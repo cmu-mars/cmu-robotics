@@ -102,7 +102,7 @@
     <param name="ig_file" value="$(find cp1_gazebo)/instructions/hometogoal.ig"/>
   </node>
 -->
-  <!-- launch node to report the state of the robot -->
-  <!-- Not the publish frequency is in Hz -->
+  <node name="brass_ll_logger" pkg="brass_logger" type="brass_logger.py" output="screen">
+  </node>
 
 </launch>
