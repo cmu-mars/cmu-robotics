@@ -25,3 +25,16 @@ starting challenge problem
 will start the simulation. You can see the debugging output in the terminal
 that's running `vagrant ssh` into the guest machine, or issue futher HTTP
 requests per the REST API.
+
+You will also see logging information about the state of the robot. When you see:
+
+```
+... Goal reached
+```
+
+on the terminal, that means the robot has successfully completed.
+
+(Note that this logging information will go away in future releases, probably. 
+This was written when we thought we had to write the code to validated the 
+intents, and it is what we were going to use. There will be another path through
+the API to get that kind of information.)
