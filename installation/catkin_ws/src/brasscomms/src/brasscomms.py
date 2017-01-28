@@ -1,25 +1,45 @@
 #! /usr/bin/env python
 
+### imports
+from __future__ import with_statement
 import roslib
 import rospy
 import actionlib
 import ig_action_msgs.msg
 import sys
+import tf
 
-from flask import Flask , request , abort
+from threading import Lock
+
+import datetime
+
+from flask import *
 from enum import Enum
-app = Flask(__name__)
 
-## some definitions and helper functions
-# status = Enum ('Status', 'Starting Operational Adapting ShuttingDown Completed ')
+import requests
+import json
+import os.path
+
+from gazebo_interface import *
+
+### some definitions and helper functions
 class Status(Enum):
-    Starting     = 1
-    Operational  = 2
-    Adapting     = 3
-    ShuttingDown = 4
-    Completed    = 5
+    PERTURBATION_DETECTED  = 1
+    MISSION_SUSPENDED = 2
+    MISSION_RESUMED = 3
+    MISSION_HALTED = 4
+    MISSION_ABORTED = 5
+    ADAPTATION_INITIATED = 6
+    ADAPTATION_COMPLETED = 7
+    ADAPTATION_STOPPED = 8
+    ERROR = 9
 
-## checks to see if a string represents an integer
+class Error(Enum):
+    TEST_DATA_FILE_ERROR  = 1
+    TEST_DATA_FORMAT_ERROR = 2
+    DAS_LOG_URI_ERROR = 3
+    DAS_OTHER_ERROR = 4
+
 def isint(x):
     try:
         int(s)
@@ -32,250 +52,185 @@ def isbool(x):
         return True
     return False
 
-
-## returns true iff the first argument is a digit inclusively between the
-## second two args. assumes that the second two are indeed digits, and that
-## the second is less than the third.
+# returns true iff the first argument is a digit inclusively between the
+# second two args. assumes that the second two are indeed digits, and that
+# the second is less than the third.
 def int_out_of_range(x,upper,lower) :
     return not(isint(x) and x >= lower and x <= upper)
-
-
-## todo: this could be a horrible concurrency bug; i don't know yet.
-start_percentage = -1
-bot_status = Status.Starting
-
-def status_name (s):
-    if (s == 1): return "Starting"
-    if (s == 2): return "Operational"
-    if (s == 3): return "Adapting"
-    if (s == 4): return "ShuttingDown"
-    if (s == 5): return "Completed"
-    return "Unknown"
 
 ## callbacks to change the status
 def done_cb(terminal, result):
     global bot_status
-    bot_status = Status.Completed
-    print "brasscomms received successful result from plan: %d" %(terminal)  
+    bot_status = Status.ADAPTATION_COMPLETED # todo: right enum?
+    print "brasscomms received successful result from plan: %d" %(terminal)
 
 def active_cb():
-    global bot_status
-    bot_status = Status.Operational
+    #### todo
+    # global bot_status
+    # bot_status = Status.Operational #todo: what to say here?
     print "brasscoms received notification that goal is active"
 
+### some globals
+app = Flask(__name__)
+shared_var_lock = Lock ()
 
-#### subroutines for the first deliverable
+# todo: this could be a horrible concurrency bug; i don't know yet.
+bot_status = Status.ERROR  # default value
 
-@app.route('/logs/status/DASSTATUS', methods=['GET'])
-def status():
-    assert request.path == '/logs/status/DASSTATUS'
-    assert request.method == 'GET'
+th_url = "http://brass-th"
 
-    global bot_status
-    ret_status = status_name(bot_status)
-    return "{{status : \"{}\" }}".format(ret_status)
+## todo
+def parse_config_file():
+    config_file_path = '/test/data'
 
-@app.route('/phase1/power/start_challenge_problem', methods=['POST'])
-def startChallengeProblem():
-    assert request.path == '/phase1/power/start_challenge_problem'
-    assert request.method == 'POST'
-    print "Processing start_challeng_problem"
+    if not (os.path.exists(config_file_path)
+            and os.path.isfile(config_file_path)
+            and os.access(config_file_path,os.R_OK)):
+        th_das_error(TEST_DATA_FILE_ERROR,'config file at ' + config_file_path + ' either does not exist, is not a file, is not readable')
+    else:
+        with open(config_file_path) as config_file:
+            data = json.load(config_file)
+
+        # todo: check to make sure each field is as in the spec ..
+
+        # start_loc
+        # start_yaw
+        # target_loc
+        # enable_adaptation
+        # initial_voltage
+        # initial_obstacle
+        # initial_obstacle_location
+        # sensor_perturbation
+
+        # todo: stop the world if the file doesn't parse
+
+    # we silently ignore anything else that might be present.
+    return data
+
+### subroutines for forming API results
+def formActionResult(arguments):
+    now = datetime.datetime.now()
+    ACTION_RESULT = {"TIME" : now.isoformat (),
+		     "ARGUMENTS": arguments}
+    return ACTION_RESULT
+
+def th_error():
+    return Response(status=400)
+
+def action_result(body):    
+    with_time = formActionResult(body)
+    return Response(json.dumps(with_time),status=200, mimetype='application/json')
+
+### subroutines for forming and sending messages to the TH
+def th_das_error(err,msg):
+    global th_url
+    now = datetime.datetime.now()
+    error_contents = {"TIME" : now.isoformat (),
+                      "ERROR" : str(err),
+                      "MESSAGE" : str(msg)}
+    # todo: this r should be th_ack or th_err; do we care?
+    r = requests.post(th_url+'/error', data = json.dumps(error_contents))
+
+def das_ready():
+    global th_url
+    now = datetime.datetime.now()
+    contents = {"TIME" : now.isoformat ()}
+    # todo: this r should be th_ack or th_err; do we care?
     try:
-        igfile = open('/home/vagrant/catkin_ws/src/cp1_gazebo/instructions/newnav.ig', "r")
+        r = requests.post(th_url+'/ready', data = json.dumps(contents))
+    except Exception as e:
+        print "Fatal: couldn't connect to TH at " + th_url+"/ready"
+
+### subroutines per endpoint URL in API wiki page order
+
+@app.route('/action/start', methods=['POST'])
+def action_start():
+    if(request.path != '/action/start' or request.method != 'POST'):
+        th_das_error(DAS_OTHER_ERROR,'internal fault: action_start called improperly')
+
+    global config
+
+    print "starting challenge problem"
+    try:
+        ig_path = '/home/vagrant/catkin_ws/src/cp_gazebo/instructions/' + config["start_loc"] + '_to_' + config["target_loc"] + '.ig'
+        igfile = open(ig_path, "r")
         igcode = igfile.read()
+        # todo: when is it safe to close this file? does the 'with' pragma do this more cleanly?
         goal = ig_action_msgs.msg.InstructionGraphGoal(order=igcode)
         global client
         client.send_goal( goal = goal, done_cb = done_cb, active_cb = active_cb)
     except Exception as e:
+        ## todo: here post the error to the relevant location in brass-th
         print e
         print "Could not send the goal!"
 
-    return 'starting challenge problem'
+    return action_result({})  # todo: this includes time as well; is that out of spec?
 
-@app.route('/phase1/power/stop_challenge_problem', methods=['POST'])
-def stopChallengeProblem():
-    assert request.path == '/phase1/power/stop_challenge_problem'
-    assert request.method == 'POST'
+@app.route('/action/observe', methods=['GET'])
+def action_observe():
+    if(request.path != '/action/observe' or request.method != 'GET'):
+        th_das_error(DAS_OTHER_ERROR,'internal fault: action_observe called improperly')
 
-    global client
-    client.cancel_all_goals()
-    global bot_status
-    bot_status = Status.Completed
-    return 'killed challenge problem'
+    global gazebo
 
+    try:
+    	x, y, w = gazebo.get_turtlebot_state()
+	observation = {"x" : x, "y" : y, "w" : w,
+		       "v" : -1,       # todo: How to calculate velocity
+                       "voltage" : -1  # todo: Need to work this out
+		      }
+	return action_result(observation)
+    except:
+	return th_error()
 
+@app.route('/action/set_battery', methods=['POST'])
+def action_set_battery():
+    if(request.path != '/action/set_battery' or request.method != 'POST'):
+        th_das_error(DAS_OTHER_ERROR,'internal fault: action_set_battery called improperly')
 
-#### subroutines for the rest of the full API; STUBS BELOW HERE
+    return action_result({})
 
-@app.route('/phase1/power/initial_settings', methods=['POST'])
-def initalSettings():
-    assert request.path == '/phase1/power/initial_settings'
-    assert request.method == 'POST'
+@app.route('/action/place_obstacle', methods=['POST'])
+def action_place_obstacle():
+    if(request.path != '/action/place_obstacle' or  request.method != 'POST'):
+        th_das_error(DAS_OTHER_ERROR,'internal fault: action_place_obstacle called improperly')
 
-    adaptions = request.args.get('enable_adaptions','')
-    if not isbool (adaptions):
-        abort(400, 'adaptations must be either "true" or "false"')
+    if(request.headers['Content-Type'] != "application/json"):
+        th_das_error(DAS_OTHER_ERROR,'action/place_obstacle recieved post without json header')
 
-    startPercent = request.args.get('start_battery','')
-    if int_out_of_range (startPercent, 0, 100):
-        abort(400, 'start percentage out of range, must be between 0 and 100 inclusive')
+    params = request.get_json(silent=True)
+    # todo: change these asserts to post error to th if they fail
+    assert 'x' in params.keys()
+    assert 'y' in params.keys()
+    global gazebo
 
-    # todo: if we're going to use it, set the global as well. this could be a
-    # horrible concurrency bug.
-    global start_percentage
-    start_percentage = startPercent
+    obs_name = gazebo.place_new_obstacle(params["x"], params["y"])
+    if obs_name is not None:
+	ARGUMENTS = {"obstacle_id" : obs_name};
+        return action_result(ARGUMENTS)
+    else:
+	return th_error()
 
-    # assume that the locations are strings "x,y".
-    obsLoc = request.args.get('obstacle_location','')
-    [obsLoc_x , obsLoc_y] = obsLoc.split(',')
-    if not (isint(obsLoc_x) and isint(obsLoc_y)):
-        abort(400, 'object location is malformed. must of the form "int,int"')
+@app.route('/action/remove_obstacle', methods=['POST'])
+def action_remove_obstacle():
+    if(request.path != '/action/remove_obstacle' or  request.method != 'POST'):
+        th_das_error(DAS_OTHER_ERROR,'internal fault: action_observe called improperly')
 
-    adaptPercent = request.args.get('minimum_battery','')
-    if int_out_of_range(adaptPercent, 0, 100) or adaptPercent >= startPercent:
-        abort(400, 'adapt percentage out of range, must be between 0 and 100 inclusive')
+    if( request.headers['Content-Type'] != "application/json"):
+        th_das_error(DAS_OTHER_ERROR,'action/remove_obstacle recieved post without json header')
 
-    return "todo: make a call here now that the data's all checked"
+    params = request.get_json(silent=True)
+    assert 'obstacle_id' in params.keys()
 
-@app.route('/phase1/power/get_robot_location', methods=['GET'])
-def location():
-    assert request.path == '/phase1/power/get_robot_location'
-    assert request.method == 'GET'
-    return 'todo: make a ROS call here to determine location'
+    obstacle_id = params["obstacle_id"]
 
-@app.route('/phase1/power/get_battery_level', methods=['GET'])
-def battery():
-    assert request.path == '/phase1/power/get_battery_level'
-    assert request.method == 'GET'
-    return 'todo: make a ROS/gazebo extension call here to determine battery level.'
+    global gazebo
+    success = gazebo.delete_obstacle(obstacle_id)
+    if success:
+	return action_result({})
+    else:
+	return th_error()
 
-@app.route('/phase1/power/change_power', methods=['POST'])
-def changePower():
-    assert request.path == '/phase1/power/change_power'
-    assert request.method == 'POST'
-
-    ## todo: this could be a horrible concurrency bug.
-    global start_percentage
-
-    ## todo: technically, this is not part of the spec given in the API.
-    if(start_percentage == -1):
-        abort(400, 'tried to change power before setting initial settings')
-
-    currentPower = request.args.get('current_battery','')
-    if int_out_of_range(currentPower, 0, start_percentage):
-        abort(400, 'current battery out of range, must be between 0 and 100 inclusive')
-
-    if currentPower >= start_percentage :
-        abort(400, 'current battery larger than the original battery setting. batteries only lose power')
-
-    return 'todo: make a call here to change the power'
-
-@app.route('/phase1/power/add_obstacle', methods=['POST'])
-def addObstacle():
-    assert request.path == '/phase1/power/add_obstacle'
-    assert request.method == 'POST'
-
-    obs_loc = request.args.get('obstacle_location','')
-
-    [obsLoc_x , obsLoc_y] = obs_loc.split(',')
-    if not (isint(obsLoc_x) and isint(obsLoc_y)):
-        abort(400, 'object location malformed. must be of the form "int,int".')
-
-    return 'todo: make a call to add the obstactle here'
-
-@app.route('/phase1/power/remove_obstacle', methods=['POST'])
-def removeObstacle():
-    assert request.path == '/phase1/power/remove_obstacle'
-    assert request.method == 'POST'
-
-    return 'todo: make a call to remove the obstacle here'
-
-@app.route('/phase1/recalibration/start_challenge_problem', methods=['POST'])
-def recal_start():
-    assert request.path == '/phase1/recalibration/start_challenge_problem'
-    assert request.method == 'POST'
-
-    return 'todo: make a call to start navigation through map for CP2'
-
-@app.route('/phase1/recalibration/initial_settings', methods=['POST'])
-def recal_init():
-    assert request.path == '/phase1/recalibration/initial_settings'
-    assert request.method == 'POST'
-
-    adaptions = request.args.get('enable_adaptions','')
-    if not isbool (adaptions):
-        abort(400, 'adaptations must be either "true" or "false"')
-
-    kinect_dx = request.args.get('kinect_dx','')
-    if int_out_of_range(kinect_dx, -5, 5):
-        abort(400, 'initial kinect dx out of range')
-
-    kinect_dy = request.args.get('kinect_dy','')
-    if int_out_of_range(kinect_dy, -5, 5):
-        abort(400, 'initial kinect dy out of range')
-
-    kinect_dz = request.args.get('kinect_dz','')
-    if int_out_of_range(kinect_dz, -5, 5):
-        abort(400, 'initial kinect dz out of range')
-
-    kinect_dr = request.args.get('kinect_dr','')
-    if int_out_of_range(kinect_dr, -30, 30):
-        abort(400, 'initial kinect dr out of range')
-
-    kinect_dp = request.args.get('kinect_dp','')
-    if int_out_of_range(kinect_dp, -30, 30):
-        abort(400, 'initial kinect dp out of range')
-
-    kinect_dw = request.args.get('kinect_dw','')
-    if int_out_of_range(kinect_dw, -30, 30):
-        abort(400, 'initial kinect dw out of range')
-
-    return 'todo: make a call here; what is this supposed to do, exactly? no spec given'
-
-## todo: are you allowed to call this if you have an initial perturbation
-## or not?
-@app.route('/phase1/recalibration/change_settings', methods=['POST'])
-def recal_change():
-    assert request.path == '/phase1/recalibration/change_settings'
-    assert request.method == 'POST'
-
-    kinect_dx = request.args.get('kinect_dx','')
-    if int_out_of_range(kinect_dx, -5, 5):
-        abort(400, 'updated kinect dx out of range')
-
-    kinect_dy = request.args.get('kinect_dy','')
-    if int_out_of_range(kinect_dy, -5, 5):
-        abort(400, 'updated kinect dy out of range')
-
-    kinect_dz = request.args.get('kinect_dz','')
-    if int_out_of_range(kinect_dz, -5, 5):
-        abort(400, 'updated kinect dz out of range')
-
-    kinect_dr = request.args.get('kinect_dr','')
-    if int_out_of_range(kinect_dr, -30, 30):
-        abort(400, 'updated kinect dr out of range')
-
-    kinect_dp = request.args.get('kinect_dp','')
-    if int_out_of_range(kinect_dp, -30, 30):
-        abort(400, 'updated kinect dp out of range')
-
-    kinect_dw = request.args.get('kinect_dw','')
-    if int_out_of_range(kinect_dw, -30, 30):
-        abort(400, 'updated kinect dw out of range')
-
-    return 'todo: make a call here'
-
-@app.route('/phase1/power/get_current_state', methods=['GET'])
-def recal_state():
-    assert request.path == '/phase1/power/get_current_state'
-    assert request.method == 'GET'
-    return 'todo: make a ROS call here to determine status. specify output format.'
-
-@app.route('/phase1/recalibration/stop_challenge_problem', methods=['GET'])
-def recal_stop():
-    assert request.path == '/phase1/recalibration/stop_challenge_problem'
-    assert request.method == 'GET'
-    return 'todo: make a ROS call to stop the challenge problem'
 
 
 # if you run this script from the command line directly, this causes it to
@@ -292,5 +247,7 @@ if __name__ == "__main__":
     rospy.init_node("brasscomms")
     client = actionlib.SimpleActionClient("ig_action_server", ig_action_msgs.msg.InstructionGraphAction)
     client.wait_for_server()
+    gazebo = GazeboInterface()
+    config = parse_config_file()
+    das_ready() ## todo: this happens too early
     app.run (host="0.0.0.0")
-    
