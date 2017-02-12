@@ -47,6 +47,7 @@ Vagrant.configure(2) do |config|
   # overcome webcam issue
   sudo ln -s /dev/null /dev/raw1394
   sudo apt-get -y install emacs
+  sudo pip install attrs
   SCRIPT
 
 
@@ -66,7 +67,13 @@ Vagrant.configure(2) do |config|
   end
 
    config.vm.provision "shell" do |s|
-    s.inline = "cp /vagrant/run-cp1.sh /home/vagrant; chmod +x /home/vagrant/run-cp1.sh"
+    s.inline = "cp /vagrant/run-cp1.sh /home/vagrant/start.sh; chmod +x /home/vagrant/start.sh"
+	s.name = "Copy the start script"
+	s.privileged = false
+  end
+
+   config.vm.provision "shell" do |s|
+    s.inline = "cp /vagrant/mockup.sh /home/vagrant; chmod +x /home/vagrant/mockup.sh"
 	s.name = "Copy the CP1 run script"
 	s.privileged = false
   end
