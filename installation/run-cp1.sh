@@ -16,4 +16,14 @@ export DISPLAY=:1
 source /opt/ros/indigo/setup.bash
 cd catkin_ws
 source devel/setup.bash
-roslaunch cp_gazebo cp1.launch
+
+export ROS_LOG_DIR=/test/roslog
+
+if [ `grep CP2 /test/data` ]
+then
+    echo "no roslaunch for CP2 yet!"
+else
+    ## if /test/data is garbage, brasscomms will pick it up and report the
+    ## error to the right place, even in the CP2 case.
+    roslaunch cp_gazebo cp1.launch
+fi

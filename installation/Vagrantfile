@@ -12,7 +12,7 @@ Vagrant.configure(2) do |config|
 
   ## the BRASSCOMMS layer runs on 5000; this allows you to access it from
   ## outside the guest machine, which is convenient.
-  config.vm.network "forwarded_port", guest: 5000, host: 5000
+  config.vm.network "forwarded_port", guest: 5000, host: 8080
 
   config.vm.provider "virtualbox" do |vb|
     vb.memory = "4096"
@@ -21,10 +21,14 @@ Vagrant.configure(2) do |config|
   end
 
  $script = <<-SCRIPT
+  mkdir ~/das
   sudo apt-get install software-properties-common -y --force-yes
   sudo apt-add-repository ppa:ansible/ansible -y
   sudo add-apt-repository ppa:openjdk-r/ppa
-  sudo sh -c 'echo "deb file:/vagrant/debs ./" >> /etc/apt/sources.list'
+  if ! [[ `grep file:/vagrant/debs /etc/apt/sources.list` ]]
+  then
+      sudo sh -c 'echo "deb file:/vagrant/debs ./" >> /etc/apt/sources.list'
+  fi
   sudo apt-get update -y
   sudo apt-get install ansible -y --force-yes
   sudo apt-get install -f
@@ -32,10 +36,12 @@ Vagrant.configure(2) do |config|
   sudo apt-get install openjdk-8-jre-headless -y --force-yes
   sudo /var/lib/dpkg/info/ca-certificates-java.postinst configure ## per https://bugs.launchpad.net/ubuntu/+source/ca-certificates-java/+bug/1396760
   cd /vagrant
+  #cp -r das /home/vagrant/
   sudo ansible-playbook turtle.yml
   echo "source /opt/ros/indigo/setup.bash" >> ~/.bashrc
   source ~/.bashrc
   source /opt/ros/indigo/setup.bash
+##  echo "export LD_LIBRARY_PATH=~/customlibs/:\$LD_LIBRARY_PATH" >> ~/.bashrc
   sudo rosdep init
   sudo rosdep fix-permissions
   rosdep update
@@ -45,9 +51,8 @@ Vagrant.configure(2) do |config|
   sudo apt-get -y install python-flask
   sudo apt-get -y install python-enum34
   # overcome webcam issue
-  sudo ln -s /dev/null /dev/raw1394
+  sudo ln -sf /dev/null /dev/raw1394
   sudo apt-get -y install emacs
-  sudo pip install attrs
   SCRIPT
 
 
@@ -55,8 +60,16 @@ Vagrant.configure(2) do |config|
   config.vm.provision "shell", inline: $script, privileged: false
 
   config.vm.provision "shell" do |s|
-    s.inline = "cp -r /vagrant/catkin_ws /home/vagrant"
-	s.name = "Copy the base programs for CP1"
+#    s.inline = "mkdir /home/vagrant/catkin_ws & ln -s /vagrant/catkin_ws/src /home/vagrant/catkin_ws/src"
+    s.inline = "rsync -rv --exclude='.git*' /vagrant/catkin_ws ."
+	s.name = "Copy the base programs for cahllenge problems"
+	s.privileged = false
+  end
+
+  config.vm.provision "shell" do |s|
+#    s.inline = "ln -s /vagrant/das/rainbow-brass /home/vagrant/das/rainbow-brass"
+	s.inline = "rsync -rv --exclude='.git*' /vagrant/das/rainbow-brass das"
+	s.name = "Copy rainbow files for adaptation"
 	s.privileged = false
   end
 
@@ -84,13 +97,22 @@ Vagrant.configure(2) do |config|
 	s.privileged = false
   end
 
+
+
   $setup = <<-SETUP
 
-  echo Setting up challenge problem 1
+  echo "Setting up challenge problem 1"
+  rm -f /home/vagrant/catkin_ws/src/CMakeLists.txt
   ./setup-cp1.sh
   echo "source catkin_ws/devel/setup.bash" >> .bashrc
   SETUP
 
   config.vm.provision "shell", inline: $setup, privileged: false
+
+  config.vm.provision "shell" do |s|
+    s.inline = "cp -r /vagrant/customlibs/* /home/vagrant/catkin_ws/devel/lib/"
+	s.name = "Copy the custom libraries (Kinect, Joints, Power Sim) to the deployment"
+	s.privileged = false
+  end
 
 end

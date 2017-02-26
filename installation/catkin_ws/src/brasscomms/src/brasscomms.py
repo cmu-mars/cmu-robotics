@@ -4,6 +4,7 @@
 
 ### standard imports
 from __future__ import with_statement
+from threading import Lock
 
 from os.path import exists, isfile
 from os import access, R_OK
@@ -23,20 +24,31 @@ from move_base_msgs.msg import MoveBaseAction
 from constants import (TH_URL, CONFIG_FILE_PATH, LOG_FILE_PATH, CP_GAZ,
                        JSON_MIME, Error, LogError, QUERY_PATH, Status,
                        START, OBSERVE, SET_BATTERY, PLACE_OBSTACLE,
-                       REMOVE_OBSTACLE, PERTURB_SENSOR, DoneEarly)
+                       REMOVE_OBSTACLE, PERTURB_SENSOR, DoneEarly,
+                       AdaptationLevels, INTERNAL_STATUS, SubSystem,
+                       TIME_FORMAT)
 from gazebo_interface import GazeboInterface
+from rainbow_interface import RainbowInterface
 from map_util import waypoint_to_coords
 from parse import (Coords, Bump, Config, TestAction,
-                   Voltage, ObstacleID, SingleBumpName)
+                   Voltage, ObstacleID, SingleBumpName,
+                   InternalStatus)
 
 ### some definitions and helper functions
 
 def done_cb(terminal, result):
     """ callback for when the bot is at the target """
-    done_early("done_cb called, so we got a good result from the plan",
-               DoneEarly.AT_TARGET)
-    log_das(LogError.INFO,
-            "brasscomms received successful result from plan: %d" % terminal)
+    if result:
+        done_early("done_cb called with terminal %d and positive result %s" % (terminal, result),
+                   DoneEarly.AT_TARGET)
+        log_das(LogError.INFO,
+                "done_cb called by ros with terminal %d and positive result %s" % (terminal, result))
+    else:
+        das_status(Status.TEST_ERROR,
+                   "done_cb with terminal %d but with negative result %s; this is an error" % (terminal, result))
+
+    ## todo: when we have the battery model implemented, also check here to
+    ## see if the battery is empty and send that message instead
 
 def active_cb():
     """ callback for when the bot is made active """
@@ -44,9 +56,8 @@ def active_cb():
 
 ### some globals
 app = Flask(__name__)
-deadline = datetime.datetime.now() ## this is a default value; the result
-                                   ## of observe will be well formed but
-                                   ## wrong unless they call start first
+deadline = None ## this is a default value; the result of observe will be
+                ## well formed but wrong unless they call start first
 
 ## shared_var_lock = Lock() ## todo :commented out until we have occasion to use it
 
@@ -70,7 +81,7 @@ def th_error():
 
 def action_result(body):
     """ given a body, produce the action result with headers """
-    return Response(json.dumps({"TIME" : (datetime.datetime.now()).isoformat(),
+    return Response(json.dumps({"TIME" : timenow(),
                                 "RESULT": body}),
                     status=200, mimetype=JSON_MIME)
 
@@ -78,20 +89,19 @@ def action_result(body):
 def th_das_error(err, msg):
     """ posts a DAS_ERROR formed with the arguments """
     dest = TH_URL + "/error"
-    now = datetime.datetime.now()
-    error_contents = {"TIME" : now.isoformat(),
+    error_contents = {"TIME" : timenow(),
                       "ERROR" : err.name,
                       "MESSAGE" : msg}
     try:
         requests.post(dest, data=json.dumps(error_contents))
     except Exception as e:
-        log_das(LogError.STARTUP_ERROR, "Fatal: cannot connect to TH at %s: %s" % (dest, e))
+        log_das(LogError.RUNTIME_ERROR, "Fatal: cannot connect to TH at %s: %s" % (dest, e))
 
 def log_das(error, msg):
     """ formats the arguments per the API and inserts them to the log """
     try:
         with open(LOG_FILE_PATH, 'a') as log_file:
-            error_contents = {"TIME" : (datetime.datetime.now()).isoformat(),
+            error_contents = {"TIME" : timenow(),
                               "TYPE" : error.name,
                               "MESSAGE" : msg}
             data = json.dumps(error_contents)
@@ -102,7 +112,7 @@ def log_das(error, msg):
 def done_early(message, reason):
     """ POSTs action message to the TH that we're done early """
     dest = TH_URL + "/action/done"
-    contents = {"TIME" : (datetime.datetime.now()).isoformat(),
+    contents = {"TIME" : timenow(),
                 "TARGET" : message,
                 "ARGUMENTS" : {"done" : reason.name}}
     log_das(LogError.INFO, "ending early: %s; %s" % (reason.name, message))
@@ -116,12 +126,41 @@ def done_early(message, reason):
 def das_ready():
     """ POSTs DAS_READY to the TH, or logs if failed"""
     dest = TH_URL + "/ready"
-    contents = {"TIME" : (datetime.datetime.now()).isoformat()}
+    contents = {"TIME" : timenow()}
     try:
         requests.post(dest, data=json.dumps(contents))
     except Exception as e:
         log_das(LogError.STARTUP_ERROR,
                 "Fatal: couldn't connect to TH to send DAS_READY at %s: %s" % (dest, e))
+
+def das_status(status, message):
+    dest = TH_URL + "/action/status"
+    contents = {"TIME" : timenow(),
+                "STATUS": status.name,
+                "MESSAGE": message}
+    try:
+        requests.post(dest, data=json.dumps(contents))
+    except Exception as e:
+        log_das(LogError.RUNTIME_ERROR,
+                "Fatal: couldn't connect to TH to send DAS_STATUS at %s: %s" % (dest, e))
+
+
+STATE_LOCK = Lock()
+READY_LIST = []
+
+def indicate_ready(subsystem):
+    ready = False
+    global config
+    with STATE_LOCK:
+        READY_LIST.append(subsystem)
+        if config.enable_adaptation == AdaptationLevels.CP1_NoAdaptation or config.enable_adaptation == AdaptationLevels.CP2_NoAdaptation:
+            ready = SubSystem.BASE in READY_LIST
+        else:
+            ready = SubSystem.BASE in READY_LIST and SubSystem.DAS in READY_LIST
+            if not ready and SubSystem.DAS in READY_LIST:
+                log_das(LogError.INFO, 'DAS is ready before base - this should not happen')
+    if ready:
+        das_ready()
 
 def check_action(req, path, methods):
     """ return true if the request respects the methods, false and log it otherwise """
@@ -139,8 +178,8 @@ def check_action(req, path, methods):
 
     # if it's a post, make sure that it got JSON. req.method also needs to
     # be in methods, but that must be true from above
-    if (req.method == 'POST') and (request.headers['Content-Type'] != JSON_MIME):
-        log_das(LogError.RUNTIME_ERROR, '%s POSTed to without json header' % path)
+    if (req.method == 'POST') and (JSON_MIME not in request.headers['Content-Type']):
+        log_das(LogError.RUNTIME_ERROR, '%s POSTed to without json header: %s' % (path, request.headers['Content-Type']))
         return False
 
     return True
@@ -150,6 +189,18 @@ def instruct(ext):
     global config
 
     return CP_GAZ + '/instructions/' + config.start_loc + '_to_' + config.target_loc + ext
+
+def timestr(d):
+    """ format the argument time to MIT's spec """
+
+    ## the spec wants exactly 3 decimal places worth of fractions of a
+    ## second. the ISO standard is 6, so we chop off the trailing 3 and
+    ## then glue on the Z that they want at the end.
+    return '%sZ' % d.strftime(TIME_FORMAT)[:-3]
+
+def timenow():
+    """ return the UTC now time, formatted to MIT's spec.  """
+    return timestr(datetime.datetime.utcnow())
 
 ### subroutines per endpoint URL in API wiki page order
 @app.route(QUERY_PATH.url, methods=QUERY_PATH.methods)
@@ -183,19 +234,24 @@ def action_start():
 
     global deadline
 
+    ## check to see if there's already an assigned goal, abort if so.
+    global client
+    if client.gh:
+        log_das(LogError.RUNTIME_ERROR, "%s hit with an already active goal" % START.url)
+        return th_error()
+
     log_das(LogError.INFO, "starting challenge problem")
     try:
         with open(instruct('.ig')) as igfile:
             igcode = igfile.read()
             goal = ig_action_msgs.msg.InstructionGraphGoal(order=igcode)
-            global client
             client.send_goal(goal=goal, done_cb=done_cb, active_cb=active_cb)
 
         # update the deadline to be now + the amount of time for the path
         # given in the json file
         with open(instruct('.json')) as config_file:
             data = json.load(config_file)
-            deadline = datetime.datetime.now() + datetime.timedelta(seconds=data['time'])
+            deadline = timestr(datetime.datetime.utcnow() + datetime.timedelta(seconds=data['time']))
     except Exception as e:
         log_das(LogError.RUNTIME_ERROR, "could not send the goal in %s: %s " % (START.url, e))
         return th_error()
@@ -216,7 +272,7 @@ def action_observe():
         observation = {"x" : x, "y" : y, "w" : w,
                        "v" : vel,
                        "voltage" : -1,  # todo: Need to work this out
-                       "deadline" : deadline.isoformat()
+                       "deadline" : str(deadline)
                       }
         return action_result(observation)
     except Exception as e:
@@ -302,10 +358,8 @@ def action_remove_obstacle():
             return th_error()
     except Exception as e:
         log_das(LogError.RUNTIME_ERROR, '%s raised an exception: %s' % (REMOVE_OBSTACLE.url, e))
-        #### todo: this is kind of a hack for RR2.1.
-        #### flip the comments here to pick the other hack, as discussed
-        ### return th_error()
-        return action_result({})
+        return th_error()
+
 
 
 @app.route(PERTURB_SENSOR.url, methods=PERTURB_SENSOR.methods)
@@ -329,6 +383,33 @@ def action_perturb_sensor():
     ## something well-formatted if it gets something well-formatted
     return action_result({})
 
+@app.route(INTERNAL_STATUS.url, methods=INTERNAL_STATUS.methods)
+def internal_status():
+    """ implements the internal status, for communication from Rainbow """
+    if not check_action(request, INTERNAL_STATUS.url, methods=INTERNAL_STATUS.methods):
+        return th_error()
+
+    try:
+        j = request.get_json(silent=True)
+        params = InternalStatus(**j)
+
+        if params.STATUS == "RAINBOW_READY":
+            # Rainbow is now ready to, so send das_ready()
+            indicate_ready(SubSystem.DAS)
+        else:
+            das_status(filter(lambda x: x.name == params.STATUS, Status)[0],
+                       params.MESSAGE)
+    except IndexError as e:
+        log_das(LogError.RUNTIME_ERROR,
+                '%s got a POST with the unknown status name \'%s\', %s'
+                % (INTERNAL_STATUS.url, params.STATUS, e))
+    except Exception as e:
+        log_das(LogError.RUNTIME_ERROR,
+                '%s got a malformed internal status: %s' %(INTERNAL_STATUS.url, e))
+    return action_result({})
+
+
+
 # if you run this script from the command line directly, this causes it to
 # actually launch the little web server and the node
 #
@@ -346,23 +427,25 @@ if __name__ == "__main__":
     client.wait_for_server()
 
     # make an interface into Gazebo
-    gazebo = GazeboInterface()
+    try:
+        gazebo = GazeboInterface()
+    except Exception as e:
+        log_das(LogError.STARTUP_ERROR, "Fatal: gazebo did not start up: %s" % e)
+        th_das_error(Error.DAS_OTHER_ERROR, "Fatal: gazebo did not start up: %s" % e)
+        raise
 
     # parse the config file
     try:
         config = parse_config_file()
     except Exception as e:
         log_das(LogError.STARTUP_ERROR, "Fatal: config file doesn't parse: %s" % e)
+        th_das_error(Error.DAS_OTHER_ERROR, "Fatal: config file doesn't parse: %s" % e)
         raise
 
     # this should block until the navigation stack is ready to recieve goals
     move_base = actionlib.SimpleActionClient("move_base", MoveBaseAction)
     move_base.wait_for_server()
 
-    ## todo: call bradley's stuff to teleport the robot to the place
-    ## it's actully starting not l1
-
-    ## todo: this posts errors to the TH, but we should stop the world when that happens
     # arrange the bot in the location specified by the config
     try:
         start_coords = waypoint_to_coords(config.start_loc)
@@ -370,11 +453,22 @@ if __name__ == "__main__":
     except Exception as e:
         log_das(LogError.STARTUP_ERROR,
                 "Fatal: config file inconsistent with map: %s" % e)
+        th_das_error(Error.DAS_OTHER_ERROR, "Fatal: config file inconsistent with map: %s" % e)
         raise
 
+    # start Rainbow
+    try:
+        rainbow_log = open("/test/rainbow.log", 'w')
+        rainbow = RainbowInterface()
+        rainbow.launchRainbow(config.enable_adaptation, rainbow_log)
+        rainbow.startRainbow()
+    except Exception as e:
+        log_das(LogError.STARTUP_ERROR, "Fatal: config file inconsistent with map: %s" % e)
+        th_das_error(Error.DAS_OTHER_ERROR, "Fatal: rainbow failed to start: %s" % e)
+        raise
 
     ## todo: this may happen too early
-    das_ready()
+    indicate_ready(SubSystem.BASE)
 
     ## actually start up the flask service. this never returns, so it must
     ## be the last thing in the file

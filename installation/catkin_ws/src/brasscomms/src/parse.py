@@ -2,11 +2,13 @@
 end points, with attributes to enforce invariants
 """
 import math
-import attr
-import unicodedata
-from attr.validators import instance_of
+import datetime
 
-from constants import AdaptationLevels
+from attr.validators import instance_of
+import attr
+
+
+from constants import AdaptationLevels, TIME_FORMAT
 
 def in_range_inclusive(low=None, high=None, kind=None):
     """ produce range checkers approriate for attrs given lower and upper bounds"""
@@ -14,9 +16,20 @@ def in_range_inclusive(low=None, high=None, kind=None):
         if not isinstance(value, kind):
             raise ValueError('%s is not a %s' % (value, kind))
         if value < low or value > high:
-            raise ValueError('%s not in [%s,%s]' % (value , low, high))
+            raise ValueError('%s not in [%s,%s]' % (value, low, high))
 
     return _isvalid
+
+def time_string(instance, attribute, value):
+    """ tries to parse the given value according to MIT spec for time formats, errors otherwise """
+    try:
+        if isinstance(value, unicode):
+            datetime.datetime.strptime(value, TIME_FORMAT + 'Z')
+        else:
+            raise ValueError('%s not a unicode string, so cannot parse as datetime object' % value)
+    except ValueError as ve:
+        raise ValueError('string %s did not part as a datetime object under %s: %s'
+                         % (value, TIME_FORMAT, ve))
 
 ## uses of the above that appear more than once
 VALID_VOLT = in_range_inclusive(low=104, high=166, kind=int)
@@ -47,16 +60,11 @@ def ensure_enum(cl):
 
     return converter
 
-def ensure_str():
-    def converter(val):
-        return str(unicodedata.normalize('NFKD', val).encode('ascii','ignore'))
-    return converter
-
 @attr.s
 class Coords(object):
     """ class with attributes for inital position """
-    x = attr.ib(validator=in_range_inclusive(low=-1.0, high=24.0, kind=float))
-    y = attr.ib(validator=in_range_inclusive(low=-1.0, high=12.0, kind=float))
+    x = attr.ib(validator=in_range_inclusive(low=-1.0, high=100.0, kind=float))
+    y = attr.ib(validator=in_range_inclusive(low=-1.0, high=112.0, kind=float))
 
 @attr.s
 class Bump(object):
@@ -70,6 +78,7 @@ class Bump(object):
 
 @attr.s
 class SingleBumpName(object):
+    """ class with attributes for just a thing called bump that's a mapping """
     bump = attr.ib(validator=instance_of(dict))
 
 @attr.s
@@ -87,8 +96,7 @@ class Config(object):
 @attr.s
 class TestAction(object):
     """ class with attributes for test actions, leaving arguments unparsed """
-    ## todo: check that this is a valid time string
-    TIME = attr.ib(validator=instance_of(unicode))
+    TIME = attr.ib(validator=time_string)
     ARGUMENTS = attr.ib(validator=instance_of(dict))
 
 @attr.s
@@ -100,4 +108,11 @@ class Voltage(object):
 class ObstacleID(object):
     """ class with attributes for obstacle ids """
     ## todo: also check here if it's a good name?
-    obstacleid = attr.ib(validator=instance_of(str),convert=ensure_str())
+    obstacleid = attr.ib(validator=instance_of(unicode))
+
+@attr.s
+class InternalStatus(object):
+    """ class with attributes for internal status from rainbow """
+    STATUS = attr.ib(validator=instance_of(unicode))
+    MESSAGE = attr.ib(validator=instance_of(unicode))
+    TIME = attr.ib(validator=time_string)

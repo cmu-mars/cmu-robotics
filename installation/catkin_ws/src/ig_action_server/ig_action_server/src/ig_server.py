@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 
 import roslib; roslib.load_manifest('ig_action_msgs')
-import roslib; roslib.load_manifest('messages')
 import rospy
 
 import actionlib
@@ -19,41 +18,40 @@ from constants import *
 from statics import findn
 import turtlebot_move_base_actions as turtlebot
 import turtlebot_actions_2 as turtlebot2
+import turn_bs as tb_no_movebase
 
 import traceback
 
-from orientation import Orientation
+# from orientation import Orientation
 import time
 
-from messages.msg import euler
+## from messages.msg import euler
+import tf
 
 lexer = lex.lex(module=lexerIG)
 parser = yacc.yacc(module=parserIG)
+
 
 class IGServer(object):
 	_feedback = ig_action_msgs.msg.InstructionGraphFeedback()
 	_result = ig_action_msgs.msg.InstructionGraphResult()
 	_init_time = None
-	_init_yaw = None
-	_yaw_with_drift = None
-	_yaw_with_drift_time = None
+	_tf = None
 
 	def __init__(self, name):
 		self._name = name
 		self._as = actionlib.SimpleActionServer(self._name, ig_action_msgs.msg.InstructionGraphAction, execute_cb=self.execute_cb, auto_start = False)
 		self._as.start()
 		rospy.loginfo('IG action server is running!')
-		rospy.Subscriber("euler_orientation", euler, self.euler_callback)
-		rospy.sleep(10)
-		self._init_yaw = self._yaw_with_drift
-		self._init_time = self._yaw_with_drift_time
-		print str(self._init_yaw)
+		self._tf = tf.TransformListener()
+#		rospy.Subscriber("euler_orientation", euler, self.euler_callback)
+#		rospy.sleep(10)
 
 
 	def execute_cb(self, goal):
 		# Setting the rate of execution.
 		r =rospy.Rate(1)
-		self._success = True		
+		self._success = True
 
 		# Appending the feedback for goal recieved.
 		self.publish_feedback('Recieved new goal!')
@@ -77,7 +75,7 @@ class IGServer(object):
 			self.publish_feedback('Executing graph')
 			rospy.loginfo('Executing the graph')
 			self.eval(ast)
-		
+
 		# end core code
 		#r.sleep()
 
@@ -94,7 +92,7 @@ class IGServer(object):
 		self._feedback.sequence = feedback
 		self._as.publish_feedback(self._feedback)
 
-	
+
 	def publish_result(self, result):
 		# Appending the results for goal completed.
 		self._result.sequence = result
@@ -115,7 +113,7 @@ class IGServer(object):
 			else:
 				self.publish_feedback("%s:Move(%s,%s,%s,%s,%s): FAILED: %s" %(node,distance, angular, speed, delta_y, rotation, msg))
 				return False
-				
+
 		elif action.operator == SAY:
 			(s,) = action.params
 			self.publish_feedback("%s:Say(\"%s\"): START" %(node,s))
@@ -139,7 +137,6 @@ class IGServer(object):
 				self.publish_feedback("%s:MoveTo(%s,%s): FAILED: %s" %(node,x,y, msg))
 				return False
 		elif action.operator == MOVEABS:
-			print str(self._yaw_with_drift)
 			(x,y,v) = action.params # x,y coordinates on the map and velocity for movement.
 			self.publish_feedback("%s:MoveAbs(%s,%s,%s): START" %(node,x,y,v))
 			status,msg = turtlebot2.moveAbs(x,y,v)
@@ -159,10 +156,21 @@ class IGServer(object):
 			else:
 				self.publish_feedback("%s:MoveRel(%s,%s, %s): FAILED: %s" %(node,x,y,v,msg))
 				return False
+		elif action.operator == FORWARD:
+			(distance, speed) = action.params
+			self.publish_feedback("%s:Forward(%s,%s): START" %(node, distance, speed))
+			status,msg = tb_no_movebase.forward(distance, speed)
+			if status:
+				self.publish_feedback("%s:Forward(%s,%s): SUCCESS" %(node, distance, speed))
+				return True
+			else:
+				self.publish_feedback("%s:Forward(%s,%s): FAILED" %(node, distance, speed))
+				return False
 		elif action.operator == TURNABS:
 			(d,r) = action.params # direction and rotational velocity. d = N, S, E, W (North, South, East, West)
 			self.publish_feedback("%s:TurnAbs(%s,%s): SUCCESS" %(node,d,r))
-			status,msg = turtlebot2.turnAbs(d, r, self._init_time, self._init_yaw, self._yaw_with_drift_time, self._yaw_with_drift)
+			#if self._tf.frameExists("/base_link") and self._tf.frameExists("/map"):
+			(status,msg) = tb_no_movebase.turnAbs(d,r)
 			if status:
 				self.publish_feedback("%s:TurnAbs(%s,%s): SUCCESS" %(node,d,r))
 				return True
@@ -172,7 +180,7 @@ class IGServer(object):
 		elif action.operator == TURNREL:
 			(a,r) = action.params # Angle and rotational velocity.
 			self.publish_feedback("%s:TurnRel(%s,%s): START" %(node,a,r))
-			status, msg = turtlebot2.turnRel(a,r)
+			status, msg = tb_no_movebase.turnDegrees(a, r, True)
 			if status:
 				self.publish_feedback("%s:TurnRel(%s,%s): SUCCESS" %(node,a,r))
 				return True
@@ -254,9 +262,9 @@ class IGServer(object):
 			  config = config2
 		(_, _, _, O) = config
 
-	def euler_callback(self, msg):
-		self._yaw_with_drift = msg.yaw
-		self._yaw_with_drift_time = time.time()
+#	def euler_callback(self, msg):
+#		self._yaw_with_drift = msg.yaw
+#		self._yaw_with_drift_time = time.time()
 
 
 
@@ -264,7 +272,3 @@ if __name__ == "__main__":
 	rospy.init_node('ig_action_server')
 	igserver = IGServer('ig_action_server')
 	rospy.spin()
-
-
-
-

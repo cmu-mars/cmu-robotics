@@ -9,6 +9,10 @@ LOG_FILE_PATH = '/test/log'
 CP_GAZ = '/home/vagrant/catkin_ws/src/cp_gazebo'
 JSON_MIME = 'application/json'
 
+## this is all of the time format EXCEPT the trailing Z, which needs to get
+## put on manually or else the truncation for %f down to three is brittle
+TIME_FORMAT = '%Y-%m-%dT%H:%M:%S.%f'
+
 class Status(Enum):
     """ statuses for DAS_STATUS messages """
     PERTURBATION_DETECTED = 1
@@ -19,7 +23,7 @@ class Status(Enum):
     ADAPTATION_INITIATED = 6
     ADAPTATION_COMPLETED = 7
     ADAPTATION_STOPPED = 8
-    ERROR = 9
+    TEST_ERROR = 9
 
 class Error(Enum):
     """ errors for DAS_ERROR messages """
@@ -35,6 +39,7 @@ class LogError(Enum):
     INFO = 3
 
 class DoneEarly(Enum):
+    """ enumeration of the reasons we might finish before timeout  """
     BATTERY = 1
     AT_TARGET = 2
 
@@ -46,6 +51,7 @@ SET_BATTERY = Endpoint(url='/action/set_battery', methods=['POST'])
 PLACE_OBSTACLE = Endpoint(url='/action/place_obstacle', methods=['POST'])
 REMOVE_OBSTACLE = Endpoint(url='/action/remove_obstacle', methods=['POST'])
 PERTURB_SENSOR = Endpoint(url='/action/perturb_sensor', methods=['POST'])
+INTERNAL_STATUS = Endpoint(url='/internal/status', methods=['POST'])
 
 class AdaptationLevels(Enum):
     """ adaptations levels for config file """
@@ -53,3 +59,8 @@ class AdaptationLevels(Enum):
     CP2_NoAdaptation = 2
     CP1_Adaptation = 3
     CP2_Adaptation = 4
+
+class SubSystem(Enum):
+    """ Subsystems comprising experiment """
+    BASE = 1
+    DAS = 2

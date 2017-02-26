@@ -12,14 +12,17 @@ import math
 # This is the model for the obstacle
 OBS_MODEL = os.path.expanduser('~/catkin_ws/src/cp_gazebo/models/box.sdf')
 
-# These are translation coordinates between the map and gazebo 
+# These are translation coordinates between the map and gazebo
 # The two things should really be syncrhonized
 X_MAP_TO_GAZEBO_TRANSLATION = 56
 Y_MAP_TO_GAZEBO_TRANSLATION = 42
 
+class GazeboExcpetion(Exception):
+	pass
+
 class GazeboInterface:
     # Class to manage interaction with Gazebo. This class should be instantiated only once.
-        
+
 	obstacle_names = None # Name of known obstacles
 	obstacle_sequence = None # The next number in the sequence
 	lock = None # A lock to manage multiple threads
@@ -38,8 +41,11 @@ class GazeboInterface:
 		self.set_model_state = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
 		self.spawn_model = rospy.ServiceProxy('/gazebo/spawn_sdf_model', SpawnModel)
 		self.delete_model = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
-		rospy.wait_for_service('/gazebo/get_model_state')
-		rospy.wait_for_service('/gazebo/spawn_gazebo_model')
+		try:
+			rospy.wait_for_service('/gazebo/get_model_state', timeout=30)
+			rospy.wait_for_service('/gazebo/spawn_gazebo_model')
+		except rospy.ROSException, e:
+			raise GazeboExcpetion("Could not connect to gazebo", e)
 
 	def translateMapToGazebo(self,mx, my):
 	    # Translate from map coordinates to gazebo coordinates
@@ -68,8 +74,8 @@ class GazeboInterface:
 			#	tb.twist.linear.z != 0 or tb.twist.angular.x!= 0 or
 			#	tb.twist.angular.y!= 0 or tb.twist.angular.z != 0):
 			#	rospy.logerr('Cannot set the robot position while it is moving')
-			#	return False	
-			
+			#	return False
+
 			# Set the position to the new position
 			tb.pose.position.x, tb.pose.position.y = self.translateMapToGazebo(mx, my)
 			q = (tb.pose.orientation.x,
@@ -145,7 +151,7 @@ class GazeboInterface:
 		pose = Pose ()
 		pose.position.x = gx
 		pose.position.y = gy
-		pose.position.z = 0.75 # constant because obstacle is 1.5 meters tall
+		pose.position.z = 0.0 # constant because obstacle is 1.5 meters tall
 		pose.orientation.x = self.zero_q[0]
 		pose.orientation.y = self.zero_q[1]
 		pose.orientation.z = self.zero_q[2]
@@ -155,7 +161,7 @@ class GazeboInterface:
 		obs_name = ''
 		with self.lock:
 		    obs_name = "Obstacle_%s" %str(self.obstacle_sequence)
-		    
+
 		# Create gazebo request and call
 		req = SpawnModelRequest()
 		req.model_name = obs_name
@@ -174,7 +180,7 @@ class GazeboInterface:
 		except rospy.ServiceException, e:
 			rospy.logerr("Could not place obstacle. Message %s" %e)
 			return None
-			
+
 	def delete_obstacle(self, obs_name):
 	    # Deletes a model (obstacle) from gazebo. The obs_name must exist
 
@@ -182,11 +188,11 @@ class GazeboInterface:
 			if obs_name not in self.obstacle_names:
 				rospy.logerr("Nonexistent obstacle [%s]"%obs_name)
 				return False
-		req = DeleteModel()
+		req = DeleteModelRequest()
 		req.model_name = obs_name
 		try:
 			res = self.delete_model(req)
-		
+
 			if res.success:
 				with self.lock:
 					self.obstacle_names.remove(obs_name)
@@ -197,14 +203,14 @@ class GazeboInterface:
 		except rospy.ServiceException, e:
 			rospy.logerr("Could not place obstacle. Message %s"%e)
 			return False
-          
-# This is just for testing  
+
+# This is just for testing
 if __name__ == "__main__":
 	# In testing
 	rospy.init_node("gazebo_interface_test")
-	gazebo = GazeboInterface() 
+	gazebo = GazeboInterface()
 
-	
+
 	success = gazebo.set_turtlebot_position(19.8,58.8,0)
 	if success:
 		print ("set position!")
@@ -215,12 +221,10 @@ if __name__ == "__main__":
 
 
 	new_obs = gazebo.place_new_obstacle(19.5, 58.5)
-	
+
 	print("Successfully placed an obstacle called %s" %new_obs)
-	
+
 	new_obs = gazebo.place_new_obstacle(52, 76)
 	print("Deleting %s" %new_obs)
 	success = gazebo.delete_model(new_obs)
 	print("Added and deleted a model, success=%s" %str(success))
-
-	
