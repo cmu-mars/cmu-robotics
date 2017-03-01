@@ -10,6 +10,9 @@ from os.path import exists, isfile
 from os import access, R_OK
 import json
 import datetime
+import subprocess
+import math
+
 import requests
 
 ### relevant third party imports
@@ -19,6 +22,9 @@ import rospy
 import actionlib
 import ig_action_msgs.msg
 from move_base_msgs.msg import MoveBaseAction
+from std_msgs.msg       import Int32
+from std_msgs.msg       import Bool
+from kobuki_msgs.msg    import MotorPower
 
 ### other brasscomms modules
 from constants import (TH_URL, CONFIG_FILE_PATH, LOG_FILE_PATH, CP_GAZ,
@@ -26,7 +32,7 @@ from constants import (TH_URL, CONFIG_FILE_PATH, LOG_FILE_PATH, CP_GAZ,
                        START, OBSERVE, SET_BATTERY, PLACE_OBSTACLE,
                        REMOVE_OBSTACLE, PERTURB_SENSOR, DoneEarly,
                        AdaptationLevels, INTERNAL_STATUS, SubSystem,
-                       TIME_FORMAT)
+                       TIME_FORMAT, BINDIR)
 from gazebo_interface import GazeboInterface
 from rainbow_interface import RainbowInterface
 from map_util import waypoint_to_coords
@@ -36,19 +42,24 @@ from parse import (Coords, Bump, Config, TestAction,
 
 ### some definitions and helper functions
 
+def energy_cb(msg):
+    """ call back to update the global battery state from the ros topic """
+    global battery
+    battery = msg.data
+
+def motor_power_cb(msg):
+    """ call back for when battery runs out of power. we assume this will be called at most once"""
+    if msg == MotorPower.OFF:
+        done_early("energy_monitor indicated that the battery is empty", DoneEarly.BATTERY)
+
 def done_cb(terminal, result):
     """ callback for when the bot is at the target """
     if result:
         done_early("done_cb called with terminal %d and positive result %s" % (terminal, result),
                    DoneEarly.AT_TARGET)
-        log_das(LogError.INFO,
-                "done_cb called by ros with terminal %d and positive result %s" % (terminal, result))
-    else:
-        das_status(Status.TEST_ERROR,
-                   "done_cb with terminal %d but with negative result %s; this is an error" % (terminal, result))
-
-    ## todo: when we have the battery model implemented, also check here to
-    ## see if the battery is empty and send that message instead
+    # else:
+    #     das_status(Status.TEST_ERROR,
+    #                "done_cb with terminal %d but with negative result %s; this is an error" % (terminal, result))
 
 def active_cb():
     """ callback for when the bot is made active """
@@ -56,10 +67,9 @@ def active_cb():
 
 ### some globals
 app = Flask(__name__)
-deadline = None ## this is a default value; the result of observe will be
-                ## well formed but wrong unless they call start first
-
-## shared_var_lock = Lock() ## todo :commented out until we have occasion to use it
+battery = None
+desired_volts = None
+deadline = None
 
 def parse_config_file():
     """ checks the appropriate place for the config file, and loads into an object if possible """
@@ -69,10 +79,9 @@ def parse_config_file():
             conf = Config(**data)
             return conf
     else:
-        # todo: does sending this this sufficiently stop the world if
-        # the file doesn't parse?  todo: return something?
         th_das_error(Error.TEST_DATA_FILE_ERROR,
                      '%s does not exist, is not a file, or is not readable' % CONFIG_FILE_PATH)
+        raise ValueError("config file doesn't exist, isn't a file, or isn't readable")
 
 ### subroutines for forming API results
 def th_error():
@@ -122,6 +131,7 @@ def done_early(message, reason):
     except Exception as e:
         log_das(LogError.RUNTIME_ERROR,
                 "Fatal: couldn't connect to TH to indicate early termination at %s: %s" % (dest, e))
+        ## todo: error / exn here?
 
 def das_ready():
     """ POSTs DAS_READY to the TH, or logs if failed"""
@@ -132,6 +142,7 @@ def das_ready():
     except Exception as e:
         log_das(LogError.STARTUP_ERROR,
                 "Fatal: couldn't connect to TH to send DAS_READY at %s: %s" % (dest, e))
+        ## todo: error / exn here?
 
 def das_status(status, message):
     dest = TH_URL + "/action/status"
@@ -143,12 +154,13 @@ def das_status(status, message):
     except Exception as e:
         log_das(LogError.RUNTIME_ERROR,
                 "Fatal: couldn't connect to TH to send DAS_STATUS at %s: %s" % (dest, e))
-
+        ## todo: error / exn here?
 
 STATE_LOCK = Lock()
 READY_LIST = []
 
 def indicate_ready(subsystem):
+    """ asynchronously waites for both the DAS and base system to come up before posting DAS ready """
     ready = False
     global config
     with STATE_LOCK:
@@ -202,6 +214,24 @@ def timenow():
     """ return the UTC now time, formatted to MIT's spec.  """
     return timestr(datetime.datetime.utcnow())
 
+def in_cp1():
+    """ return true iff we're in either CP1 mode """
+    global config
+    if config.enable_adaptation == AdaptationLevels.CP1_NoAdaptation:
+        return True
+    if config.enable_adaptation == AdaptationLevels.CP1_Adaptation:
+        return True
+    return False
+
+def in_cp2():
+    """ return true iff we're in either CP2 mode """
+    global config
+    if config.enable_adaptation == AdaptationLevels.CP2_NoAdaptation:
+        return True
+    if config.enable_adaptation == AdaptationLevels.CP2_Adaptation:
+        return True
+    return False
+
 ### subroutines per endpoint URL in API wiki page order
 @app.route(QUERY_PATH.url, methods=QUERY_PATH.methods)
 def action_query_path():
@@ -240,6 +270,17 @@ def action_start():
         log_das(LogError.RUNTIME_ERROR, "%s hit with an already active goal" % START.url)
         return th_error()
 
+    global desired_volts
+    global pub_setvoltage
+    global pub_setcharging
+    try:
+        pub_setcharging.publish(Bool(False))
+        pub_setvoltage.publish(Int32(desired_volts))
+    except Exception as e:
+        log_das(LogError.RUNTIME_ERROR,
+                '%s got an error trying to publish to set_voltage and set_charging: %s' % (START.url, e))
+        return th_error()
+
     log_das(LogError.INFO, "starting challenge problem")
     try:
         with open(instruct('.ig')) as igfile:
@@ -266,12 +307,13 @@ def action_observe():
 
     global gazebo
     global deadline
+    global battery
 
     try:
         x, y, w, vel = gazebo.get_turtlebot_state()
         observation = {"x" : x, "y" : y, "w" : w,
                        "v" : vel,
-                       "voltage" : -1,  # todo: Need to work this out
+                       "voltage" : int(battery),
                        "deadline" : str(deadline)
                       }
         return action_result(observation)
@@ -285,6 +327,11 @@ def action_set_battery():
     if not check_action(request, SET_BATTERY.url, SET_BATTERY.methods):
         return th_error()
 
+    if in_cp2():
+        log_das(LogError.RUNTIME_ERROR,
+                '%s hit in CP2 when battery is not active' % SET_BATTERY.url)
+        return th_error()
+
     try:
         j = request.get_json(silent=True)
         params = TestAction(**j)
@@ -294,13 +341,17 @@ def action_set_battery():
                 '%s got a malformed test action POST: %s' % (SET_BATTERY.url, e))
         return th_error()
 
-    ## todo : implement real stuff here when we have the battery
-    ## model. also need to check that the argument voltage is less than the
-    ## current voltage, not just a valid possible voltage?
+    ## write to the relevant topic
+    global pub_setvoltage
+    try:
+        pub_setvoltage.publish(Int32(params.ARGUMENTS.voltage))
+    except Exception as e:
+        log_das(LogError.RUNTIME_ERROR,
+                '%s got an error trying to publish to set_voltage: %s' % (SET_BATTERY.url, e))
+        return th_error()
 
-    ## todo: register a callback with the battery sim here to hit
-    ## done_early in case we run out. alt: we may need to subscribe to
-    ## the topic below.
+    global desired_volts
+    desired_volts = params.ARGUMENTS.voltage
 
     return action_result({})
 
@@ -308,6 +359,11 @@ def action_set_battery():
 def action_place_obstacle():
     """ implements place_obstacle end point """
     if not check_action(request, PLACE_OBSTACLE.url, PLACE_OBSTACLE.methods):
+        return th_error()
+
+    if in_cp2():
+        log_das(LogError.RUNTIME_ERROR,
+                '%s hit in CP2 when obstacles are not active' % PLACE_OBSTACLE.url)
         return th_error()
 
     try:
@@ -324,10 +380,10 @@ def action_place_obstacle():
     obs_name = gazebo.place_new_obstacle(params.ARGUMENTS.x, params.ARGUMENTS.y)
     if obs_name is not None:
         return action_result({"obstacleid" : obs_name,
-                              "topleft_x" : params.ARGUMENTS.x - 1.2,
-                              "topleft_y" : params.ARGUMENTS.y - 1.2,
+                              "topleft_x" :  params.ARGUMENTS.x - 1.2,
+                              "topleft_y" :  params.ARGUMENTS.y - 1.2,
                               "botright_x" : params.ARGUMENTS.x + 1.2,
-                              "botright_y" : params.ARGUMENTS.x + 1.2})
+                              "botright_y" : params.ARGUMENTS.y + 1.2})
     else:
         log_das(LogError.RUNTIME_ERROR, 'gazebo cant place new obstacle at given x y')
         return th_error()
@@ -336,6 +392,11 @@ def action_place_obstacle():
 def action_remove_obstacle():
     """ implements remove_obstacle end point """
     if not check_action(request, REMOVE_OBSTACLE.url, methods=REMOVE_OBSTACLE.methods):
+        return th_error()
+
+    if in_cp2():
+        log_das(LogError.RUNTIME_ERROR,
+                '%s hit in CP2 when obstacles are not active' % REMOVE_OBSTACLE.url)
         return th_error()
 
     try:
@@ -360,12 +421,38 @@ def action_remove_obstacle():
         log_das(LogError.RUNTIME_ERROR, '%s raised an exception: %s' % (REMOVE_OBSTACLE.url, e))
         return th_error()
 
+def call_set_joint(name, args, trans):
+    """given the name of a binary, arguments, and a transform on those args,
+        call it and look for errors. returns False if an error was
+        encountered, True otherwise.
+    """
+    try:
+        call = [BINDIR + name] + (map(trans, args))
+        print "calling %s as %s" % (name, call)
+        ret = subprocess.call(call)
+        print "%s returned" % name
 
+        if ret > 0:
+            log_das(LogError.RUNTIME_ERROR,
+                    '%s had non-zero return %d from calling %s'
+                    % (PERTURB_SENSOR.url, ret, name))
+            return False
+    except Exception as e:
+        log_das(LogError.RUNTIME_ERROR,
+                '%s caught exception when calling %s: %s'
+                % (PERTURB_SENSOR.url, name, e))
+        return False
+    return True
 
 @app.route(PERTURB_SENSOR.url, methods=PERTURB_SENSOR.methods)
 def action_perturb_sensor():
     """ implements perturb_sensor end point """
     if not check_action(request, PERTURB_SENSOR.url, methods=PERTURB_SENSOR.methods):
+        return th_error()
+
+    if in_cp1():
+        log_das(LogError.RUNTIME_ERROR,
+                '%s hit in CP1 when the kinect is not active' % PERTURB_SENSOR.url)
         return th_error()
 
     try:
@@ -378,9 +465,21 @@ def action_perturb_sensor():
                 '%s got a malformed test action POST: %s' % (PERTURB_SENSOR.url, e))
         return th_error()
 
-    ## todo: currently we have no sensor to bump, so this doesn't do
-    ## anything other than check the format of the request and reply with
-    ## something well-formatted if it gets something well-formatted
+    ## rotate the joint, converting intervals of degrees to radians
+    if not (call_set_joint("/set_joint_rot",
+                           [params.ARGUMENTS.bump.p,
+                            params.ARGUMENTS.bump.w,
+                            params.ARGUMENTS.bump.r],
+                           lambda x: str(math.radians(x * 10)))):
+        return th_error()
+
+    if not (call_set_joint("/set_joint_trans",
+                           [params.ARGUMENTS.bump.x,
+                            params.ARGUMENTS.bump.y,
+                            params.ARGUMENTS.bump.z],
+                           lambda x: str(x * 0.05))):
+        return th_error()
+
     return action_result({})
 
 @app.route(INTERNAL_STATUS.url, methods=INTERNAL_STATUS.methods)
@@ -442,6 +541,8 @@ if __name__ == "__main__":
         th_das_error(Error.DAS_OTHER_ERROR, "Fatal: config file doesn't parse: %s" % e)
         raise
 
+    desired_volts = config.initial_voltage
+
     # this should block until the navigation stack is ready to recieve goals
     move_base = actionlib.SimpleActionClient("move_base", MoveBaseAction)
     move_base.wait_for_server()
@@ -457,6 +558,8 @@ if __name__ == "__main__":
         raise
 
     # start Rainbow
+
+    ## todo: should this code not get executed in half the adaptation levels?
     try:
         rainbow_log = open("/test/rainbow.log", 'w')
         rainbow = RainbowInterface()
@@ -466,6 +569,13 @@ if __name__ == "__main__":
         log_das(LogError.STARTUP_ERROR, "Fatal: config file inconsistent with map: %s" % e)
         th_das_error(Error.DAS_OTHER_ERROR, "Fatal: rainbow failed to start: %s" % e)
         raise
+
+    ## subscribe to the energy_monitor topics and make publishers
+    pub_setcharging = rospy.Publisher("/energy_monitor/set_charging", Bool, queue_size=10)
+    pub_setvoltage = rospy.Publisher("/energy_monitor/set_voltage", Int32, queue_size=10)
+
+    rospy.Subscriber("/energy_monitor/voltage", Int32, energy_cb)
+    rospy.Subscriber("/mobile_base/commands/motor_power", MotorPower, motor_power_cb)
 
     ## todo: this may happen too early
     indicate_ready(SubSystem.BASE)

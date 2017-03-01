@@ -2,10 +2,10 @@
 - hosts: localhost
   tasks:
 
-   # - name: Add Local Packages
-   #   command: sh -c ./update.sh
-   #   become: yes
-   #   become_method: sudo
+   #- name: Add Local Packages
+   #  command: sh -c ./update.sh
+   #  become: yes
+   #  become_method: sudo
 
    #- name: Add apt-key
    #  command: apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net --recv-key 0xB01FA116
@@ -42,6 +42,12 @@
    - name: Install Ros-Ar-Track
      apt: pkg=ros-indigo-ar-track-alvar-msgs state=installed force=yes 
      
+   - name: Install Frontier Exploration
+     apt: pkg=ros-indigo-frontier-exploration state=installed force=yes
+     
+   - name: Install navigation stage
+     apt: pkg=ros-indigo-navigation-stage state=installed force=yes
+     
    - name: Python Ply
      apt: pkg=python-ply state=installed force=yes 
      
@@ -53,6 +59,9 @@
      
    - name: Install attrs
      pip: name=attrs
+     
+   - name: Install tweepy
+     pip: name=tweepy
 
      
    - name: Unarchive PRISM
