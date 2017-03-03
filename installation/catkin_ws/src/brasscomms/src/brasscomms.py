@@ -48,7 +48,7 @@ def energy_cb(msg):
     battery = msg.data
 
 def motor_power_cb(msg):
-    """ call back for when battery runs out of power. we assume this will be called at most once"""
+    """ call back for when battery runs out of power. we assume posting this to the TH will end the test soon"""
     if msg == MotorPower.OFF:
         done_early("energy_monitor indicated that the battery is empty", DoneEarly.BATTERY)
 
@@ -123,7 +123,8 @@ def done_early(message, reason):
     dest = TH_URL + "/action/done"
     contents = {"TIME" : timenow(),
                 "TARGET" : message,
-                "ARGUMENTS" : {"done" : reason.name}}
+                "ARGUMENTS" : {"done" : reason.name,
+                               "sim_time" : str(rospy.Time.now().secs)}}
     log_das(LogError.INFO, "ending early: %s; %s" % (reason.name, message))
 
     try:
@@ -148,7 +149,8 @@ def das_status(status, message):
     dest = TH_URL + "/action/status"
     contents = {"TIME" : timenow(),
                 "STATUS": status.name,
-                "MESSAGE": message}
+                "MESSAGE": {"msg" : message,
+                            "sim_time" : str(rospy.Time.now().secs)}}
     try:
         requests.post(dest, data=json.dumps(contents))
     except Exception as e:
@@ -314,7 +316,8 @@ def action_observe():
         observation = {"x" : x, "y" : y, "w" : w,
                        "v" : vel,
                        "voltage" : int(battery),
-                       "deadline" : str(deadline)
+                       "deadline" : str(deadline),
+                       "sim_time" : str(rospy.Time.now().secs)
                       }
         return action_result(observation)
     except Exception as e:
@@ -353,7 +356,14 @@ def action_set_battery():
     global desired_volts
     desired_volts = params.ARGUMENTS.voltage
 
-    return action_result({})
+    return action_result({"sim_time" : str(rospy.Time.now().secs)})
+
+def place_obstacle(loc):
+    """given a coodinate, places the obstacle there. returns true if this goes
+       well, false otherwise."""
+    global gazebo
+    obs_name = gazebo.place_new_obstacle(loc.x, loc.y)
+    return obs_name
 
 @app.route(PLACE_OBSTACLE.url, methods=PLACE_OBSTACLE.methods)
 def action_place_obstacle():
@@ -375,15 +385,14 @@ def action_place_obstacle():
                 '%s got a malformed test action POST: %s' % (PLACE_OBSTACLE.url, e))
         return th_error()
 
-    global gazebo
-
-    obs_name = gazebo.place_new_obstacle(params.ARGUMENTS.x, params.ARGUMENTS.y)
+    obs_name = place_obstacle(params.ARGUMENTS)
     if obs_name is not None:
         return action_result({"obstacleid" : obs_name,
                               "topleft_x" :  params.ARGUMENTS.x - 1.2,
                               "topleft_y" :  params.ARGUMENTS.y - 1.2,
                               "botright_x" : params.ARGUMENTS.x + 1.2,
-                              "botright_y" : params.ARGUMENTS.y + 1.2})
+                              "botright_y" : params.ARGUMENTS.y + 1.2,
+                              "sim_time" : str(rospy.Time.now().secs)})
     else:
         log_das(LogError.RUNTIME_ERROR, 'gazebo cant place new obstacle at given x y')
         return th_error()
@@ -413,7 +422,7 @@ def action_remove_obstacle():
         ## todo: this breaks for slightly mysterious reasons
         success = gazebo.delete_obstacle(params.ARGUMENTS.obstacleid)
         if success:
-            return action_result({})
+            return action_result({"sim_time" : str(rospy.Time.now().secs)})
         else:
             log_das(LogError.RUNTIME_ERROR, '%s gazebo call failed' % REMOVE_OBSTACLE.url)
             return th_error()
@@ -444,8 +453,21 @@ def call_set_joint(name, args, trans):
         return False
     return True
 
+def bump_sensor(bump):
+    """given a bump object, bumps the sensor accordingly. returns true if this
+       goes well and false otherwise so that errors can be propagated as
+       appropriate from the call site """
+    if not (call_set_joint("/set_joint_rot", [bump.r, bump.w, bump.z],
+                           lambda x: str(math.radians(x * 10)))):
+        return False
+    if not (call_set_joint("/set_joint_trans", [bump.x, bump.y, bump.z],
+                           lambda x: str(x * 0.05))):
+        return False
+    return True
+
 @app.route(PERTURB_SENSOR.url, methods=PERTURB_SENSOR.methods)
 def action_perturb_sensor():
+
     """ implements perturb_sensor end point """
     if not check_action(request, PERTURB_SENSOR.url, methods=PERTURB_SENSOR.methods):
         return th_error()
@@ -466,21 +488,10 @@ def action_perturb_sensor():
         return th_error()
 
     ## rotate the joint, converting intervals of degrees to radians
-    if not (call_set_joint("/set_joint_rot",
-                           [params.ARGUMENTS.bump.p,
-                            params.ARGUMENTS.bump.w,
-                            params.ARGUMENTS.bump.r],
-                           lambda x: str(math.radians(x * 10)))):
+    if not bump_sensor(params.ARGUMENTS.bump):
         return th_error()
-
-    if not (call_set_joint("/set_joint_trans",
-                           [params.ARGUMENTS.bump.x,
-                            params.ARGUMENTS.bump.y,
-                            params.ARGUMENTS.bump.z],
-                           lambda x: str(x * 0.05))):
-        return th_error()
-
-    return action_result({})
+    else:
+        return action_result({"sim_time" : str(rospy.Time.now().secs)})
 
 @app.route(INTERNAL_STATUS.url, methods=INTERNAL_STATUS.methods)
 def internal_status():
@@ -568,14 +579,24 @@ if __name__ == "__main__":
     except Exception as e:
         log_das(LogError.STARTUP_ERROR, "Fatal: config file inconsistent with map: %s" % e)
         th_das_error(Error.DAS_OTHER_ERROR, "Fatal: rainbow failed to start: %s" % e)
-        raise
+        raise Exception("start up error")
 
     ## subscribe to the energy_monitor topics and make publishers
     pub_setcharging = rospy.Publisher("/energy_monitor/set_charging", Bool, queue_size=10)
     pub_setvoltage = rospy.Publisher("/energy_monitor/set_voltage", Int32, queue_size=10)
-
     rospy.Subscriber("/energy_monitor/voltage", Int32, energy_cb)
     rospy.Subscriber("/mobile_base/commands/motor_power", MotorPower, motor_power_cb)
+
+    ## todo: is this happening at the right time?
+    if (in_cp1()
+            and config.initial_obstacle
+            and (not place_obstacle(config.initial_obstacle_location))):
+        log_das(LogError.STARTUP_ERROR, "Fatal: could not place inital obstacle")
+        raise Exception("start up error")
+
+    if in_cp2() and (not bump_sensor(config.sensor_perturbation)):
+        log_das(LogError.STARTUP_ERROR, "Fatal: could not set inital sensor pose")
+        raise Exception("start up error")
 
     ## todo: this may happen too early
     indicate_ready(SubSystem.BASE)
