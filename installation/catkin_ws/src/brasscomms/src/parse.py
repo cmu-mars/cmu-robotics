@@ -118,8 +118,13 @@ class ObstacleID(object):
     obstacleid = attr.ib(validator=instance_of(unicode))
 
 @attr.s
+class ISMessage(object):
+    msg = attr.ib(validator=instance_of(unicode))
+    sim_time = attr.ib(validator=instance_of(int))
+
+@attr.s
 class InternalStatus(object):
     """ class with attributes for internal status from rainbow """
     STATUS = attr.ib(validator=instance_of(unicode))
-    MESSAGE = attr.ib(validator=instance_of(unicode))
+    MESSAGE = attr.ib(validator=instance_of(dict))
     TIME = attr.ib(validator=time_string)

@@ -12,6 +12,8 @@ import json
 import datetime
 import subprocess
 import math
+import time
+import pexpect
 
 import requests
 
@@ -22,8 +24,7 @@ import rospy
 import actionlib
 import ig_action_msgs.msg
 from move_base_msgs.msg import MoveBaseAction
-from std_msgs.msg       import Int32
-from std_msgs.msg       import Bool
+from std_msgs.msg       import Int32, Bool, Float32MultiArray, Int32MultiArray
 from kobuki_msgs.msg    import MotorPower
 
 ### other brasscomms modules
@@ -32,7 +33,7 @@ from constants import (TH_URL, CONFIG_FILE_PATH, LOG_FILE_PATH, CP_GAZ,
                        START, OBSERVE, SET_BATTERY, PLACE_OBSTACLE,
                        REMOVE_OBSTACLE, PERTURB_SENSOR, DoneEarly,
                        AdaptationLevels, INTERNAL_STATUS, SubSystem,
-                       TIME_FORMAT, BINDIR)
+                       TIME_FORMAT, BINDIR, CAL_ERROR_THRESH)
 from gazebo_interface import GazeboInterface
 from rainbow_interface import RainbowInterface
 from map_util import waypoint_to_coords
@@ -41,6 +42,13 @@ from parse import (Coords, Bump, Config, TestAction,
                    InternalStatus)
 
 ### some definitions and helper functions
+
+def cal_error_cb(msg):
+    global cal_error_counter
+    cal_error_counter += 1
+    if cal_error_counter >= CAL_ERROR_THRESH:
+        global sub_calerror
+        sub_calerror.unregister()
 
 def energy_cb(msg):
     """ call back to update the global battery state from the ros topic """
@@ -51,6 +59,10 @@ def motor_power_cb(msg):
     """ call back for when battery runs out of power. we assume posting this to the TH will end the test soon"""
     if msg == MotorPower.OFF:
         done_early("energy_monitor indicated that the battery is empty", DoneEarly.BATTERY)
+        ## if we see the message we want, we only need to see it once, so
+        ## we unsubscribe
+        global sub_motorpow
+        sub_motorpow.unregister()
 
 def done_cb(terminal, result):
     """ callback for when the bot is at the target """
@@ -60,6 +72,8 @@ def done_cb(terminal, result):
     # else:
     #     das_status(Status.TEST_ERROR,
     #                "done_cb with terminal %d but with negative result %s; this is an error" % (terminal, result))
+    #
+    #  todo: also log here?
 
 def active_cb():
     """ callback for when the bot is made active """
@@ -70,6 +84,7 @@ app = Flask(__name__)
 battery = None
 desired_volts = None
 deadline = None
+cal_error_counter = 0
 
 def parse_config_file():
     """ checks the appropriate place for the config file, and loads into an object if possible """
@@ -102,7 +117,7 @@ def th_das_error(err, msg):
                       "ERROR" : err.name,
                       "MESSAGE" : msg}
     try:
-        requests.post(dest, data=json.dumps(error_contents))
+        requests.post(dest, data=json.dumps(error_contents), headers=JSON_MIME)
     except Exception as e:
         log_das(LogError.RUNTIME_ERROR, "Fatal: cannot connect to TH at %s: %s" % (dest, e))
 
@@ -128,7 +143,7 @@ def done_early(message, reason):
     log_das(LogError.INFO, "ending early: %s; %s" % (reason.name, message))
 
     try:
-        requests.post(dest, data=json.dumps(contents))
+        requests.post(dest, data=json.dumps(contents), headers=JSON_MIME)
     except Exception as e:
         log_das(LogError.RUNTIME_ERROR,
                 "Fatal: couldn't connect to TH to indicate early termination at %s: %s" % (dest, e))
@@ -139,7 +154,7 @@ def das_ready():
     dest = TH_URL + "/ready"
     contents = {"TIME" : timenow()}
     try:
-        requests.post(dest, data=json.dumps(contents))
+        requests.post(dest, data=json.dumps(contents), headers=JSON_MIME)
     except Exception as e:
         log_das(LogError.STARTUP_ERROR,
                 "Fatal: couldn't connect to TH to send DAS_READY at %s: %s" % (dest, e))
@@ -152,7 +167,7 @@ def das_status(status, message):
                 "MESSAGE": {"msg" : message,
                             "sim_time" : str(rospy.Time.now().secs)}}
     try:
-        requests.post(dest, data=json.dumps(contents))
+        requests.post(dest, data=json.dumps(contents), headers=JSON_MIME)
     except Exception as e:
         log_das(LogError.RUNTIME_ERROR,
                 "Fatal: couldn't connect to TH to send DAS_STATUS at %s: %s" % (dest, e))
@@ -457,12 +472,14 @@ def bump_sensor(bump):
     """given a bump object, bumps the sensor accordingly. returns true if this
        goes well and false otherwise so that errors can be propagated as
        appropriate from the call site """
-    if not (call_set_joint("/set_joint_rot", [bump.r, bump.w, bump.z],
+    if not (call_set_joint("/set_joint_rot", [bump.r, bump.p, bump.w],
                            lambda x: str(math.radians(x * 10)))):
         return False
     if not (call_set_joint("/set_joint_trans", [bump.x, bump.y, bump.z],
                            lambda x: str(x * 0.05))):
         return False
+
+    ## publish r p w x y z
     return True
 
 @app.route(PERTURB_SENSOR.url, methods=PERTURB_SENSOR.methods)
@@ -502,13 +519,14 @@ def internal_status():
     try:
         j = request.get_json(silent=True)
         params = InternalStatus(**j)
+        params.MESSAGE = ISMessage(**params.MESSAGE)
 
         if params.STATUS == "RAINBOW_READY":
             # Rainbow is now ready to, so send das_ready()
             indicate_ready(SubSystem.DAS)
         else:
             das_status(filter(lambda x: x.name == params.STATUS, Status)[0],
-                       params.MESSAGE)
+                       params.MESSAGE.msg)
     except IndexError as e:
         log_das(LogError.RUNTIME_ERROR,
                 '%s got a POST with the unknown status name \'%s\', %s'
@@ -584,8 +602,9 @@ if __name__ == "__main__":
     ## subscribe to the energy_monitor topics and make publishers
     pub_setcharging = rospy.Publisher("/energy_monitor/set_charging", Bool, queue_size=10)
     pub_setvoltage = rospy.Publisher("/energy_monitor/set_voltage", Int32, queue_size=10)
-    rospy.Subscriber("/energy_monitor/voltage", Int32, energy_cb)
-    rospy.Subscriber("/mobile_base/commands/motor_power", MotorPower, motor_power_cb)
+    sub_voltage = rospy.Subscriber("/energy_monitor/voltage", Int32, energy_cb)
+    sub_motorpow = rospy.Subscriber("/mobile_base/commands/motor_power", MotorPower, motor_power_cb)
+    sub_calerror = rospy.Subscriber("/calibration/calibration_error", Float32MultiArray, cal_error_cb)
 
     ## todo: is this happening at the right time?
     if (in_cp1()
@@ -597,6 +616,17 @@ if __name__ == "__main__":
     if in_cp2() and (not bump_sensor(config.sensor_perturbation)):
         log_das(LogError.STARTUP_ERROR, "Fatal: could not set inital sensor pose")
         raise Exception("start up error")
+
+    if config.enable_adaptation == AdaptationLevels.CP2_Adaptation:
+        cw_log = open("/test/calibration_watcher.log", "w")
+        cw_child = pexpect.spawn(BINDIR + "/calibration_watcher", logfile=cw_log)
+
+        ## todo: if we figure out sigint stuff, we should call close and
+        ## termiante on the above, as as the other files
+
+        while cal_error_counter <= CAL_ERROR_THRESH:
+            print "waiting for calibration_watcher to post %d messages" % CAL_ERROR_THRESH
+            time.sleep(1)
 
     ## todo: this may happen too early
     indicate_ready(SubSystem.BASE)
