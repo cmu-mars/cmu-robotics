@@ -1,4 +1,4 @@
-P(V(1, do MoveAbs(42.5, 58.8, 1.0) then 2),
-V(2, do MoveAbs(42.5, 65.0, 1.0) then 3)::
+P(V(1, do MoveAbsH(42.50, 58.80, 0.35, 1.5708) then 2),
+V(2, do MoveAbsH(42.50, 65.00, 0.35, 0.0000) then 3)::
 V(3, end)::
 nil)

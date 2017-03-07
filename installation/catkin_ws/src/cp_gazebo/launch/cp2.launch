@@ -4,9 +4,7 @@
   <arg name="base" value="$(optenv TURTLEBOT_BASE kobuki)"/>
   <arg name="3d_sensor" value="kinect"/>
   <arg name="stacks" value="$(optenv TURTLEBOT_STACKS hexagons)"/>
-  <!-- The param file is turning off various navigation options on move_base to
-       hamper the navigation -->
-  <arg name="custom_param_file" value="$(find cp_gazebo)/param/move_base_params.yaml"/>
+  
 
   <!-- This is the map file that will be used for planning -->
   <arg name="map_file" value="$(find cp_gazebo)/maps/Wean-entire-floor4.yaml"/>
@@ -15,7 +13,7 @@
   <!-- Start the gazebo world, so that obstacles can be mapped -->
   <!-- NOTE: The maze in the world might not be needed if the map server is required -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find cp_gazebo)/worlds/Wean-complete-floor4.world"/>
+    <arg name="world_name" value="$(find cp_gazebo)/worlds/Wean-complete-floor4-cp2.world"/>
     <arg name="gui" value="false"/>
     <arg name="headless" value="true"/>
   </include>
@@ -74,7 +72,6 @@
 
   <!-- Launch move base -->
   <include file="$(find turtlebot_navigation)/launch/includes/move_base.launch.xml">
-    <arg name="custom_param_file" value="$(arg custom_param_file)"/>
   </include>
 
   <!-- Launch instruction graph, with initial instruction files -->

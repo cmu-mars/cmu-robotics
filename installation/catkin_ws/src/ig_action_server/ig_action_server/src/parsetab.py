@@ -5,9 +5,9 @@ _tabversion = '3.8'
 
 _lr_method = 'LALR'
 
-_lr_signature = 'AA6D30B7E4566122ECF00F8026FB578B'
+_lr_signature = 'E717584F30781CC9B7300FF43045AB70'
     
-_lr_action_items = {'LPAR':([1,5,22,23,24,25,26,27,28,29,30,31,32,33,36,37,],[3,7,39,40,41,42,43,44,45,46,47,48,49,50,53,54,]),'SETLOCALIZATIONFIDELITY':([18,],[22,]),'CONS':([9,35,],[12,-4,]),'MOVEABS':([18,],[23,]),'DO':([14,],[18,]),'MOVE':([18,],[24,]),'STOP':([20,52,],[36,36,]),'RPAR':([8,10,15,16,19,21,56,62,63,67,68,71,91,92,93,94,95,97,98,99,109,111,117,],[-2,13,-3,-9,35,-8,73,79,80,84,-5,87,102,103,104,105,106,-6,108,-7,112,114,118,]),'TURNABS':([18,],[26,]),'STRING':([43,46,54,86,],[60,63,71,98,]),'MOVETO':([18,],[27,]),'RECALIBRATE':([18,],[28,]),'TURNREL':([18,],[25,]),'VISIBLE':([20,52,],[37,37,]),'SAY':([18,],[29,]),'NUM':([7,17,39,40,41,42,44,45,47,48,49,50,51,53,55,74,75,76,77,78,81,82,83,85,88,100,101,107,113,116,],[11,21,56,57,58,59,61,62,64,65,66,67,68,70,72,89,90,91,92,93,94,95,96,97,99,109,110,111,115,117,]),'COMMA':([4,11,35,57,58,59,60,61,64,65,66,70,89,90,96,110,115,],[6,14,-4,74,75,76,77,78,81,82,83,86,100,101,107,113,116,]),'THEN':([34,38,69,73,79,80,84,87,102,103,104,105,106,108,112,114,118,],[51,55,85,-21,-20,-11,-19,-22,-17,-16,-12,-13,-18,-23,-14,-15,-10,]),'$end':([2,13,],[0,-1,]),'LOCATE':([18,],[30,]),'END':([14,],[16,]),'GOTO':([14,],[17,]),'ELSE':([72,],[88,]),'P':([0,],[1,]),'V':([3,6,12,],[5,5,5,]),'FORWARD':([18,],[31,]),'UNTIL':([34,73,79,80,84,102,103,104,105,106,112,114,118,],[52,-21,-20,-11,-19,-17,-16,-12,-13,-18,-14,-15,-10,]),'IF':([14,],[20,]),'MOVEREL':([18,],[32,]),'NIL':([6,12,],[8,8,]),'CHARGE':([18,],[33,]),}
+_lr_action_items = {'LPAR':([1,5,22,23,24,25,26,27,28,29,30,31,32,33,34,35,38,39,],[3,7,41,42,43,44,45,46,47,48,49,50,51,52,53,54,57,58,]),'SETLOCALIZATIONFIDELITY':([18,],[22,]),'CONS':([9,37,],[12,-4,]),'MOVEABS':([18,],[24,]),'DO':([14,],[18,]),'MOVE':([18,],[25,]),'STOP':([20,56,],[38,38,]),'RPAR':([8,10,15,16,19,21,60,64,68,69,73,74,77,100,101,102,104,106,107,108,120,122,123,129,133,],[-2,13,-3,-9,37,-8,79,83,87,88,92,-5,95,112,113,114,116,-6,118,-7,125,127,128,131,134,]),'MOVEABSH':([18,],[23,]),'DEADLINE':([18,],[26,]),'TURNABS':([18,],[28,]),'STRING':([47,50,58,94,],[66,69,77,107,]),'MOVETO':([18,],[29,]),'RECALIBRATE':([18,],[30,]),'TURNREL':([18,],[27,]),'VISIBLE':([20,56,],[39,39,]),'SAY':([18,],[31,]),'NUM':([7,17,41,42,43,44,45,46,48,49,51,52,53,54,55,57,59,80,81,82,84,85,86,89,90,91,93,96,109,110,111,115,117,124,126,132,],[11,21,60,61,62,63,64,65,67,68,70,71,72,73,74,76,78,97,98,99,100,101,102,103,104,105,106,108,119,120,121,122,123,129,130,133,]),'COMMA':([4,11,37,61,62,63,65,66,67,70,71,72,76,97,98,99,103,105,119,121,130,],[6,14,-4,80,81,82,84,85,86,89,90,91,94,109,110,111,115,117,124,126,132,]),'THEN':([36,40,75,79,83,87,88,92,95,112,113,114,116,118,125,127,128,131,134,],[55,59,93,-21,-23,-20,-11,-19,-24,-17,-16,-12,-18,-25,-14,-13,-15,-22,-10,]),'$end':([2,13,],[0,-1,]),'LOCATE':([18,],[32,]),'END':([14,],[16,]),'GOTO':([14,],[17,]),'ELSE':([78,],[96,]),'P':([0,],[1,]),'V':([3,6,12,],[5,5,5,]),'FORWARD':([18,],[33,]),'UNTIL':([36,79,83,87,88,92,112,113,114,116,125,127,128,131,134,],[56,-21,-23,-20,-11,-19,-17,-16,-12,-18,-14,-13,-15,-22,-10,]),'IF':([14,],[20,]),'MOVEREL':([18,],[34,]),'NIL':([6,12,],[8,8,]),'CHARGE':([18,],[35,]),}
 
 _lr_action = {}
 for _k, _v in _lr_action_items.items():
@@ -16,7 +16,7 @@ for _k, _v in _lr_action_items.items():
       _lr_action[_x][_k] = _y
 del _lr_action_items
 
-_lr_goto_items = {'vertex':([3,6,12,],[4,9,9,]),'vertices':([6,12,],[10,15,]),'content':([14,],[19,]),'cnd':([20,52,],[38,69,]),'program':([0,],[2,]),'action':([18,],[34,]),}
+_lr_goto_items = {'vertex':([3,6,12,],[4,9,9,]),'vertices':([6,12,],[10,15,]),'content':([14,],[19,]),'cnd':([20,56,],[40,75,]),'program':([0,],[2,]),'action':([18,],[36,]),}
 
 _lr_goto = {}
 for _k, _v in _lr_goto_items.items():
@@ -38,7 +38,7 @@ _lr_productions = [
   ('action -> MOVE LPAR NUM COMMA NUM COMMA NUM COMMA NUM COMMA NUM RPAR','action',12,'p_action','parserIG.py',98),
   ('action -> SAY LPAR STRING RPAR','action',4,'p_action','parserIG.py',99),
   ('action -> MOVETO LPAR NUM COMMA NUM RPAR','action',6,'p_action','parserIG.py',100),
-  ('action -> LOCATE LPAR NUM COMMA NUM RPAR','action',6,'p_action','parserIG.py',101),
+  ('action -> LOCATE LPAR NUM COMMA NUM COMMA NUM RPAR','action',8,'p_action','parserIG.py',101),
   ('action -> MOVEABS LPAR NUM COMMA NUM COMMA NUM RPAR','action',8,'p_action','parserIG.py',102),
   ('action -> MOVEREL LPAR NUM COMMA NUM COMMA NUM RPAR','action',8,'p_action','parserIG.py',103),
   ('action -> TURNABS LPAR STRING COMMA NUM RPAR','action',6,'p_action','parserIG.py',104),
@@ -47,6 +47,8 @@ _lr_productions = [
   ('action -> CHARGE LPAR NUM RPAR','action',4,'p_action','parserIG.py',107),
   ('action -> RECALIBRATE LPAR NUM RPAR','action',4,'p_action','parserIG.py',108),
   ('action -> SETLOCALIZATIONFIDELITY LPAR NUM RPAR','action',4,'p_action','parserIG.py',109),
-  ('cnd -> VISIBLE LPAR STRING RPAR','cnd',4,'p_cnd','parserIG.py',137),
-  ('cnd -> STOP LPAR NUM COMMA STRING RPAR','cnd',6,'p_cnd','parserIG.py',138),
+  ('action -> MOVEABSH LPAR NUM COMMA NUM COMMA NUM COMMA NUM RPAR','action',10,'p_action','parserIG.py',110),
+  ('action -> DEADLINE LPAR NUM RPAR','action',4,'p_action','parserIG.py',111),
+  ('cnd -> VISIBLE LPAR STRING RPAR','cnd',4,'p_cnd','parserIG.py',143),
+  ('cnd -> STOP LPAR NUM COMMA STRING RPAR','cnd',6,'p_cnd','parserIG.py',144),
 ]

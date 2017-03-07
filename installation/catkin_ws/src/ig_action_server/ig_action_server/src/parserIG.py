@@ -41,7 +41,7 @@ class Content(Node):
 class Action(Node):
   def __init__(self, operator, params):
     super(Action, self).__init__(operator, params)
-    assert(operator in [MOVE, SAY, MOVETO, LOCATE, MOVEABS, MOVEREL, TURNABS, TURNREL, FORWARD, CHARGE, RECALIBRATE, SETLOCALIZATIONFIDELITY])
+    assert(operator in [DEADLINE,MOVE, SAY, MOVETO, LOCATE, MOVEABS, MOVEREL, TURNABS, TURNREL, FORWARD, CHARGE, RECALIBRATE, SETLOCALIZATIONFIDELITY, MOVEABSH])
 
 class Condition(Node):
   def __init__(self, operator, params):
@@ -98,7 +98,7 @@ def p_action(t):
   """action : MOVE LPAR NUM    COMMA NUM     COMMA NUM    COMMA NUM    COMMA NUM RPAR
             | SAY  LPAR STRING RPAR
             | MOVETO LPAR NUM COMMA NUM RPAR
-            | LOCATE LPAR NUM COMMA NUM RPAR
+            | LOCATE LPAR NUM COMMA NUM COMMA NUM RPAR
             | MOVEABS LPAR NUM COMMA NUM COMMA NUM RPAR
             | MOVEREL LPAR NUM COMMA NUM COMMA NUM RPAR
             | TURNABS LPAR STRING COMMA NUM RPAR
@@ -107,13 +107,15 @@ def p_action(t):
             | CHARGE LPAR NUM RPAR
             | RECALIBRATE LPAR NUM RPAR
             | SETLOCALIZATIONFIDELITY LPAR NUM RPAR
+            | MOVEABSH LPAR NUM COMMA NUM COMMA NUM COMMA NUM RPAR
+            | DEADLINE LPAR NUM RPAR
             """
   if t[1] == "Move":
     t[0] = Action(MOVE, (t[3], t[5], t[7], t[9], t[11]))
   elif t[1] == "MoveTo":
     t[0] = Action(MOVETO, (t[3], t[5]))
   elif t[1] == "Locate":
-    t[0] = Action(LOCATE, (t[3], t[5]))
+    t[0] = Action(LOCATE, (t[3], t[5], t[7]))
   elif t[1] == "MoveAbs":
     t[0] = Action(MOVEABS, (t[3], t[5], t[7]))
   elif t[1] == "MoveRel":
@@ -130,6 +132,10 @@ def p_action(t):
     t[0] = Action(RECALIBRATE, (t[3],))
   elif t[1] == "SetLocalizationFidelity":
     t[0] = Action(SETLOCALIZATIONFIDELITY, (t[3],))
+  elif t[1] == "MoveAbsH":
+    t[0] = Action(MOVEABSH, (t[3], t[5], t[7], t[9]))
+  elif t[1] == "Deadline":
+    t[0] = Action(DEADLINE, (t[3],))
   else:
     t[0] = Action(SAY, (t[3],))
 
