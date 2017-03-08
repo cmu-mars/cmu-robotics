@@ -334,7 +334,7 @@ def action_start():
         # given in the json file
         with open(instruct('.json')) as config_file:
             data = json.load(config_file)
-            deadline = int(data['time']) + rospy.Time().now().secs
+            deadline = int(data['time']) + rospy.Time.now().secs
             pub_user_notify.publish(UserNotification(new_deadline=str(deadline),
                                                      user_notification="initial deadline"))
 
@@ -390,6 +390,7 @@ def action_set_battery():
     ## write to the relevant topic
     global pub_setvoltage
     try:
+        rospy.loginfo('Setting voltage to %s' %params.ARGUMENTS.voltage)
         pub_setvoltage.publish(Int32(params.ARGUMENTS.voltage))
     except Exception as e:
         log_das(LogError.RUNTIME_ERROR,
