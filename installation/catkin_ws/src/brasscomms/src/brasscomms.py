@@ -563,6 +563,8 @@ def internal_status():
         if params.STATUS == "RAINBOW_READY":
             # Rainbow is now ready to, so send das_ready()
             indicate_ready(SubSystem.DAS)
+        elif params.STATUS == "MISSION_COMPLETED":
+	    done_early(params.MESSAGE.msg, DoneEarly.AT_TARGET)
         else:
             das_status(filter(lambda x: x.name == params.STATUS, Status)[0],
                        params.MESSAGE.msg)
