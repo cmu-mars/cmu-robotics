@@ -26,7 +26,7 @@ from std_msgs.msg       import (Int32, Bool, Float32MultiArray, Int32MultiArray,
                                 MultiArrayLayout, MultiArrayDimension)
 from kobuki_msgs.msg    import MotorPower
 from mars_notifications.msg import UserNotification
-from actionlib_msgs.msg import GoalStatus
+from ig_action_msgs.msg import InstructionGraphResult
 
 ### other brasscomms modules
 from constants import (TH_URL, CONFIG_FILE_PATH, LOG_FILE_PATH, CP_GAZ,
@@ -65,7 +65,8 @@ def motor_power_cb(msg):
        the TH will end the test soon. unsubscribes itself after one OFF
        message, to keep log size and message count down
     """
-    if msg == MotorPower.OFF:
+    rospy.loginfo("Received message from motor power: %s" %msg)
+    if msg.state == MotorPower.OFF:
         done_early("energy_monitor indicated that the battery is empty", DoneEarly.BATTERY)
         ## if we see the message we want, we only need to see it once, so
         ## we unsubscribe
@@ -78,7 +79,7 @@ def done_cb(terminal, result):
     print "--------- result"
     print str(result)
     print
-    if not_adapting() and result and client.get_state () == GoalStatus.SUCCEEDED:
+    if not_adapting() and 'successfully' in result.sequence:
         done_early("done_cb called with terminal %d and result %s" % (terminal, result),
                     DoneEarly.AT_TARGET)
 
