@@ -16,9 +16,9 @@ class Command(object):
 
     def run(self, timeout):
         def target():
-        print self.cmd
-        self.process = subprocess.Popen(self.cmd)
-        self.process.communicate()
+            print self.cmd
+            self.process = subprocess.Popen(self.cmd)
+            self.process.communicate()
 
         thread = threading.Thread(target=target)
         thread.start()
@@ -55,6 +55,7 @@ class RainbowInterface:
 		if (self.target is None):
 			return True
 		rospy.loginfo("Starting Rainbow (DAS)...")
+                command = Command([RAINBOW_PATH+"/brass.sh", "-w", RAINBOW_PATH, "-s", self.target, "/test/rainbow-start.log"])
 		ret = command.run(timeout=60)
 #		ret = subprocess.call ([RAINBOW_PATH+"/brass.sh", "-w", RAINBOW_PATH, "-s", self.target, "/test/rainbow-start.log"], timeout=60)
 		rospy.loginfo("Rainbow started, exit=%s"%str(ret))
