@@ -657,6 +657,11 @@ if __name__ == "__main__":
 
     desired_volts = config.initial_voltage
     desired_bump = config.sensor_perturbation
+    
+    if config.target_loc == config.start_loc:
+    	log_das(LogError.STARTUP_ERROR, "Fatal: config file has same start and end locations")
+    	th_das_error(Error.DAS_OTHER_ERROR, "Fatal: config file has same start and end locations")
+    	raise Exception("Failed to start")
 
     # this should block until the navigation stack is ready to recieve goals
     move_base = actionlib.SimpleActionClient("move_base", MoveBaseAction)
