@@ -120,7 +120,7 @@ ACTION_RESULT:
 An interaction diagram like the following would also be helpful in our
 discussions.
 
-![TH-to-TA interaction diagram](img/template-diagram.png)
+<img src="img/template-diagram.png" width="200" alt="TH-to-TA interaction diagram">
 
 ## Intent Specification and Evaluation Metrics
 
