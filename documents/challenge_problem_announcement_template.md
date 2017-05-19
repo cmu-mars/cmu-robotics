@@ -1,5 +1,4 @@
-# Team Name
-# Challenge Problem Number and Name
+# Team Name, Challenge Problem Number and Name
 
 ## Overview
 
@@ -42,7 +41,10 @@ of ecosystem changes presented to the system under test. Be as specific as
 possible to the types and values for each parameter. The following table
 format can be used to describe the parameters of the system under test.
 
-TABLE GOES HERE
+| Name           | Value                        | Description  |
+| -------------- | ---------------------------- | ------------ |
+| BatteryVoltage | Integer in `range(104, 165)` | Change the robot battery voltage – value can be changed prior to or during test runtime. |
+| HasSensor      | Boolean                      | If True a new sensor is available for the vehicle to measure X aiding in its navigation. This value will be set prior to test. |
 
 ## Test Procedure
 
@@ -118,7 +120,7 @@ ACTION_RESULT:
 An interaction diagram like the following would also be helpful in our
 discussions.
 
-![TH-to-TA interaction diagram](/img/template-diagram.png)
+![TH-to-TA interaction diagram](img/template-diagram.png)
 
 ## Intent Specification and Evaluation Metrics
 
