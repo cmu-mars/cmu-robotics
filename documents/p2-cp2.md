@@ -95,7 +95,11 @@ scenario using one of several predefined labels. Each of these labels is
 described below, together with any additional details that may be returned by
 the API.
 
-**[INSERT TABLE]**
+| Scenario State | Description |
+|----------------|-------------|
+| generating | Indicates that the perturbation engine is currently attempting to generate and inject a suitable code-level perturbation. |
+| searching | Indicates that the code adaptation engine is currently attempting to find an intent-restoring transformation.<ul><li>A description of the injected perturbation</li><li>Number of transformations attempted</li><li>A concise history of transformation attempts, each described by a label and a quality score</li><li>A concise history of transformation attempts, each described by a label and a quality score</li></ul> |
+| finished | Indicates that the perturbation scenario has finished. Returns a short description of the evaluation. It should be possible to reproduce the results of this run by providing this description to the test harness. <ul><li>A description of the injected perturbation.</li><li>Time spent searching</li><li>Time spent generating the perturbation</li><li>Number of transformations attempted</li><li>A concise history of transformations attempts, in the same format as the response for the “searching” state.</li><li>The pareto front of transformations</li><li>A coarse summary of the extent to which (one of) the best transformation(s) restores intent: complete, partial, none.</li></ul> |
 
 To implement our perturbation engine, we plan to adapt and evolve our existing
 perturbation injection tool for generic ROS systems, ROSHammer. ROSHammer is
