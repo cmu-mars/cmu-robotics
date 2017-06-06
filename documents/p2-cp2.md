@@ -14,7 +14,7 @@ Using this approach, we propose that Lincoln Labs assesses the ability of the MA
 
 ## Test Data
 
-No specific test data is required by this challenge problem. All code-level
+No specific test data are required by this challenge problem. All code-level
 perturbations will be generated using our supplied perturbation engine.
 
 ## Test Parameters
@@ -22,7 +22,11 @@ perturbations will be generated using our supplied perturbation engine.
 Below, we describe parameters that may be supplied to the perturbation engine
 (via the test harness) to specify the nature of the perturbation.
 
-**[INSERT TABLE]**
+| Name        | Description                                                    |
+|-------------|----------------------------------------------------------------|
+| Location    | The location in the system at which the perturbation should be injected. This may be specified at a number of different granularities: ROS node, project, file, class, function, block, line or character range. Any details that are left unspecified by the user are selected at random by the perturbation engine. |
+| Schema      | The “shape” of the perturbation (e.g., swap binary operands, replace an expression, modify a method header, etc.). Each schema is intended to mimic a kind of perturbation that is frequently encountered in API migrations. If no schema is specified by the user, a suitable schema (w.r.t. the chosen location) will be randomly selected.</br></br> Certain parameterised schemas may also accept a number of parameters, describing the concrete details of a perturbation (e.g., the replacement expression). If these parameters are omitted by the user, the perturbation engine will randomly select suitable values. |
+| Difficulty | A measure of the difficulty of the perturbation, according to some yet-to-be-defined difficulty metric. If unspecified, a perturbation of the lowest difficulty will be generated. |
 
 ## Test Procedure
 
