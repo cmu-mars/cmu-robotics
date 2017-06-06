@@ -6,7 +6,7 @@ In this document, we outline a challenge problem that requires code-level adapta
  
  The process of injecting perturbations is to be conducted by a third-party (i.e., Lincoln Labs) with the aid of a perturbation engine, provided by ourselves. Below, we provide a high-level overview of the external evaluation process:
 
-**[INSERT DIAGRAM]**
+![alt text](img/brass-high-level.png "High-Level Architecture of the Perturbation Injection Process")
 
 (1) The test harness sends a request to the perturbation engine, containing a description of the characteristics of the desired perturbation. (2) The perturbation engine generates a suitable perturbation at random, fitting the characteristics provided in step (1), and injects it into the source code. (3) The perturbation engine notifies the repair tool to the presence of a perturbation, invoking the process of code-level adaptation. (4) The code adaptation engine attempts to localise and adapt to the perturbation, within a given time or resource limit specified by the examiner. (5) The code adaptation engine provides a summary of the adaptation process to the test harness.
 
