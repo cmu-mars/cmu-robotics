@@ -20,7 +20,7 @@ perturbations will be generated using our supplied perturbation engine.
 ## Test Parameters
 
 Below, we describe parameters that may be supplied to the perturbation engine
-(via the test harness API) to specify the nature of the perturbation.
+(via the test harness) to specify the nature of the perturbation.
 
 **[INSERT TABLE]**
 
@@ -32,7 +32,7 @@ Below, we discuss each of the steps involved in the test procedure for this Chal
 		by the examiner to the test harness, is forwarded onto the perturbation
 		engine. The perturbation engine proceeds to generate a suitable code-level
 		perturbation with the desired characteristics.
-		</br>
+		</br></br>
 		Generating realistic code-level perturbations, similar to those that are
 		observed in software systems, remains an open challenge, not only for
 		robotics but for software systems in general. The use of mutation tools and
@@ -52,7 +52,7 @@ Below, we discuss each of the steps involved in the test procedure for this Chal
 		orchestrated using a single YAML file, hosted on a publicly visible Git
 		repository, specifying logical components and the addresses of their
 		associated images.
-		</br>
+		</br></br>
 		We propose to exploit the decentralised, ephemeral nature of this
 		architecture to reduce the complexity of injecting code-level
 		perturbations. Specifically, we plan to inject perturbations into the
