@@ -27,8 +27,22 @@ The key challenges being addressed in this challenge problem are:
 
 ## Test Parameters
 
+* Start and target location
+* Initial battery level
+* Hardware failure (e.g., (only?) kinect failure)
+* (? Map)
+
+
 ## Test Procedure
+
+The test procedure will be the same as for P1CP1, except that Lincoln labs will be able to perturb multiple times for each perturbation (e.g., place/remove obstacle, set battery, fail/reinstate kinect)
 
 ## Interface to the Test Harness (API)
 
+Will mostly be the same as for P1CP1 with added API for introducing sensor failure.
+
 ## Intent Specification and Evaluation Metrics
+
+* Accuracy, as per P1CP1
+* Timeliness, as per P1CP1
+* (not safety?)
