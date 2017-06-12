@@ -21,6 +21,7 @@ power supply, and as approximate power consumption of the individual sensors and
 The key challenges being addressed in this challenge problem are:
 
 * Scalabilility of online adaptation planning to realistic environments and concerns
+* (? Uncertainty and its relationship to safety and scale. This might be done with partial obstacle occlusion meaning that the robot might be able to adjust is clearance paramters to squeeze past an obstacle with some probability of hitting the obstacle. This introduces probabilistic elements into the plan.)
 * Technologies for adapting software configurations and algorithms on-line
 
 ## Test Data
