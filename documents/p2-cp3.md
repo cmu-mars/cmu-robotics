@@ -21,20 +21,23 @@ power supply, and as approximate power consumption of the individual sensors and
 The key challenges being addressed in this challenge problem are:
 
 * Scalabilility of online adaptation planning to realistic environments and concerns
-* (? Uncertainty and its relationship to safety and scale. This might be done with partial obstacle occlusion meaning that the robot might be able to adjust is clearance paramters to squeeze past an obstacle with some probability of hitting the obstacle. This introduces probabilistic elements into the plan.)
+* Uncertainty and its relationship to scale. There are various sources of uncertainty in this domain that could be included as probabilistic elements in planning; we are currently investigating the best one to use in the challenge problem. The candidates for uncertainty are:
+    * Partial obstacle occlusion meaning that the robot might be able to adjust is clearance paramters to squeeze past an obstacle with some probability of hitting the obstacle.
+    * Probabilistic information inherent in timing or power models.
+    * Probability of obstacle permanance (i.e., will an obstacle that is place in the path stay there or be removed soon?).
+    * Uncertainty in localization from sensing.
 * Technologies for adapting software configurations and algorithms on-line
 
 ## Test Data
 
-(? This challenge problem will require a set of maps that LL can select from. The "parameters" of these maps are TBD. Possible parameters are map size, connectivity [e.g., how many alternate paths], # charging stations and waypoints])
+Lincoln Labs will be able to choose from a set of predefined maps that explore different aspects of scale and uncertainty. The selection will be part of the configuration data for the test. This will be done through a mnemonic in the configuration data.
+
 
 ## Test Parameters
 
 * Start and target location
 * Initial battery level
-* Hardware failure (e.g., (only?) kinect failure)
-* (? Map)
-
+* Map mnemonic
 
 ## Test Procedure
 
@@ -122,7 +125,7 @@ ACTION_RESULT:
   {"TIME" : TIME_ENCODING,
    "RESULT" : {"sim_time" : Integer}}
  
-POST http://brass-ta/action/perturb_sensor
+POST http://brass-ta/action/kinect_activation
 TEST_ACTION:
   {"TIME" : TIME_ENCODING,
    "ARGUMENTS" : {"status" : "on" | "off"}
@@ -137,4 +140,4 @@ ACTION_RESULT:
 
 * Accuracy, as per P1CP1
 * Timeliness, as per P1CP1
-* (not safety?)
+* (If safety is in play for the uncertainty requirement, we will have an intent for this; otherwise, it will not be a factor)
