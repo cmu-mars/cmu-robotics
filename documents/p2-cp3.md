@@ -41,7 +41,9 @@ Lincoln Labs will be able to choose from a set of predefined maps that explore d
 
 ## Test Procedure
 
-The test procedure will be the same as for P1CP1, except that Lincoln labs will be able to perturb multiple times for each perturbation (e.g., place/remove obstacle, set battery, fail/reinstate kinect)
+The test procedure will be the same as for P1CP1, except that Lincoln labs will be able to perturb multiple times for each perturbation (e.g., place/remove obstacle, set battery, fail/reinstate kinect).
+
+[runtime-automation]: https://github.mit.edu/brass/cmu-robotics/documents/images/cp3-runtime-automation.png "CP3 Runtime Automation"
 
 ## Interface to the Test Harness (API)
 
@@ -92,14 +94,14 @@ TEST_ACTION:
   {"TIME" : TIME_ENCODING, "ARGUMENTS" : {}}
 ACTION_RESULT:
   {"TIME" : TIME_ENCODING, 
-   "RESULT" : {"x" : Float, "y" : Float, "w" : Float, "v" : Float, "voltage" : batteryLevel, "deadline" : Integer, "sim_time" : Integer}
+   "RESULT" : {"x" : Float, "y" : Float, "w" : Float, "v" : Float, "charge" : batteryLevel, "deadline" : Integer, "sim_time" : Integer, "kinect_status" : "on" | "off"}
   }
  
 // API to set up the initial conditions for the experiment for power
 POST http://brass-ta/action/set_battery
 TEST_ACTION:
   {"TIME" : TIME_ENCODING,
-   "ARGUMENTS" : {"voltage" : batteryLevel}
+   "ARGUMENTS" : {"charge" : batteryLevel}
   }
 ACTION_RESULT:
   {"TIME" : TIME_ENCODING,
