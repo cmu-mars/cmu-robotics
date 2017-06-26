@@ -22,11 +22,11 @@ The key challenges being addressed in this challenge problem are:
 
 * Scalabilility of online adaptation planning to realistic environments and concerns
 * Uncertainty and its relationship to scale. There are various sources of uncertainty in this domain that could be included as probabilistic elements in planning; we are currently investigating the best one to use in the challenge problem. The candidates for uncertainty are:
-    * Partial obstacle occlusion meaning that the robot might be able to adjust is clearance paramters to squeeze past an obstacle with some probability of hitting the obstacle.
+    * Partial obstacle occlusion meaning that the robot might be able to adjust is clearance parameters to squeeze past an obstacle with some probability of hitting the obstacle.
     * Probabilistic information inherent in timing or power models.
-    * Probability of obstacle permanance (i.e., will an obstacle that is place in the path stay there or be removed soon?).
+    * Probability of obstacle permanence (i.e., will an obstacle that is placed in the path stay there or be removed soon?).
     * Uncertainty in localization from sensing.
-* Technologies for adapting software configurations and algorithms on-line
+* Technologies for adapting software configurations and algorithms on-line.
 
 ## Test Data
 
