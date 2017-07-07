@@ -57,6 +57,8 @@ The test procedure will be the same as for P1CP1, except that Lincoln labs will 
 
 ## Interface to the Test Harness (API)
 
+> Jeff: I don't think the new API definition deals with the case where we report ready, get a map to use, and have to wait for the system to be configured to read the map. We discussed this last meeting, but the API doc sent around 7/7 did not seem to account for this. The problem is that we may get "start" as soon as we send "ready", but if we are getting configuration information in response to "ready" and that takes time (e.g., starting das, starting simulator with map, placing the robot), then "start" won't work. 
+
 ```json
 // Interface(s) from DAS/CP to test harness
 // This POST message provides the status of the DAS and the system
