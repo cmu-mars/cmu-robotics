@@ -127,8 +127,9 @@ GET http://brass-ta/query/observe
    Request: No parameters
    Response:
      {"x" : Float, "y" : Float, "w" : Float, "v" : Float, 
-      "charge" : batteryLevel, "deadline" : Integer, "sim_time" : Integer, 
-      "kinect_status" : "on" | "off"
+      "charge" : batteryLevel, "predicted_arrival" : Integer, 
+      "kinect_status" : "on" | "off",
+      "sim_time" : Integer
      }
  
 // API to set up the initial conditions for the experiment for power
