@@ -49,7 +49,7 @@ Lincoln Labs will be able to choose from a set of predefined maps that explore d
 > Jeff: I left off the optional other parameters from Phase 1 because they are redundant with the API, and were not used. You can always place an obstacle, set the charge, or turn off the kinect at any time.
 
 ## Test Procedure
-
+> This automaton is obsolete according to the new API
 The test procedure will be the same as for P1CP1, except that Lincoln labs will be able to perturb multiple times for each perturbation (e.g., place/remove obstacle, set battery, fail/reinstate kinect).
 ![runtime-automation](img/cp3-runtime-automation.png "Run-time Automation")
 
@@ -57,27 +57,38 @@ The test procedure will be the same as for P1CP1, except that Lincoln labs will 
 
 ## Interface to the Test Harness (API)
 
-> Jeff: I don't think the new API definition deals with the case where we report ready, get a map to use, and have to wait for the system to be configured to read the map. We discussed this last meeting, but the API doc sent around 7/7 did not seem to account for this. The problem is that we may get "start" as soon as we send "ready", but if we are getting configuration information in response to "ready" and that takes time (e.g., starting das, starting simulator with map, placing the robot), then "start" won't work. 
-
 ```json
 // Interface(s) from DAS/CP to test harness
-// This POST message provides the status of the DAS and the system
-// NOTE: Changed to use new interface
-// NOTE: This is provided by the test harness -- DAS calls it
+
+// Indicates that the system is ready to receive configuration information from
+// the test harness.
 http://brass-th/ready
+  Method: POST
   Request: No parameters
   Response: { "map_to_use" : MapMnemonic, "start_loc" : String, "target_loc" : String}
-  
+
+// Indicates that the DAS and SUT are ready to receive perturbations (and that the test has started)
+http://brass-th/start
+  Method: POST
+  Request: No parameters
+  Response: No repsonse 
+
+// Indicates that there is an error in configuration, parameters, system start, or any other problem
+// The TH will terminate the test if it gets this message
 http://brass-th/error
+  Method: POST
   Request: 
     {"ERROR" : TEST_DATA_FILE_ERROR | TEST_DATA_FORMAT_ERROR | DAS_LOG_FILE_ERROR | DAS_OTHER_ERROR,
      "MESSAGE" : STRING_ENCODING}
   Response: No response
   
+// Indicates to the TH important states in the SUT and DAS. Posted periodically as interesting events occur.
 http://brass-th/status
+   Method: POST
    Request:
      {"STATUS" : PERTURBATION_DETECTED | MISSION_SUSPENDED | MISSION_RESUMED | MISSION_HALTED | MISSION_ABORTED | ADAPTATION_INITIATED | ADAPTATION_COMPLETED | ADAPTATION_STOPPED | TEST_ERROR,
-      "MESSAGE" : { “msg” : STRING_ENCODING, “sim_time" : Integer }
+      "MESSAGE" : STRING_ENCODING,
+      “sim_time" : Integer
      }
    Response: No response
    
@@ -87,17 +98,18 @@ http://brass-th/status
 http://brass-th/action/done
    Request: 
      {"TARGET" : STRING_ENCODING,
-      "ARGUMENTS" :  { "done" : earlyTermReason }
+      "REASON" :  STRING_ENCODING
      } 
+     
 // Interfaces from test harness to DAS/CP
 // After ready is reported, the th will use this query to 
 // get the initial planned path. note that waypoint names are unique.
-// time gives a lower bound on the number of seconds we estimate to 
+// predicted_arrival_time gives a lower bound on the number of seconds we estimate to 
 // traverse the path.
-GET http://brass-ta/action/query_path
+GET http://brass-ta/query/initial
   Request: No parameters
   Response: 
-    {"path" : [String], "predicted_arrival_time" : Integer}
+    {"path" : [STRING_ENCODING], "predicted_arrival_time" : Integer}
 
 // Enables/disables the DAS
 POST http://brass-ta/action/das
@@ -111,7 +123,7 @@ POST http://brass-ta/action/start
 
 // Note, we may add additional data to the arguments as they are needed
 // for LL evaluation
-GET http://brass-ta/action/observe
+GET http://brass-ta/query/observe
    Request: No parameters
    Response:
      {"x" : Float, "y" : Float, "w" : Float, "v" : Float, 
@@ -120,14 +132,14 @@ GET http://brass-ta/action/observe
      }
  
 // API to set up the initial conditions for the experiment for power
-POST http://brass-ta/action/set_battery
+POST http://brass-ta/perturb/battery
    Request: {"charge" : batteryLevel}
    Response: {"sim_time" : Integer}
 
  
 // tries to place an obstacle at the argument (x,y). if possible, returns a unique name for that obstacle and the (x,y)
 // of the top left and bottom right corner of the unsafe region. 
-POST http://brass-ta/action/place_obstacle
+POST http://brass-ta/perturb/place_obstacle
    Request:
      {"x" : Float, "y" : Float,
        "type" : String} # Note, type is TBD
@@ -137,11 +149,11 @@ POST http://brass-ta/action/place_obstacle
       "sim_time" : Integer }
  
 // removes an obstacle when given its name as returns from /action/place_obstacle
-POST http://brass-ta/action/remove_obstacle
+POST http://brass-ta/perturb/remove_obstacle
    Request: {"obstacleid" : STRING_ENCODING}
    Result: {"sim_time" : Integer}
  
-POST http://brass-ta/action/kinect_activation
+POST http://brass-ta/perturb/kinect
    Request: {"status" : "on" | "off"}
    Response:  {"sim_time" : Integer}
   
