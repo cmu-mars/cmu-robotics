@@ -81,6 +81,41 @@ Below, we discuss each of the steps involved in the test procedure for this Chal
 		JSON file. This summary may be accessed by the examiner through the
 		test harness, described next.
 
+### Pseudocode
+
+```python
+sut.start() # block until the SUT is ready
+dsl.setup(sut.getInfo()) # prepare the DSL
+
+# evaluate N adaptation scenarios
+for i in range(numScenarios): 
+
+  parameters = dsl.sample() # sample parameters from the DSL
+  perturbations = sut.adaptations(parameters) # find the set of suitable perturbations
+  shuffle(perturbations)
+
+  # select and inject K perturbations
+  selected = sample(perturbations, parameters["numFaults"])
+  sut.inject(selected)
+
+  # block until the perturbations are injected and the system is ready
+  # if an error occurred during the injection process, select another pair of
+  # perturbations and retry
+  if not sut.waitTillInjected():
+    BLAH
+
+  # trigger the code adaptation process
+  # pass along any experiment parameters (e.g., resource limits)
+  sut.adapt(experimentParams)
+
+  # block until the adaptation process has finished
+  while not sut.done():
+    sleep(5.0)
+
+  # fetch the results and save them (to disk)
+  results = sut.results()
+```
+
 ## Fix Schemas
 
 | Schema | Description | Parameters |
@@ -134,7 +169,7 @@ systematically measure adaptiveness in a variety of scenarios.
 
 ## SUT API
 
-### GET: /faults
+### GET: /perturbations
 
 Returns a list of possible perturbations of an (optionally) specified kind and
 complexity that can be performed at a given (set of) location(s) in the program.
@@ -153,6 +188,14 @@ its `Kind`, the `Location` to which it should be applied, and any additional
 parameters that are required to complete the perturbation (e.g., a replacement
 statement).
 
+### POST: /adapt
+
+Used to trigger the code adaptation process.
+
+If a suitable test scenario has not been successfully prepared, an error is
+returned in the response. Otherwise, the request to begin adaptation is simply
+acknowledged.
+
 ### POST: /perturb
 
 Applies a given set of perturbations, provided as a list of JSON objects, to the
@@ -165,6 +208,10 @@ SUT. This method should be used to prepare a test scenario for evaluation.
 An empty response is returned by this method. Any errors encountered during the
 injection of the given perturbations is communicated to the test harness API
 via its `/error` method.
+
+### GET: /status
+
+Returns a description of the current state of the SUT.
 
 ## Test Harness API
 
@@ -194,9 +241,14 @@ the system is ready for evaluation.
 Used to inform the test harness that a new adaptation has been added to the
 Pareto front (i.e., a new "best" adaptation has been found).
 
+| Request Parameter | Type | Description | Example |
+|-------------------|------|-------------|---------|
+
+No response is provided by this method.
+
 ### POST: /done
 
-Used to indicate that evaluation of the current test scenario has been completed.
+Used to indicate that evaluation of the test scenario has been completed.
 A summary of the results of the test scenario are provided as a JSON object. The
 entire summary is contained within `SutFinishedStatus`, as specified by the
 Lincoln Labs API. This property contains the following parameters:
@@ -207,17 +259,28 @@ Lincoln Labs API. This property contains the following parameters:
 | Outcome | Enum | A short description of the success of the repair process | `"repaired"` |
 | RunningTime | Float | The number of minutes taken to complete the repair process | `90.012` |
 | NumAttempts | Int | The number of repairs attempted | `120` |
-| ParetoFront | CandidateSolution[] | A list containing details of the final pareto front | See below |
-| Log | CandidateSolution[] | A list containing details of each of the attempted repairs | See below |
+| ParetoFront | CandidateAdaptation[] | A list containing details of the final pareto front | See below |
+| Log | CandidateAdaptation[] | A list containing details of each of the attempted repairs | See below |
 
 ## API Data Structures
 
-### CandidateSolution
+### CandidateAdaptation
+
+Used to describe the evaluation of a candidate adaptation.
 
 | Property | Type | Description | Example |
 |--|--|--|--|
-| Identifier | String | | `"Rep(14,0:14,39; 'x < 3')"` |
-| Description | String | | |
+| Identifier | String | A short description of the adaptation | `"Replace(14,0:14,39; 'x < 3')"` |
+| Compilation | CompilationOutcome | Details of the outcome of the compilation of this adaptation | See below |
+
+### CompilationOutcome
+
+Used to describe the outcome of an attempted compilation.
+
+| Property | Type | Description | Example |
+|--|--|--|--|
+| Successful | Bool | A flag indicating whether or not the compilation was successful | `true` |
+| Duration | Float | The number of seconds taken to (fail to) finish compilation | `3.56` |
 
 ## Intent Specification and Evaluation Metrics
 
