@@ -192,9 +192,18 @@ statement).
 
 Used to trigger the code adaptation process.
 
+| Request Parameter | Type | Description | Example |
+|--------------|------|-------------|---------|
+| TimeLimit* | Float | An (optional) time limit for the adaptation process, given in minutes. | `120.00` |
+| AttemptLimit* | Int | An (optional) limit for the adaptation process, given in minutes. | `120.00` |
+
+
 If a suitable test scenario has not been successfully prepared, an error is
 returned in the response. Otherwise, the request to begin adaptation is simply
 acknowledged.
+
+**NOTE:** We could allow *hints* to be provided to this method? e.g., the shape(s)
+  or location(s) of the fix(es).
 
 ### POST: /perturb
 
