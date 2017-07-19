@@ -183,7 +183,16 @@ No response is provided by this method.
 
 ### POST: /ready
 
+Used to indicate that the perturbations have been successfully injected, and that
+the system is ready for evaluation.
+
+**WARNING:** The semantics of `/ready` are very different for CP2 than the other
+  challenge problems!
+
 ### POST: /status
+
+Used to inform the test harness that a new adaptation has been added to the
+Pareto front (i.e., a new "best" adaptation has been found).
 
 ### POST: /done
 
@@ -200,6 +209,15 @@ Lincoln Labs API. This property contains the following parameters:
 | NumAttempts | Int | The number of repairs attempted | `120` |
 | ParetoFront | CandidateSolution[] | A list containing details of the final pareto front | See below |
 | Log | CandidateSolution[] | A list containing details of each of the attempted repairs | See below |
+
+## API Data Structures
+
+### CandidateSolution
+
+| Property | Type | Description | Example |
+|--|--|--|--|
+| Identifier | String | | `"Rep(14,0:14,39; 'x < 3')"` |
+| Description | String | | |
 
 ## Intent Specification and Evaluation Metrics
 
