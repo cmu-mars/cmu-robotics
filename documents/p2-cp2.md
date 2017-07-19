@@ -85,10 +85,13 @@ Below, we discuss each of the steps involved in the test procedure for this Chal
 
 | Schema | Description | Parameters |
 |--------|-------------|------------|
+| DeleteStatement | appends a statement to a given location. | Location |
 | AppendStatement | appends a statement to a given location. | Location, Append |
 | ReplaceStatement | replaces a statement with another. | Location, Replacement |
-| DeleteStatement | appends a statement to a given location. | Location |
 | ReplaceCallTarget | replaces the target of a function call | Location, Replacement |
+| ReplaceCallArg | replaces an argument of a function call | Location, Replacement |
+| ReplaceIfCondition | replaces an if-condition | Location, Replacement |
+| ReplaceLoopInvariant | replaces a loop invariant | Location, Replacement |
 
 ## Interface to the Test Harness (API)
 
