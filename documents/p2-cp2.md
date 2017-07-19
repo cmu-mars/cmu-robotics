@@ -132,6 +132,25 @@ both the code and architectural levels. This tool may be used by any ROS-based
 system to improve model inference, perform automated test generation, and to
 systematically measure adaptiveness in a variety of scenarios.
 
+### GET: /faults
+
+Returns a list of possible perturbations of an (optionally) specified kind and
+complexity that can be performed at a given (set of) location(s) in the program.
+This endpoint should be used to select a suitable (set of) perturbation(s) for
+a test scenario.
+
+| Request Parameter | Type | Description | Example |
+|--------------|------|-------------|---------|
+| File | String | The file in which the fault should be placed | `"navigation.cpp"` |
+| Kind* | String | The "kind" of the fault. | `"DeleteStatement"` |
+| Line* | Int | The  | `[1, 4]` |
+
+The response of this API call is a (JSON) list of perturbations that satisfy
+the query parameters provided by the request. Each perturbation is described by
+its `Kind`, the `Location` to which it should be applied, and any additional
+parameters that are required to complete the perturbation (e.g., a replacement
+statement).
+
 ## Intent Specification and Evaluation Metrics
 
 To evaluate candidate code-level transformations, we propose that a set of
