@@ -170,7 +170,20 @@ via its `/error` method.
 
 ### POST: /error
 
+Used to indicate that an error has occurred during the preparation or
+evaluation of a test scenario. The body of this method contains a single
+property, `ErrorMsg`, containing a JSON-based description of the error.
+A description of the errors produced by SUT are given below.
+
+| Error Kind | Code | Description | Parameters |
+|------------|------|-------------|------------|
+| Neutral Perturbation | `NeutralPerturbation` | One of the perturbations for the test scenario has no effect on the outcome of the test suite, and as such, it does not consistitute a fault | `Perturbation` |
+
+No response is provided by this method.
+
 ### POST: /ready
+
+### POST: /status
 
 ### POST: /done
 
