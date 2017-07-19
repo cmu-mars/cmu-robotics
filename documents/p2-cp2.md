@@ -83,42 +83,12 @@ Below, we discuss each of the steps involved in the test procedure for this Chal
 
 ## Fix Schemas
 
-```json
-// Delete Statement
-//   removes a statement at a given location (range) from the program
-{
-  "kind": "DeleteStatement",
-  "locationRange": {
-    "file": "blah.c",
-    "from": "15:78",
-    "to": "15:90"
-  }
-}
-
-// Append Statement
-//   introduces a given statement immediately after a specified location in the program
-{
-  "kind": "AppendStatement",
-  "location": {
-    "file": "blah.c",
-    "at": "15:90"
-  },
-  "statement": "x = y = 4"
-}
-
-// Replaces Statement
-//   replaces a given statement, identified by its character range, with a
-//   provided statement
-{
-  "kind": "ReplaceStatement",
-  "locationRange": {
-    "file": "blah.c",
-    "from": "15:78",
-    "to": "15:90"
-  },
-  "statement": "x = y = 4"
-}
-```
+| Schema | Description | Parameters |
+|--------|-------------|------------|
+| AppendStatement | appends a statement to a given location. | Location, Append |
+| ReplaceStatement | replaces a statement with another. | Location, Replacement |
+| DeleteStatement | appends a statement to a given location. | Location |
+| ReplaceCallTarget | replaces the target of a function call | Location, Replacement |
 
 ## Interface to the Test Harness (API)
 
