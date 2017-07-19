@@ -195,7 +195,7 @@ Used to trigger the code adaptation process.
 | Request Parameter | Type | Description | Example |
 |--------------|------|-------------|---------|
 | TimeLimit* | Float | An (optional) time limit for the adaptation process, given in minutes. | `120.00` |
-| AttemptLimit* | Int | An (optional) limit for the adaptation process, given in minutes. | `120.00` |
+| AttemptLimit* | Int | An (optional) limit on the number of adaptations that may be attempted. | `400` |
 
 
 If a suitable test scenario has not been successfully prepared, an error is
