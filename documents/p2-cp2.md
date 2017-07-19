@@ -81,6 +81,45 @@ Below, we discuss each of the steps involved in the test procedure for this Chal
 		JSON file. This summary may be accessed by the examiner through the
 		test harness, described next.
 
+## Fix Schemas
+
+```json
+// Delete Statement
+//   removes a statement at a given location (range) from the program
+{
+  "kind": "DeleteStatement",
+  "locationRange": {
+    "file": "blah.c",
+    "from": "15:78",
+    "to": "15:90"
+  }
+}
+
+// Append Statement
+//   introduces a given statement immediately after a specified location in the program
+{
+  "kind": "AppendStatement",
+  "location": {
+    "file": "blah.c",
+    "at": "15:90"
+  },
+  "statement": "x = y = 4"
+}
+
+// Replaces Statement
+//   replaces a given statement, identified by its character range, with a
+//   provided statement
+{
+  "kind": "ReplaceStatement",
+  "locationRange": {
+    "file": "blah.c",
+    "from": "15:78",
+    "to": "15:90"
+  },
+  "statement": "x = y = 4"
+}
+```
+
 ## Interface to the Test Harness (API)
 
 The test harness will be provided by a simple RESTful server. This server will
@@ -150,7 +189,14 @@ Each test case, or mission, is described by the following:
 This metric succinctly captures our goal for code-level adaptation: to return
 a perturbed system as close to its intent as possible. From the perspective
 of the code-level adaptation engine, this metric also transforms the problem
-into one more amenable to search (i.e., it produces a gradient).
+into one that is more amenable to search (i.e., it produces a gradient).
+
+### Comparison to the Baseline
+
+The original and adapted system may be compared using the test suite and a set
+of evaluation metrics.
+
+* 
 
 ## References
 
