@@ -132,6 +132,8 @@ both the code and architectural levels. This tool may be used by any ROS-based
 system to improve model inference, perform automated test generation, and to
 systematically measure adaptiveness in a variety of scenarios.
 
+## SUT API
+
 ### GET: /faults
 
 Returns a list of possible perturbations of an (optionally) specified kind and
@@ -150,6 +152,41 @@ the query parameters provided by the request. Each perturbation is described by
 its `Kind`, the `Location` to which it should be applied, and any additional
 parameters that are required to complete the perturbation (e.g., a replacement
 statement).
+
+### POST: /perturb
+
+Applies a given set of perturbations, provided as a list of JSON objects, to the
+SUT. This method should be used to prepare a test scenario for evaluation.
+
+| Request Parameter | Type | Description | Example |
+|--------------|------|-------------|---------|
+| Perturbations | Perturbation[] | A list of perturbations that should be applied to the code | `[{"kind": "DeleteStatement", "location": "foo.cpp:5,0:5,65"}]` |
+
+An empty response is returned by this method. Any errors encountered during the
+injection of the given perturbations is communicated to the test harness API
+via its `/error` method.
+
+## Test Harness API
+
+### POST: /error
+
+### POST: /ready
+
+### POST: /done
+
+Used to indicate that evaluation of the current test scenario has been completed.
+A summary of the results of the test scenario are provided as a JSON object. The
+entire summary is contained within `SutFinishedStatus`, as specified by the
+Lincoln Labs API. This property contains the following parameters:
+
+
+| Request Parameter | Type | Description | Example |
+|--------------|------|-------------|---------|
+| Outcome | Enum | A short description of the success of the repair process | `"repaired"` |
+| RunningTime | Float | The number of minutes taken to complete the repair process | `90.012` |
+| NumAttempts | Int | The number of repairs attempted | `120` |
+| ParetoFront | CandidateSolution[] | A list containing details of the final pareto front | See below |
+| Log | CandidateSolution[] | A list containing details of each of the attempted repairs | See below |
 
 ## Intent Specification and Evaluation Metrics
 
