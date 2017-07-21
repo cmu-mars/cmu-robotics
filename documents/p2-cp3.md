@@ -65,7 +65,7 @@ The test procedure will be the same as for P1CP1, except that Lincoln labs will 
 http://brass-th/ready
   Method: POST
   Request: No parameters
-  Response: { "map_to_use" : MapMnemonic, "start_loc" : String, "target_loc" : String, "use_adaption" : Boolean}
+  Response: { "map_to_use" : MapMnemonic, "start_loc" : String, "target_loc" : String, "use_adaptation" : Boolean}
 
 // Indicates that the DAS and SUT are ready to receive perturbations (and that the test has started)
 http://brass-th/start
