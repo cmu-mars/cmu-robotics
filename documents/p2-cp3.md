@@ -65,7 +65,7 @@ The test procedure will be the same as for P1CP1, except that Lincoln labs will 
 http://brass-th/ready
   Method: POST
   Request: No parameters
-  Response: { "map_to_use" : MapMnemonic, "start_loc" : String, "target_loc" : String}
+  Response: { "map_to_use" : MapMnemonic, "start_loc" : String, "target_loc" : String, "use_adaption" : Boolean}
 
 // Indicates that the DAS and SUT are ready to receive perturbations (and that the test has started)
 http://brass-th/start
@@ -86,12 +86,16 @@ http://brass-th/error
 http://brass-th/status
    Method: POST
    Request:
-     {"STATUS" : PERTURBATION_DETECTED | MISSION_SUSPENDED | MISSION_RESUMED | MISSION_HALTED | MISSION_ABORTED | ADAPTATION_INITIATED | ADAPTATION_COMPLETED | ADAPTATION_STOPPED | TEST_ERROR,
+     {"STATUS" : BOOTING | BOOTED | ONLINE | OFFLINE | PERTURBATION_DETECTED | MISSION_SUSPENDED | MISSION_RESUMED | MISSION_HALTED | MISSION_ABORTED | ADAPTATION_INITIATED | ADAPTATION_COMPLETED | ADAPTATION_STOPPED | TEST_ERROR,
       "MESSAGE" : STRING_ENCODING,
       “sim_time" : Integer
      }
    Response: No response
-   
+```
+
+> TODO: Define each status mode
+
+```json
 // a test action message that the TA may send to the TH to indicate that the mission is over before hitting time out.
 // this message will be sent for one of two reasons: the bot is at the target location or the battery is about to die.
 // other, more general, errors that cause the mission to end early will be reported by posting TEST_ERROR
