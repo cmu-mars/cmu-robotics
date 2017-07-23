@@ -65,11 +65,7 @@ learned. This will require a yet-to-be specified number of runs.
 
 ## Interface to the Test Harness (API)
 
-Note, this API is notional at this stage. In essence, this is an evolution
-of CP1 from Phase 1, with the expansion of being able to set the battery
-model and place and remove obstacles multiple times during the test. The
-power model, start location, and set of tasks will be specified in the test
-configuration file.
+Note, this API is notional at this stage. 
 
 ```javascript
 // Note, we may add additional data to the arguments as they are needed
@@ -110,7 +106,13 @@ http://brass-th/action/done
       "message" : String
      } 
    Response: No response
+```
 
+## Interface to the TA (API)
+
+Note, this API is notional at this stage. 
+
+```javascript
 //
 // Here are the APIs related to purturbations and adaptation trigers, internal APIs??
 //
