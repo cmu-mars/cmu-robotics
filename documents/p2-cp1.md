@@ -75,6 +75,40 @@ configuration file.
 // Note, we may add additional data to the arguments as they are needed
 // for LL evaluation
 // Note, change from Phase I - no deadline, replaced with taskOn, which is the task currently being done
+// Revised API
+http://brass-th/ready
+  Method: POST
+  Request: No parameters
+  Response: { "map_to_use" : String, "start_loc" : String, "target_loc" : String, "use_adaptation" : Boolean, "discharge_function": String, "options":array, "option_bounds":math.matrix(), "budget": Integer}
+  
+// Indicates that there is an error in system start or the learning process
+// The TH will terminate the test if it gets this message
+http://brass-th/error
+  Method: POST
+  Request: 
+    {"ERROR" : TEST_DATA_FILE_ERROR | TEST_DATA_FORMAT_ERROR | DAS_LOG_FILE_ERROR | DAS_OTHER_ERROR | PARSING_ERROR | LEARNING_ERROR,
+     "MESSAGE" : String}
+  Response: No response
+
+// Indicates to the TH important states in the SUT and DAS. Posted periodically as interesting events occur.
+http://brass-th/status
+   Method: POST
+   Request:
+     {"STATUS" : BOOTING | BOOTED | ONLINE | OFFLINE | PERTURBATION_DETECTED | MISSION_SUSPENDED | MISSION_RESUMED | MISSION_HALTED | MISSION_ABORTED | ADAPTATION_INITIATED | ADAPTATION_COMPLETED | ADAPTATION_STOPPED | TEST_ERROR | LEARNING_STARTED| LEARNING_DONE,
+      "MESSAGE" : String,
+      “sim_time" : Integer
+     }
+   Response: No response
+   
+// provides the data to TH
+http://brass-th/action/done
+   Request: 
+     {"x" : Float, "y" : Float, "w" : Float, "v" : Float, 
+      "charge" : batteryLevel,
+      "message" : String
+     } 
+   Response: No response
+
 GET http://brass-ta/action/observe
 TEST_ACTION:
   {"TIME" : TIME_ENCODING, "ARGUMENTS" : {}}
