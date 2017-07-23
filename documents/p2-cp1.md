@@ -79,7 +79,7 @@ configuration file.
 http://brass-th/ready
   Method: POST
   Request: No parameters
-  Response: { "map_to_use" : String, "start_loc" : String, "target_loc" : String, "use_adaptation" : Boolean, "discharge_function": String, "options":array, "option_bounds":math.matrix(), "budget": Integer}
+  Response: { "map_to_use": String, "start_loc": String, "target_loc": String, "use_adaptation": Boolean, "discharge_function": String, "options": Array, "option_bounds": math.matrix(), "budget": Integer}
   
 // Indicates that there is an error in system start or the learning process
 // The TH will terminate the test if it gets this message
@@ -94,7 +94,7 @@ http://brass-th/error
 http://brass-th/status
    Method: POST
    Request:
-     {"STATUS": BOOTING | BOOTED | ONLINE | OFFLINE | PERTURBATION_DETECTED | MISSION_SUSPENDED | MISSION_RESUMED | MISSION_HALTED | MISSION_ABORTED | ADAPTATION_INITIATED | ADAPTATION_COMPLETED | ADAPTATION_STOPPED | TEST_ERROR | LEARNING_STARTED| LEARNING_DONE,
+     {"STATUS": BOOTING | BOOTED | ONLINE | OFFLINE | PERTURBATION_DETECTED | MISSION_SUSPENDED | MISSION_RESUMED | MISSION_HALTED | MISSION_ABORTED | ADAPTATION_INITIATED | ADAPTATION_COMPLETED | ADAPTATION_STOPPED | TEST_ERROR | LEARNING_STARTED | LEARNING_DONE,
       "MESSAGE": String,
       "sim_time": Integer
      }
@@ -102,31 +102,72 @@ http://brass-th/status
    
 // provides the data to TH
 http://brass-th/action/done
+   Method: POST
    Request: 
      {"x" : Float, "y" : Float, "w" : Float, "v" : Float, 
-      "charge" : batteryLevel,
+      "charge" : batteryLevel, "num_hidden_func_query": Integer, "sim_time": Integer, "num_adaptations": Integer
+      "learning_status": Boolean, "num_learned_func_query": Integer,
       "message" : String
      } 
    Response: No response
 
-GET http://brass-ta/action/observe
-TEST_ACTION:
-  {"TIME" : TIME_ENCODING, "ARGUMENTS" : {}}
-ACTION_RESULT:
-  {"TIME" : TIME_ENCODING,
-   "RESULT" : {"x" : Float, "y" : Float, "w" : Float, "v" : Float, "voltage" : batteryLevel, “taskOn”: String, "sim_time" : Integer}
-  }
+//
+// Here are the APIs related to purturbations and adaptation trigers, internal APIs??
+//
 
-// API to set up the initial conditions for the experiment for power
-POST http://brass-ta/action/set_battery
-TEST_ACTION:
-  {"TIME" : TIME_ENCODING,
-   "ARGUMENTS" : {"voltage" : batteryLevel}
-  }
-ACTION_RESULT:
-  {"TIME" : TIME_ENCODING,
-   "RESULT" : {"sim_time" : Integer}
-  }
+// This will inject purturbations such as changing the discharge function, or seting new/in itializing battery charge, placing obstackles, removing obstackles, or changing kinnect type or changing any other components of the system thta typically affect the performance and discharge battery level differently.
+// Do we need to have different discharge functions that we need to discover based on components that will be replaced at runtime? If so, every time we change this via /purturb, we need to change the hidden function and call /learn
+// errors to be redirected to TH /error
+// if the purturbation injected successfully, we should observe PERTURBATION_DETECTED in the /status
+http://brass-ta/purturb
+   Method: POST
+   Request: 
+     {"ID": Integer,
+      "parameters": Array
+     } 
+   Response: No response
+
+// This will trigger the learning process
+// Should this method return the status whether the function has been learned? or we get this via /status?
+http://brass-ta/action/learn
+   Method: POST
+   Request:
+    {"budget": Integer
+    }
+   Response: No response
+
+// This will triger the adaptation process
+http://brass-ta/adapt
+   Method: POST
+   Request:
+    {"num_attempts": Integer, "charge" : batteryLevel
+    }
+   Response: No response
+
+// Enables/disables the DAS
+http://brass-ta/das
+   Method: POST
+   Request: {"enabled" : Boolean}
+   Response: No response
+   
+// start the mission a->b
+http://brass-ta/action/start
+  Method: POST
+  Request: No parameters
+  Response: No response
+
+// Note, we may add additional data to the arguments as they are needed
+// for LL evaluation, how this should be different from th/status? i.e., when we should call each? should we merge the two?
+http://brass-ta/observe
+   Method: GET
+   Request: No parameters
+   Response:
+     {"x" : Float, "y" : Float, "w" : Float, "v" : Float, 
+      "charge" : batteryLevel, "predicted_arrival" : Integer, 
+      "kinect_status" : "on" | "off",
+      "sim_time" : Integer
+     }
+
 ```
 
 ## Intent Specification and Evaluation Metrics
