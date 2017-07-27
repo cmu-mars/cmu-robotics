@@ -1,0 +1,7 @@
+swagger: '2.0'
+info:
+  version: '0.1'
+  title: 'cmu mars brass th: phase 2, cp1'
+schemes:
+  - http
+host: brass-th

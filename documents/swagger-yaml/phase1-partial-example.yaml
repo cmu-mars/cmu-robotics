@@ -1,0 +1,144 @@
+swagger: '2.0'
+info:
+  version: '1.0'
+  title: 'cmu mars brass api, phase1'
+schemes:
+  - http
+host: brass-ta
+paths:
+  /action/query_path:
+    get:
+      description: >-
+        returns the list of waypoints to be visited in the plan. note that
+        waypoint names are unique.
+      parameters:
+        - in: body
+          name: (args)
+          description: arguments for perturbation
+          schema:
+            type: object
+            required:
+              - TIME
+              - ARGUMENTS
+            properties:
+              TIME:
+                type: string
+                format: date-time
+              ARGUMENTS:
+                type: object
+      responses:
+        '200':
+          description: sucuessfully returned the list of waypoints on the current plan
+          schema:
+            type: object
+            properties:
+              TIME:
+                type: string
+                format: date-time
+              RESULT:
+                type: object
+                properties:
+                  path:
+                    type: array
+                    items:
+                      type: string
+                    description: >-
+                      list of way point names in the path planned before any
+                      perturbations
+                  time:
+                    type: number
+                    format: float
+                    description: >-
+                      estimated number of seconds to execute this path if
+                      unobstructed
+        '400':
+          description: >-
+            encountered an error computing the path. further info stored in the
+            logs.
+  /action/start:
+    post:
+      description: start the experiment running
+      parameters:
+        - in: body
+          name: (args)
+          description: arguments for perturbation
+          schema:
+            type: object
+            required:
+              - TIME
+              - ARGUMENTS
+            properties:
+              TIME:
+                type: string
+                format: date-time
+              ARGUMENTS:
+                type: object
+      responses:
+        '200':
+          description: sucuessfully started the experiment
+        '400':
+          description: >-
+            encountered an error trying to start the experiement. further info
+            stored in the logs.
+  /action/observe:
+    get:
+      description: returns the current observation of the system.
+      parameters:
+        - in: body
+          name: (args)
+          description: arguments for perturbation
+          schema:
+            type: object
+            required:
+              - TIME
+              - ARGUMENTS
+            properties:
+              TIME:
+                type: string
+                format: date-time
+              ARGUMENTS:
+                type: object
+      responses:
+        '200':
+          description: sucuessfully determined the current state of the system
+          schema:
+            type: object
+            properties:
+              TIME:
+                type: string
+                format: date-time
+              RESULT:
+                type: object
+                properties:
+                  x:
+                    type: number
+                    format: float
+                    description: current x-coordinate of the turtlebot's position
+                  'y':
+                    type: number
+                    format: float
+                    description: current y-coordinate of the turtlebot's position
+                  w:
+                    type: number
+                    format: float
+                    description: current yaw of the turtlebot's aspect
+                  v:
+                    type: number
+                    format: float
+                    description: current pitch of the turtlebot's aspect
+                  voltage:
+                    type: number
+                    format: batteryLevel
+                    description: current voltage of the battery
+                  deadline:
+                    type: number
+                    format: int_32
+                    description: current deadline for arrival
+                  sim_time:
+                    type: number
+                    format: int_32
+                    description: current simulation time
+        '400':
+          description: >-
+            encountered an error determining the current state of the DAS.
+            further info stored in the logs.
