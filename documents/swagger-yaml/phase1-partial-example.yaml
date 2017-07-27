@@ -28,7 +28,7 @@ paths:
                 type: object
       responses:
         '200':
-          description: sucuessfully returned the list of waypoints on the current plan
+          description: successfully returned the list of waypoints on the current plan
           schema:
             type: object
             properties:
@@ -75,10 +75,10 @@ paths:
                 type: object
       responses:
         '200':
-          description: sucuessfully started the experiment
+          description: successfully started the experiment
         '400':
           description: >-
-            encountered an error trying to start the experiement. further info
+            encountered an error trying to start the experiment. further info
             stored in the logs.
   /action/observe:
     get:
@@ -100,7 +100,7 @@ paths:
                 type: object
       responses:
         '200':
-          description: sucuessfully determined the current state of the system
+          description: successfully determined the current state of the system
           schema:
             type: object
             properties:
