@@ -49,33 +49,43 @@ effectively with fewer disruptions to the mission).
 
 We will provide a baseline power model that describes the power consumption
 of the system depending on a number of configuration options. The model is
-a linear model over the inputs (including interactions). Variations of this
-power model will be provided as test inputs.
+a linear model over the inputs (including interactions). 
+
+// I presume we do not want to let LL to change the model??
+Variations of this power model will be provided as test inputs.
+
+Possible purturbations that we consider in this challenge problem:
+* Placement of 1 obstackle once or multiple times
+* Placement of multiple obstackle once or multiple times
+* Placement and removal of obstackle
+* Set charge (to a higher or lower degree)
+* Sequence of target endpoints (multiple missions)
 
 ## Test Parameters
 
-Secret power model plus all of the parameters relevant to CP1 in phase 1
-(e.g. location, target location, battery level).
+Secret power models (for charge and discharge) plus all of the parameters relevant to CP1 in phase 1
+(e.g. budget start location, target location, battery level). We need to detail specific parameters for each of the purturbations that we decide (e.g., number of obstackles, frequency based on which obstackles are put, number of target points, set to a higher/lower charge, etc).
 
 ## Test Procedure
 
 See overview above. In particular, this challenge problem will require a
-training phase, T, where the model specified by Lincoln Labs is
-learned. This will require a yet-to-be specified number of runs.
+training phase, Tr, where the model specified by Lincoln Labs is
+learned. This requires a budget (number of times the hidden function will be queried) that will be given by LL. We learn the function once at the beginning offline and then the online phase will be started.
+
+> **TODO**: Sequdence Diagram
 
 ## Interface to the Test Harness (API)
 
 Note, this API is notional at this stage. 
 
 ```javascript
-// Note, we may add additional data to the arguments as they are needed
-// for LL evaluation
-// Note, change from Phase I - no deadline, replaced with taskOn, which is the task currently being done
+
 // Revised API
+// mode encodes: (pert|adaptation) & (No PM|Predefined PM|Learned PM)
 http://brass-th/ready
   Method: POST
   Request: No parameters
-  Response: { "map_to_use": String, "start_loc": String, "target_loc": String, "use_adaptation": Boolean, "discharge_function": String, "options": Array, "option_bounds": math.matrix(), "budget": Integer}
+  Response: {"mode": Integer, "start_loc": String, "target_loc": String, "discharge_function": String, "budget": Integer}
   
 // Indicates that there is an error in system start or the learning process
 // The TH will terminate the test if it gets this message
@@ -175,7 +185,23 @@ http://brass-ta/observe
 ## Intent Specification and Evaluation Metrics
 
 The intents described on the wiki for CP1 in phase 1 still apply (Accuracy,
-timing, and safety). These should be summed over the n missions completed
+timing, and safety). Also, we may consider power consumptions as a metric for evaluation. 
+These should be summed over the n missions completed
 by the robot. In addition, we may evaluate the discovery mechanism with a
 cost function based on the number of queries used. Alternatively, Lincoln
 Labs can set a tuneable query budget which will be used by the DAS.
+
+|A (p:[ ],a:[ ])|B (p:[x],a:[ ])|C (p:[x],a:[x])
+No PM|[x]|[x]|[x]
+Predefined|[x]|[x]|[x]
+Learned|[ ]|[ ]|[x]
+
+To evaluate intent discovery, we propose that a set of test cases, each describing a mission as well as purturbations for the robot (e.g., navigating a simulated corridor, placing 1 obstackle and changing the battery level once). We should classify the test cases as ```easy, medium, difficult, very difficult, impossible'''. 
+We use metrics such as distance from the target, power consumption, etc to evaluate the success of failure of the mission. We measure quality as an approximate measure of how closely the behaviour of a system meets its intent. In this challenge problem we evaluate how adaptations made by planner that uses a learned model partially restore intent (e.g., switching to an alternative kinect, less accurate navigation algorithm).
+
+Each test case is described by the following:
+* Mission schema: Navigation
+* Mission parameters: A->B
+* Purturbations: Obstackles + Battery level change
+* Possible adaptations: Kinects we can swap, Algorithms we may downgrade, etc
+* Evaluation metric: Power consumed, Mission accomplish time, Distance to target location, Numer of times we hit obtackles
