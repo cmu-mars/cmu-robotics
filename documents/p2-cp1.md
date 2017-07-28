@@ -192,6 +192,7 @@ cost function based on the number of queries used. Alternatively, Lincoln
 Labs can set a tuneable query budget which will be used by the DAS.
 
  | A (p:[ ],a:[ ]) | B (p:[x],a:[ ]) | C (p:[x],a:[x])
+--- | --- | --- | ---
 No PM | [x] | [x] | [x]
 Predefined | [x] | [x] | [x]
 Learned | [ ] | [ ] | [x]
