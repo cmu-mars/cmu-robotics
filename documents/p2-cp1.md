@@ -51,8 +51,8 @@ We will provide a baseline power model that describes the power consumption
 of the system depending on a number of configuration options. The model is
 a linear model over the inputs (including interactions). 
 
-// I presume we do not want to let LL to change the model??
-Variations of this power model will be provided as test inputs.
+> I presume we do not want to let LL to change the model??
+> Variations of this power model will be provided as test inputs.
 
 Possible purturbations that we consider in this challenge problem:
 * Placement of 1 obstackle once or multiple times
@@ -191,10 +191,10 @@ by the robot. In addition, we may evaluate the discovery mechanism with a
 cost function based on the number of queries used. Alternatively, Lincoln
 Labs can set a tuneable query budget which will be used by the DAS.
 
-|A (p:[ ],a:[ ])|B (p:[x],a:[ ])|C (p:[x],a:[x])
-No PM|[x]|[x]|[x]
-Predefined|[x]|[x]|[x]
-Learned|[ ]|[ ]|[x]
+ | A (p:[ ],a:[ ]) | B (p:[x],a:[ ]) | C (p:[x],a:[x])
+No PM | [x] | [x] | [x]
+Predefined | [x] | [x] | [x]
+Learned | [ ] | [ ] | [x]
 
 To evaluate intent discovery, we propose that a set of test cases, each describing a mission as well as purturbations for the robot (e.g., navigating a simulated corridor, placing 1 obstackle and changing the battery level once). We should classify the test cases as ```easy, medium, difficult, very difficult, impossible'''. 
 We use metrics such as distance from the target, power consumption, etc to evaluate the success of failure of the mission. We measure quality as an approximate measure of how closely the behaviour of a system meets its intent. In this challenge problem we evaluate how adaptations made by planner that uses a learned model partially restore intent (e.g., switching to an alternative kinect, less accurate navigation algorithm).
