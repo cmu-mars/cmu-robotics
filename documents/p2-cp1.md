@@ -197,7 +197,7 @@ No PM | ✔ | ✔ | ✔
 Predefined | ✔ | ✔ | ✔
 Learned |  |  | ✔
 
-To evaluate intent discovery, we propose that a set of test cases, each describing a mission as well as purturbations for the robot (e.g., navigating a simulated corridor, placing 1 obstackle and changing the battery level once). We should classify the test cases as ```easy, medium, difficult, very difficult, impossible'''. 
+To evaluate intent discovery, we propose that a set of test cases, each describing a mission as well as purturbations for the robot (e.g., navigating a simulated corridor, placing 1 obstackle and changing the battery level once). We should classify the test cases as `easy, medium, difficult, very difficult, impossible`. 
 We use metrics such as distance from the target, power consumption, etc to evaluate the success of failure of the mission. We measure quality as an approximate measure of how closely the behaviour of a system meets its intent. In this challenge problem we evaluate how adaptations made by planner that uses a learned model partially restore intent (e.g., switching to an alternative kinect, less accurate navigation algorithm).
 
 Each test case is described by the following:
