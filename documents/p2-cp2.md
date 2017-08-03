@@ -281,7 +281,7 @@ Lincoln Labs API. This property contains the following parameters:
 Used to describe the evaluation of a candidate adaptation.
 
 | Property | Type | Description | Example |
-|--|--|--|--|
+|------|------|--------|-----------|
 | Identifier | String | A short description of the adaptation | `"Replace(14,0:14,39; 'x < 3')"` |
 | Compilation | CompilationOutcome | Details of the outcome of the compilation of this adaptation | See below |
 
@@ -290,7 +290,7 @@ Used to describe the evaluation of a candidate adaptation.
 Used to describe the outcome of an attempted compilation.
 
 | Property | Type | Description | Example |
-|--|--|--|--|
+|------|------|--------|-----------|
 | Successful | Bool | A flag indicating whether or not the compilation was successful | `true` |
 | Duration | Float | The number of seconds taken to (fail to) finish compilation | `3.56` |
 
