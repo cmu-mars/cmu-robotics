@@ -150,8 +150,8 @@ paths:
               chargeLevel:
                 description: final charge measure of the turtlebot
                 type: integer
-                minimum: 16000
-                maximum: 32000
+                minimum: 16000 ## total guess
+                maximum: 32000 ## total guess
               num_hidden_func_query:
                 description: >-
                   number of queries made against the hidden function. must less
