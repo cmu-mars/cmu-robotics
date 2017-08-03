@@ -113,19 +113,19 @@ paths:
                   x:
                     type: number
                     format: float
-                    description: current x-coordinate of the turtlebot's position
-                  'y':
+                    description: current x-coordinate of the turtlebot position
+                  y:
                     type: number
                     format: float
-                    description: current y-coordinate of the turtlebot's position
+                    description: current y-coordinate of the turtlebot position
                   w:
                     type: number
                     format: float
-                    description: current yaw of the turtlebot's aspect
+                    description: current yaw of the turtlebot aspect
                   v:
                     type: number
                     format: float
-                    description: current pitch of the turtlebot's aspect
+                    description: current pitch of the turtlebot aspect
                   voltage:
                     type: number
                     format: batteryLevel
