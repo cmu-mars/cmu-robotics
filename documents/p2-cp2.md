@@ -215,7 +215,7 @@ SUT. This method should be used to prepare a test scenario for evaluation.
 | Perturbations | Perturbation[] | A list of perturbations that should be applied to the code | `[{"kind": "DeleteStatement", "location": "foo.cpp:5,0:5,65"}]` |
 
 An empty response is returned by this method. Any errors encountered during the
-injection of the given perturbations is communicated to the test harness API
+injection of the given perturbations are communicated to the test harness API
 via its `/error` method.
 
 ### GET: /status
@@ -227,8 +227,9 @@ Returns a description of the current state of the SUT.
 ### POST: /error
 
 Used to indicate that an error has occurred during the preparation or
-evaluation of a test scenario. The body of this method contains a single
-property, `ErrorMsg`, containing a JSON-based description of the error.
+evaluation of a test scenario, or during the start-up of the system under test.
+The body of this method contains a single property, `ErrorMsg`, containing a
+JSON-based description of the error.
 A description of the errors produced by SUT are given below.
 
 | Error Kind | Code | Description | Parameters |
@@ -239,11 +240,13 @@ No response is provided by this method.
 
 ### POST: /ready
 
+Used to indicate that the "system under test" is ready, and that testing
+may begin.
+
+### POST: /perturbed
+
 Used to indicate that the perturbations have been successfully injected, and that
 the system is ready for evaluation.
-
-**WARNING:** The semantics of `/ready` are very different for CP2 than the other
-  challenge problems!
 
 ### POST: /status
 
