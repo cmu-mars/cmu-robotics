@@ -5,3 +5,174 @@ info:
 schemes:
   - http
 host: brass-th
+paths:
+  /ready:
+    post:
+      description: >-
+        indicate to the TH that the TA is ready to recieve configuration data to
+        continue starting up the DAS
+      responses:
+        '200':
+          description: TH is ready to produce configuration data
+          schema:
+            type: object
+            properties:
+              mode:
+                type: integer
+                description: TODO
+              start_loc:
+                type: string
+                description: the name of the start map waypoint
+              target_loc:
+                type: string
+                description: the name of the goal map waypoint
+              discharge_function:
+                type: string
+                format: function_spec
+                description: >-
+                  a description of the function dictating the discharge of the
+                  battery, which is what we will learn
+              budget:
+                type: integer
+                description: >-
+                  the maximum number of queries against the target function
+                  during learning
+        '400':
+          description: TH encountered an error producing configuration data
+  /error:
+    post:
+      description: >-
+        used by the TA to indicate to the TH that an error has occurred in the
+        start up or learning process. the TH will terminate the test upon
+        notification of an error
+      parameters:
+        - in: body
+          name: error info
+          schema:
+            type: object
+            required:
+              - ERROR
+              - MESSAGE
+            properties:
+              ERROR:
+                description: one of a enumerated set of reasons that errors may arise
+                type: string
+                enum:
+                  - TEST_DATA_FILE_ERROR
+                  - TEST_DATA_FORMAT_ERROR
+                  - DAS_LOG_FILE_ERROR
+                  - DAS_OTHER_ERROR
+                  - PARSING_ERROR
+                  - LEARNING_ERROR
+              MESSAGE:
+                description: human readable text describing the error
+                type: string
+      responses:
+        '200':
+          description: TH acknowledges the error and is shutting down the test
+  /status:
+    post:
+      description: used by the TA to periodically indicate its current state to the TH
+      parameters:
+        - in: body
+          name: error info
+          schema:
+            type: object
+            required:
+              - STATUS
+              - MESSAGE
+              - SIM_TIME
+            properties:
+              STATUS:
+                description: one of the possible statuses
+                type: string
+                enum:
+                  - BOOTING
+                  - BOOTED
+                  - ONLINE
+                  - OFFLINE
+                  - PERTURBATION_DETECTED
+                  - MISSION_SUSPENDED
+                  - MISSION_RESUMED
+                  - MISSION_HALTED
+                  - MISSION_ABORTED
+                  - ADAPTATION_INITIATED
+                  - ADAPTATION_COMPLETED
+                  - ADAPTATION_STOPPED
+                  - TEST_ERROR
+                  - LEARNING_STARTED
+                  - LEARNING_DONE
+              MESSAGE:
+                description: human readable text describing the status
+                type: string
+              SIM_TIME:
+                description: >-
+                  the internal simulation time at the time that the status
+                  message was sent
+                type: integer
+                minimum: 0
+      responses:
+        '200':
+          description: TH acknowledges the status
+  /action/done:
+    post:
+      description: >-
+        used by the TA to indicate to the TH that the turtlebot has reached the
+        goal and that the mission has been completed. note that incomplete
+        missions will result in an error and not use this end point.
+      parameters:
+        - in: body
+          name: error info
+          schema:
+            type: object
+            required:
+              - x
+              - 'y'
+              - w
+              - v
+            properties:
+              x:
+                description: final x-coordinate of the turtlebot
+                type: number
+                format: float
+              'y':
+                description: final y-coordinate of the turtlebot
+                type: number
+                format: float
+              w:
+                description: final ?TODO? of the turtlebot
+                type: number
+                format: float
+              v:
+                description: final ?TODO? of the turtlebot
+                type: number
+                format: float
+              chargeLevel:
+                description: final charge measure of the turtlebot
+                type: integer
+                minimum: 16000
+                maximum: 32000
+              num_hidden_func_query:
+                description: >-
+                  number of queries made against the hidden function. must less
+                  than or equal to the budget given in the response to /ready.
+                type: integer
+              sim_time:
+                description: the final internal simulation time
+                type: integer
+                minimum: 0
+              num_adaptations:
+                description: todo?
+                type: integer
+              learning_status:
+                description: todo
+                type: boolean
+              num_learned_func_query:
+                description: todo
+                type: integer
+              message:
+                description: todo human readable something or other
+                type: string
+      responses:
+        '200':
+          description: TH acknowledges the completion of the mission
