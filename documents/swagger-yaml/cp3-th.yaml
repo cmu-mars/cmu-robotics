@@ -5,3 +5,155 @@ info:
 schemes:
   - http
 host: brass-th
+paths:
+  /ready:
+    post:
+      description: >-
+        indicate to the TH that the TA is ready to recieve configuration data
+        and continue starting up the DAS
+      responses:
+        '200':
+          description: TH is ready to produce configuration data
+          schema:
+            type: object
+            properties:
+              map_to_use:
+                type: string
+                format: MapMnemonic
+                description: >-
+                  the name of the map to use for this test, must be from the
+                  list of agreed upon map names
+              start_loc:
+                type: string
+                description: >-
+                  the name of the start map waypoint. must be a valid way point
+                  for the map given in `map_to_use`.
+              target_loc:
+                type: string
+                description: the name of the goal map waypoint
+              use_adaptation:
+                type: boolean
+                description: >-
+                  if `true`, then the DAS will use adapative behaiviours; if
+                  `false` then the DAS will not sure adaptive behaiviours
+        '400':
+          description: TH encountered an error producing configuration data
+  /start:
+    post:
+      description: >-
+        indicates that the SUT is ready to recieve perturbations and that the
+        test has started
+      responses:
+        '200':
+          description: the TH acknowledges that the SUT has started
+        '400':
+          description: the TH has encountered an error
+  /error:
+    post:
+      description: >-
+        indicates that the SUT has encountered an error in configuration data,
+        parameters, system start, or any other less specified problem
+      parameters:
+        - in: body
+          name: error info
+          schema:
+            type: object
+            required:
+              - ERROR
+              - MESSAGE
+            properties:
+              ERROR:
+                description: one of a enumerated set of reasons that errors may arise
+                type: string
+                enum:
+                  - TEST_DATA_FILE_ERROR
+                  - TEST_DATA_FORMAT_ERROR
+                  - DAS_LOG_FILE_ERROR
+                  - DAS_OTHER_ERROR
+              MESSAGE:
+                description: human readable text describing the error
+                type: string
+      responses:
+        '200':
+          description: >-
+            the TH acknowledges that the SUT has encountered an error and will
+            shut down the test
+        '400':
+          description: >-
+            the TH has encountered an error in processing the error from the SUt
+            and will also shut down the test
+  /status:
+    post:
+      description: >-
+        indicate important state changes in the SUT to the TH. posted
+        periodically as the described events occur.
+      parameters:
+        - in: body
+          name: error info
+          schema:
+            type: object
+            required:
+              - ERROR
+              - MESSAGE
+              - sim_time
+            properties:
+              ERROR:
+                description: one of a enumerated set of reasons that errors may arise
+                type: string
+                enum:
+                  - BOOTING
+                  - BOOTED
+                  - ONLINE
+                  - PERTURBATION_DETECTED
+                  - MISSION_SUSPENDED
+                  - MISSION_RESUMED
+                  - MISSION_HALTED
+                  - MISSION_ABORTED
+                  - ADAPTATION_INITIATED
+                  - ADAPTATION_COMPLETED
+                  - ADAPTATION_STOPPED
+                  - TEST_ERROR
+              MESSAGE:
+                description: human readable text describing the status
+                type: string
+              sim_time:
+                type: integer
+                description: >-
+                  the time inside the simulation when the status message was
+                  produced
+      responses:
+        '200':
+          description: the TH acknowledges the status of the SUT
+        '400':
+          description: the TH has encountered an error in processing the status of the SUT
+  /done:
+    post:
+      description: indicates that the test is completed
+      parameters:
+        - in: body
+          name: error info
+          schema:
+            type: object
+            required:
+              - TARGET
+              - REASON
+              - sim_time
+            properties:
+              TARGET:
+                type: string
+                description: TODO
+              REASON:
+                type: string
+                description: 'TODO, make this an enum?'
+              sim_time:
+                type: integer
+                description: the simulation time when the mission finished
+      responses:
+        '200':
+          description: >-
+            the TH acknowledges the done message from the SUT and is shutting
+            down the test
+        '400':
+          description: >-
+            the TH has encountered an error in processing the done message of
+            the SUT
