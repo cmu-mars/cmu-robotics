@@ -131,7 +131,7 @@ Note, this API is notional at this stage.
 // Do we need to have different discharge functions that we need to discover based on components that will be replaced at runtime? If so, every time we change this via /purturb, we need to change the hidden function and call /learn
 // errors to be redirected to TH /error
 // if the purturbation injected successfully, we should observe PERTURBATION_DETECTED in the /status
-http://brass-ta/purturb
+http://brass-ta/perturb
    Method: POST
    Request: 
      {"ID": Integer,
