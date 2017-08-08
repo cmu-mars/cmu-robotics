@@ -176,7 +176,7 @@ POST http://brass-ta/perturb/kinect
 **Verdict Expression**:
 
 | Constant | likely value | meaning |
-|--|--|--|
+|----------|--------------|---------|
 | BUFFER   | 50cm | the radius of the robot, plus some buffer that robotic algorithms determine as close enough |
 | MAX_DISTANCE | 3m |  The maximum distance from the buffer zone that can be considered near the target. |
 
