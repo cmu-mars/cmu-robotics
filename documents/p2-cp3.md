@@ -2,20 +2,20 @@
 
 ## Overview
 
-This challenge problem is an evolution of Phase I Challenge Problem 1 that will adapt the TurtleBot's use of sensors, components, 
-and mission to current energy levels to preserve mission intent and intents regarding internal behavior despite low power and *changing 
+This challenge problem is an evolution of Phase I Challenge Problem 1 that will adapt the TurtleBot's use of sensors, components,
+and mission to current energy levels to preserve mission intent and intents regarding internal behavior despite low power and *changing
 hardware conditions*.
 
-The robot is used for a variety of tasks with different mission parameters and different mission length. In its current form the 
-TurtleBot implementation does not explicitly consider energy consumption and battery life, assuming the TurtleBot can drive back 
-to its home station when the battery runs low. Various ecosystem and mission changes, from obstacles on the course, to delays in 
+The robot is used for a variety of tasks with different mission parameters and different mission length. In its current form the
+TurtleBot implementation does not explicitly consider energy consumption and battery life, assuming the TurtleBot can drive back
+to its home station when the battery runs low. Various ecosystem and mission changes, from obstacles on the course, to delays in
 the mission, to partial sensor failure, can interfere with those objectives.
 
-The DAS will use both offline and online techniques to prepare possible adaptations to ecosystem changes before the mission starts. 
+The DAS will use both offline and online techniques to prepare possible adaptations to ecosystem changes before the mission starts.
 It will perform adaptations online during the mission.
 
-To successfully prepare and evaluate changes, the simulator requires a sensor on the system's current energy consumption, 
-e.g., whole-system energy as measured by a power meter external to the computer running the simulation or part of the computer’s 
+To successfully prepare and evaluate changes, the simulator requires a sensor on the system's current energy consumption,
+e.g., whole-system energy as measured by a power meter external to the computer running the simulation or part of the computer’s
 power supply, and as approximate power consumption of the individual sensors and actuators.
 
 The key challenges being addressed in this challenge problem are:
@@ -71,17 +71,17 @@ http://brass-th/ready
 http://brass-th/start
   Method: POST
   Request: No parameters
-  Response: No repsonse 
+  Response: No repsonse
 
 // Indicates that there is an error in configuration, parameters, system start, or any other problem
 // The TH will terminate the test if it gets this message
 http://brass-th/error
   Method: POST
-  Request: 
+  Request:
     {"ERROR" : TEST_DATA_FILE_ERROR | TEST_DATA_FORMAT_ERROR | DAS_LOG_FILE_ERROR | DAS_OTHER_ERROR,
      "MESSAGE" : STRING_ENCODING}
   Response: No response
-  
+
 // Indicates to the TH important states in the SUT and DAS. Posted periodically as interesting events occur.
 http://brass-th/status
    Method: POST
@@ -100,26 +100,26 @@ http://brass-th/status
 // this message will be sent for one of two reasons: the bot is at the target location or the battery is about to die.
 // other, more general, errors that cause the mission to end early will be reported by posting TEST_ERROR
 http://brass-th/action/done
-   Request: 
+   Request:
      {"TARGET" : STRING_ENCODING,
       "REASON" :  STRING_ENCODING
-     } 
-     
+     }
+
 // Interfaces from test harness to DAS/CP
-// After ready is reported, the th will use this query to 
+// After ready is reported, the th will use this query to
 // get the initial planned path. note that waypoint names are unique.
-// predicted_arrival_time gives a lower bound on the number of seconds we estimate to 
+// predicted_arrival_time gives a lower bound on the number of seconds we estimate to
 // traverse the path.
 GET http://brass-ta/query/initial
   Request: No parameters
-  Response: 
+  Response:
     {"path" : [STRING_ENCODING], "predicted_arrival_time" : Integer}
 
 // Enables/disables the DAS
 POST http://brass-ta/action/das
    Request: {"enabled" : Boolean}
    Response: No response
-   
+
 // Starts the TurtleBot navigating through the map for challenge problem 1
 POST http://brass-ta/action/start
   Request: No parameters
@@ -130,38 +130,38 @@ POST http://brass-ta/action/start
 GET http://brass-ta/query/observe
    Request: No parameters
    Response:
-     {"x" : Float, "y" : Float, "w" : Float, "v" : Float, 
-      "charge" : batteryLevel, "predicted_arrival" : Integer, 
+     {"x" : Float, "y" : Float, "w" : Float, "v" : Float,
+      "charge" : batteryLevel, "predicted_arrival" : Integer,
       "kinect_status" : "on" | "off",
       "sim_time" : Integer
      }
- 
+
 // API to set up the initial conditions for the experiment for power
 POST http://brass-ta/perturb/battery
    Request: {"charge" : batteryLevel}
    Response: {"sim_time" : Integer}
 
- 
+
 // tries to place an obstacle at the argument (x,y). if possible, returns a unique name for that obstacle and the (x,y)
-// of the top left and bottom right corner of the unsafe region. 
+// of the top left and bottom right corner of the unsafe region.
 POST http://brass-ta/perturb/place_obstacle
    Request:
      {"x" : Float, "y" : Float,
        "type" : String} # Note, type is TBD
-   Response: 
-     {"obstacleid" : STRING_ENCODING, 
-      "topleft_x" : Float, "topleft_y" : Float, "botright_x" : Float, "botright_y" : Float, 
+   Response:
+     {"obstacleid" : STRING_ENCODING,
+      "topleft_x" : Float, "topleft_y" : Float, "botright_x" : Float, "botright_y" : Float,
       "sim_time" : Integer }
- 
+
 // removes an obstacle when given its name as returns from /action/place_obstacle
 POST http://brass-ta/perturb/remove_obstacle
    Request: {"obstacleid" : STRING_ENCODING}
    Result: {"sim_time" : Integer}
- 
+
 POST http://brass-ta/perturb/kinect
    Request: {"status" : "on" | "off"}
    Response:  {"sim_time" : Integer}
-  
+
 ```
 
 ## Intent Specification and Evaluation Metrics
@@ -175,10 +175,12 @@ POST http://brass-ta/perturb/kinect
 
 **Verdict Expression**:
 
-BUFFER = 50cm – the radius of the robot, plus some buffer that robotic algorithms determine as close enough
-MAX_DISTANCE = 3m - The maximum distance from the buffer zone that can be considered near the target. 
+| Constant | likely value | meaning |
+| -- | -- | -- |
+| BUFFER   | 50cm | the radius of the robot, plus some buffer that robotic algorithms determine as close enough |
+| MAX_DISTANCE | 3m |  The maximum distance from the buffer zone that can be considered near the target. |
 
-function distance(loc1, loc2) = sqrt((loc1.x - loc2.x)^2 + (loc1.y - loc2.y)^2))
+\\[ function distance(loc1, loc2) = sqrt((loc1.x - loc2.x)^2 + (loc1.y - loc2.y)^2)) \\]
 
 | Condition                                                        | Score                                             |
 |------------------------------------------------------------------|---------------------------------------------------|
@@ -189,10 +191,10 @@ function distance(loc1, loc2) = sqrt((loc1.x - loc2.x)^2 + (loc1.y - loc2.y)^2))
 **Challenge evaluation for degraded intents:**
 
 C = the challenge (with adaptation on)
-B = base (with no adaptation) 
+B = base (with no adaptation)
 
 DEG_C = the score (0..1) degraded of C
-DEG_B = the score (0..1) degraded of B 
+DEG_B = the score (0..1) degraded of B
 
 | C ->,<br/> B \/  | PASS              | DEGRADED                             | FAIL |
 |-------------|-------------------|--------------------------------------|------|
@@ -224,7 +226,7 @@ We’re allowed one prediction at the beginning of the test. So if there is one 
 **Verdict Expressions**:
 
 BUFFER = 10 seconds
-PENALTY = 120 seconds 
+PENALTY = 120 seconds
 
 function close_enough (loc1, loc2) = distance (loc1, loc2) <= MAX_DISTANCE
 
@@ -235,7 +237,7 @@ function inDeadlineWindow(deadline, arrival) = arrival <= deadline + BUFFER and 
 function tooEarly(deadline, arrival) = arrival <= deadline - 2*BUFFER
 
 // 3 minutes late is ok, but later than one minutes gives us a degraded score
-function tooLate(deadline, arrival) = arrival > deadline + BUFFER 
+function tooLate(deadline, arrival) = arrival > deadline + BUFFER
 
 function prediction_penalty() = 1-(number_of_predictions - 1 - number_of_adaptations)^(3/2)/15
 
@@ -247,6 +249,6 @@ function prediction_penalty() = 1-(number_of_predictions - 1 - number_of_adaptat
 | else | 0 |
 
 
-### Intent Element 3: Safety 
+### Intent Element 3: Safety
 
 (If safety is in play for the uncertainty requirement, we will have an intent for this; otherwise, it will not be a factor)
