@@ -49,34 +49,40 @@ effectively with fewer disruptions to the mission).
 
 We will provide a baseline power model that describes the power consumption
 of the system depending on a number of configuration options. The model is
-a linear model over the inputs (including interactions). 
+a linear model over the inputs (including interactions).
 
-> I presume we do not want to let LL to change the model??
-> Variations of this power model will be provided as test inputs.
+> I presume we do not want to let LL to change the model? Variations of
+> this power model will be provided as test inputs.
 
-Possible purturbations that we consider in this challenge problem:
-* Placement of 1 obstackle once or multiple times
-* Placement of multiple obstackle once or multiple times
-* Placement and removal of obstackle
+Possible perturbations that we consider in this challenge problem:
+* Placement of 1 obstacle once or multiple times
+* Placement of multiple obstacle once or multiple times
+* Placement and removal of obstacle
 * Set charge (to a higher or lower degree)
 * Sequence of target endpoints (multiple missions)
 
 ## Test Parameters
 
-Secret power models (for charge and discharge) plus all of the parameters relevant to CP1 in phase 1
-(e.g. budget start location, target location, battery level). We need to detail specific parameters for each of the purturbations that we decide (e.g., number of obstackles, frequency based on which obstackles are put, number of target points, set to a higher/lower charge, etc).
+Secret power models (for charge and discharge) plus all of the parameters
+relevant to CP1 in phase 1 (e.g. budget start location, target location,
+battery level). We need to detail specific parameters for each of the
+perturbations that we decide (e.g., number of obstacles, frequency based
+on which obstacles are put, number of target points, set to a higher/lower
+charge, etc).
 
 ## Test Procedure
 
 See overview above. In particular, this challenge problem will require a
 training phase, Tr, where the model specified by Lincoln Labs is
-learned. This requires a budget (number of times the hidden function will be queried) that will be given by LL. We learn the function once at the beginning offline and then the online phase will be started.
+learned. This requires a budget (number of times the hidden function will
+be queried) that will be given by LL. We learn the function once at the
+beginning offline and then the online phase will be started.
 
-> **TODO**: Sequdence Diagram
+> **TODO**: Sequence Diagram
 
 ## Interface to the Test Harness (API)
 
-Note, this API is notional at this stage. 
+Note, this API is notional at this stage.
 
 ```javascript
 
@@ -86,12 +92,12 @@ http://brass-th/ready
   Method: POST
   Request: No parameters
   Response: {"mode": Integer, "start_loc": String, "target_loc": String, "discharge_function": String, "budget": Integer}
-  
+
 // Indicates that there is an error in system start or the learning process
 // The TH will terminate the test if it gets this message
 http://brass-th/error
   Method: POST
-  Request: 
+  Request:
     {"ERROR": TEST_DATA_FILE_ERROR | TEST_DATA_FORMAT_ERROR | DAS_LOG_FILE_ERROR | DAS_OTHER_ERROR | PARSING_ERROR | LEARNING_ERROR,
      "MESSAGE": String}
   Response: No response
@@ -105,38 +111,38 @@ http://brass-th/status
       "sim_time": Integer
      }
    Response: No response
-   
+
 // provides the data to TH
 http://brass-th/action/done
    Method: POST
-   Request: 
-     {"x" : Float, "y" : Float, "w" : Float, "v" : Float, 
+   Request:
+     {"x" : Float, "y" : Float, "w" : Float, "v" : Float,
       "charge" : batteryLevel, "num_hidden_func_query": Integer, "sim_time": Integer, "num_adaptations": Integer
       "learning_status": Boolean, "num_learned_func_query": Integer,
       "message" : String
-     } 
+     }
    Response: No response
 ```
 
 ## Interface to the TA (API)
 
-Note, this API is notional at this stage. 
+Note, this API is notional at this stage.
 
 ```javascript
 //
-// Here are the APIs related to purturbations and adaptation trigers, internal APIs??
+// Here are the APIs related to perturbations and adaptation triggers, internal APIs??
 //
 
-// This will inject purturbations such as changing the discharge function, or seting new/in itializing battery charge, placing obstackles, removing obstackles, or changing kinnect type or changing any other components of the system thta typically affect the performance and discharge battery level differently.
-// Do we need to have different discharge functions that we need to discover based on components that will be replaced at runtime? If so, every time we change this via /purturb, we need to change the hidden function and call /learn
+// This will inject perturbations such as changing the discharge function, or setting new/in itializing battery charge, placing obstacles, removing obstacles, or changing kinect type or changing any other components of the system that typically affect the performance and discharge battery level differently.
+// Do we need to have different discharge functions that we need to discover based on components that will be replaced at runtime? If so, every time we change this via /perturb, we need to change the hidden function and call /learn
 // errors to be redirected to TH /error
-// if the purturbation injected successfully, we should observe PERTURBATION_DETECTED in the /status
+// if the perturbation injected successfully, we should observe PERTURBATION_DETECTED in the /status
 http://brass-ta/perturb
    Method: POST
-   Request: 
+   Request:
      {"ID": Integer,
       "parameters": Array
-     } 
+     }
    Response: No response
 
 // This will trigger the learning process
@@ -148,7 +154,7 @@ http://brass-ta/action/learn
     }
    Response: No response
 
-// This will triger the adaptation process
+// This will trigger the adaptation process
 http://brass-ta/adapt
    Method: POST
    Request:
@@ -161,7 +167,7 @@ http://brass-ta/das
    Method: POST
    Request: {"enabled" : Boolean}
    Response: No response
-   
+
 // start the mission a->b
 http://brass-ta/action/start
   Method: POST
@@ -174,8 +180,8 @@ http://brass-ta/observe
    Method: GET
    Request: No parameters
    Response:
-     {"x" : Float, "y" : Float, "w" : Float, "v" : Float, 
-      "charge" : batteryLevel, "predicted_arrival" : Integer, 
+     {"x" : Float, "y" : Float, "w" : Float, "v" : Float,
+      "charge" : batteryLevel, "predicted_arrival" : Integer,
       "kinect_status" : "on" | "off",
       "sim_time" : Integer
      }
@@ -185,24 +191,34 @@ http://brass-ta/observe
 ## Intent Specification and Evaluation Metrics
 
 The intents described on the wiki for CP1 in phase 1 still apply (Accuracy,
-timing, and safety). Also, we may consider power consumptions as a metric for evaluation. 
-These should be summed over the n missions completed
-by the robot. In addition, we may evaluate the discovery mechanism with a
-cost function based on the number of queries used. Alternatively, Lincoln
-Labs can set a tuneable query budget which will be used by the DAS.
+timing, and safety). Also, we may consider power consumptions as a metric
+for evaluation.  These should be summed over the n missions completed by
+the robot. In addition, we may evaluate the discovery mechanism with a cost
+function based on the number of queries used. Alternatively, Lincoln Labs
+can set a tunable query budget which will be used by the DAS.
 
- | A (p:✕,a:✕) | B (p:✔,a:✕) | C (p:✔,a:✔)
---- | --- | --- | ---
-No PM | ✔ | ✔ | ✔
-Predefined | ✔ | ✔ | ✔
-Learned |  |  | ✔
+|             | A (p:✕,a:✕) | B (p:✔,a:✕) | C (p:✔,a:✔) |
+|-------------|-------------|-------------|-------------|
+| No PM       | ✔           | ✔           | ✔           |
+| Predefined  | ✔           | ✔           | ✔           |
+| Learned     |             |             | ✔           |
 
-To evaluate intent discovery, we propose that a set of test cases, each describing a mission as well as purturbations for the robot (e.g., navigating a simulated corridor, placing 1 obstackle and changing the battery level once). We should classify the test cases as `easy, medium, difficult, very difficult, impossible`. 
-We use metrics such as distance from the target, power consumption, etc to evaluate the success of failure of the mission. We measure quality as an approximate measure of how closely the behaviour of a system meets its intent. In this challenge problem we evaluate how adaptations made by planner that uses a learned model partially restore intent (e.g., switching to an alternative kinect, less accurate navigation algorithm).
+To evaluate intent discovery, we propose that a set of test cases, each
+describing a mission as well as perturbations for the robot (e.g.,
+navigating a simulated corridor, placing 1 obstacle and changing the
+battery level once). We should classify the test cases as `easy, medium,
+difficult, very difficult, impossible`.  We use metrics such as distance
+from the target, power consumption, etc to evaluate the success of failure
+of the mission. We measure quality as an approximate measure of how closely
+the behavior of a system meets its intent. In this challenge problem we
+evaluate how adaptations made by planner that uses a learned model
+partially restore intent (e.g., switching to an alternative kinect, less
+accurate navigation algorithm).
 
 Each test case is described by the following:
 * Mission schema: Navigation
 * Mission parameters: A->B
-* Purturbations: Obstackles + Battery level change
+* Perturbations: Obstacles + Battery level change
 * Possible adaptations: Kinects we can swap, Algorithms we may downgrade, etc
-* Evaluation metric: Power consumed, Mission accomplish time, Distance to target location, Numer of times we hit obtackles
+* Evaluation metric: Power consumed, Mission accomplish time, Distance to
+  target location, Number of times we hit obstacles
