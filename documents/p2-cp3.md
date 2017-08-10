@@ -39,56 +39,144 @@ The test procedure will be the same as for P1CP1, except that Lincoln labs will 
 
 > Jeff: This is based on the diagram from last time. We're hoping to find a better tool to specify the state machine with. The intent is that you should be able to place (and optionally remove) obstacles simultaneously (i.e., place more than one obstacle at a time). But, this doesn't make sense for the charge and the kinect activation. Not sure how to represent this in this notation.
 
-## Interface to the Test Harness (API)
+## REST Interface to the TH
+
+Note that the text that follows is automatically generated from the Swagger YAML file `cp3-th.yaml`.
+
+<a name="done-post"></a>
+### POST /done
+
+#### Description
+indicates that the test is completed
+
+
+#### Parameters
+
+|Type|Name|Schema|
+|---|---|---|
+|**Body**|**error info**  <br>*optional*|[error info](#done-post-error-info)|
+
+<a name="done-post-error-info"></a>
+**error info**
+
+|Name|Description|Schema|
+|---|---|---|
+|**REASON**  <br>*required*|TODO, make this an enum?|string|
+|**TARGET**  <br>*required*|TODO|string|
+|**sim_time**  <br>*required*|the simulation time when the mission finished|integer|
+
+
+#### Responses
+
+|HTTP Code|Description|Schema|
+|---|---|---|
+|**200**|the TH acknowledges the done message from the SUT and is shutting down the test|No Content|
+|**400**|the TH has encountered an error in processing the done message of the SUT|No Content|
+
+
+<a name="error-post"></a>
+### POST /error
+
+#### Description
+indicates that the SUT has encountered an error in configuration data, parameters, system start, or any other less specified problem
+
+
+#### Parameters
+
+|Type|Name|Schema|
+|---|---|---|
+|**Body**|**error info**  <br>*optional*|[error info](#error-post-error-info)|
+
+<a name="error-post-error-info"></a>
+**error info**
+
+|Name|Description|Schema|
+|---|---|---|
+|**ERROR**  <br>*required*|one of a enumerated set of reasons that errors may arise|enum (TEST_DATA_FILE_ERROR, TEST_DATA_FORMAT_ERROR, DAS_LOG_FILE_ERROR, DAS_OTHER_ERROR)|
+|**MESSAGE**  <br>*required*|human readable text describing the error|string|
+
+
+#### Responses
+
+|HTTP Code|Description|Schema|
+|---|---|---|
+|**200**|the TH acknowledges that the SUT has encountered an error and will shut down the test|No Content|
+|**400**|the TH has encountered an error in processing the error from the SUt and will also shut down the test|No Content|
+
+
+<a name="ready-post"></a>
+### POST /ready
+
+#### Description
+indicate to the TH that the TA is ready to recieve configuration data and continue starting up the DAS
+
+
+#### Responses
+
+|HTTP Code|Description|Schema|
+|---|---|---|
+|**200**|TH is ready to produce configuration data|[Response 200](#ready-post-response-200)|
+|**400**|TH encountered an error producing configuration data|No Content|
+
+<a name="ready-post-response-200"></a>
+**Response 200**
+
+|Name|Description|Schema|
+|---|---|---|
+|**map_to_use**  <br>*optional*|the name of the map to use for this test, must be from the list of agreed upon map names|string (MapMnemonic)|
+|**start_loc**  <br>*optional*|the name of the start map waypoint. must be a valid way point for the map given in `map_to_use`.|string|
+|**target_loc**  <br>*optional*|the name of the goal map waypoint|string|
+|**use_adaptation**  <br>*optional*|if `true`, then the DAS will use adapative behaiviours; if `false` then the DAS will not sure adaptive behaiviours|boolean|
+
+
+<a name="start-post"></a>
+### POST /start
+
+#### Description
+indicates that the SUT is ready to recieve perturbations and that the test has started
+
+
+#### Responses
+
+|HTTP Code|Description|Schema|
+|---|---|---|
+|**200**|the TH acknowledges that the SUT has started|No Content|
+|**400**|the TH has encountered an error|No Content|
+
+
+<a name="status-post"></a>
+### POST /status
+
+#### Description
+indicate important state changes in the SUT to the TH. posted periodically as the described events occur.
+
+
+#### Parameters
+
+|Type|Name|Schema|
+|---|---|---|
+|**Body**|**error info**  <br>*optional*|[error info](#status-post-error-info)|
+
+<a name="status-post-error-info"></a>
+**error info**
+
+|Name|Description|Schema|
+|---|---|---|
+|**ERROR**  <br>*required*|one of a enumerated set of reasons that errors may arise, described as follows<br> * BOOTING - TODO<br> * BOOTED - TODO<br> * ONLINE - TODO<br> * PERTURBATION_DETECTED - TODO<br> * MISSION_SUSPENDED - TODO<br> * MISSION_RESUMED - TODO<br> * MISSION_HALTED - TODO<br> * MISSION_ABORTED - TODO<br> * ADAPTATION_INITIATED - TODO<br> * ADAPTATION_COMPLETED - TODO<br> * ADAPTATION_STOPPED - TODO<br> * TEST_ERROR - TODO|enum (BOOTING, BOOTED, ONLINE, PERTURBATION_DETECTED, MISSION_SUSPENDED, MISSION_RESUMED, MISSION_HALTED, MISSION_ABORTED, ADAPTATION_INITIATED, ADAPTATION_COMPLETED, ADAPTATION_STOPPED, TEST_ERROR)|
+|**MESSAGE**  <br>*required*|human readable text describing the status|string|
+|**sim_time**  <br>*required*|the time inside the simulation when the status message was produced|integer|
+
+
+#### Responses
+
+|HTTP Code|Description|Schema|
+|---|---|---|
+|**200**|the TH acknowledges the status of the SUT|No Content|
+|**400**|the TH has encountered an error in processing the status of the SUT|No Content|
+
+## REST Interface to the TA
 
 ```json
-// Interface(s) from DAS/CP to test harness
-
-// Indicates that the system is ready to receive configuration information from
-// the test harness.
-http://brass-th/ready
-  Method: POST
-  Request: No parameters
-  Response: { "map_to_use" : MapMnemonic, "start_loc" : String, "target_loc" : String, "use_adaptation" : Boolean}
-
-// Indicates that the DAS and SUT are ready to receive perturbations (and that the test has started)
-http://brass-th/start
-  Method: POST
-  Request: No parameters
-  Response: No repsonse
-
-// Indicates that there is an error in configuration, parameters, system start, or any other problem
-// The TH will terminate the test if it gets this message
-http://brass-th/error
-  Method: POST
-  Request:
-    {"ERROR" : TEST_DATA_FILE_ERROR | TEST_DATA_FORMAT_ERROR | DAS_LOG_FILE_ERROR | DAS_OTHER_ERROR,
-     "MESSAGE" : STRING_ENCODING}
-  Response: No response
-
-// Indicates to the TH important states in the SUT and DAS. Posted periodically as interesting events occur.
-http://brass-th/status
-   Method: POST
-   Request:
-     {"STATUS" : BOOTING | BOOTED | ONLINE | OFFLINE | PERTURBATION_DETECTED | MISSION_SUSPENDED | MISSION_RESUMED | MISSION_HALTED | MISSION_ABORTED | ADAPTATION_INITIATED | ADAPTATION_COMPLETED | ADAPTATION_STOPPED | TEST_ERROR,
-      "MESSAGE" : STRING_ENCODING,
-      “sim_time" : Integer
-     }
-   Response: No response
-```
-
-> TODO: Define each status mode
-
-```json
-// a test action message that the TA may send to the TH to indicate that the mission is over before hitting time out.
-// this message will be sent for one of two reasons: the bot is at the target location or the battery is about to die.
-// other, more general, errors that cause the mission to end early will be reported by posting TEST_ERROR
-http://brass-th/action/done
-   Request:
-     {"TARGET" : STRING_ENCODING,
-      "REASON" :  STRING_ENCODING
-     }
-
 // Interfaces from test harness to DAS/CP
 // After ready is reported, the th will use this query to
 // get the initial planned path. note that waypoint names are unique.
@@ -211,10 +299,14 @@ We’re allowed one prediction at the beginning of the test. So if there is one 
 
 **Verdict Expressions**:
 
-BUFFER = 10 seconds
-PENALTY = 120 seconds
+| Constant | likely value | meaning |
+|----------|--------------|---------|
+| BUFFER   | 10 seconds   | TODO    |
+| PENALTY  | 120 seconds  | TODO    |
 
+```
 function close_enough (loc1, loc2) = distance (loc1, loc2) <= MAX_DISTANCE
+
 
 // can be one minute late or two minutes early
 function inDeadlineWindow(deadline, arrival) = arrival <= deadline + BUFFER and arrival > deadline-2*BUFFER
@@ -226,6 +318,7 @@ function tooEarly(deadline, arrival) = arrival <= deadline - 2*BUFFER
 function tooLate(deadline, arrival) = arrival > deadline + BUFFER
 
 function prediction_penalty() = 1-(number_of_predictions - 1 - number_of_adaptations)^(3/2)/15
+```
 
 | Condition                                                      | Score                                                |
 |---|---|
