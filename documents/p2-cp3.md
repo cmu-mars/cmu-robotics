@@ -32,22 +32,6 @@ The key challenges being addressed in this challenge problem are:
 
 Lincoln Labs will be able to choose from a set of predefined maps that explore different aspects of scale and uncertainty. The selection will be part of the configuration data for the test. This will be done through a mnemonic in the configuration data.
 
-
-## Test Parameters
-
-* Start and target location
-* Map mnemonic
-
-```json
-{
-    "map_to_use" : MapMnemonic,
-    "start_loc" : String,
-    "target_loc" : String,
-    "enable_adaptation" : "CP3_NoAdaptation" | "CP3_Adaptation",
-}
-```
-> Jeff: I left off the optional other parameters from Phase 1 because they are redundant with the API, and were not used. You can always place an obstacle, set the charge, or turn off the kinect at any time.
-
 ## Test Procedure
 > This automaton is obsolete according to the new API
 The test procedure will be the same as for P1CP1, except that Lincoln labs will be able to perturb multiple times for each perturbation (e.g., place/remove obstacle, set battery, fail/reinstate kinect).
