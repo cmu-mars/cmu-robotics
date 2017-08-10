@@ -98,7 +98,21 @@ paths:
               - sim_time
             properties:
               ERROR:
-                description: one of a enumerated set of reasons that errors may arise
+                description: >-
+                  one of a enumerated set of reasons that errors may
+                  arise, described as follows
+                   * BOOTING - TODO
+                   * BOOTED - TODO
+                   * ONLINE - TODO
+                   * PERTURBATION_DETECTED - TODO
+                   * MISSION_SUSPENDED - TODO
+                   * MISSION_RESUMED - TODO
+                   * MISSION_HALTED - TODO
+                   * MISSION_ABORTED - TODO
+                   * ADAPTATION_INITIATED - TODO
+                   * ADAPTATION_COMPLETED - TODO
+                   * ADAPTATION_STOPPED - TODO
+                   * TEST_ERROR - TODO
                 type: string
                 enum:
                   - BOOTING
