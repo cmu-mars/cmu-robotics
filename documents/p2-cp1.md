@@ -88,13 +88,52 @@ Note, this API is notional at this stage.
 
 // Revised API
 // mode encodes: (pert|adaptation) & (No PM|Predefined PM|Learned PM)
+// num_of_waypoints is the number of target points, i.e., sub-missions that needs to be completed
+// mode is one of the following cases, cf. table below: 
+// 1: A (no purturbation, no adaptation) and no power model so the robot do not have a clue to 
+// charge even when the battery goes bellow a threshold
+// 2: B (purturbation, no adaptation) and no power model so the robot do not have a clue to charge 
+// even when the battery goes bellow a threshold
+// 3: C (purturbation, adaptation) and a static predefined power model (we implcitely assume this 
+// is inacurate) so the planner uses an inaccurate model for planning an adaptation
+// 4: C (purturbation, adaptation) and a leanred model that the planner use for adaptation
+
+// The discharge and charge functions are what we mean by the power models. 
+// These are linear combinations of polynomial features with three different variables and 
+// interactions between them. 
+// More specifically, a power model is specified by the following general definition (formula): 
+//    $f(o_1,\cdots,o_d) = \beta_0 + \sum_{o_i \in \mathcal{O}} \phi_i (o_i) 
+//                         + \sum_{o_{i..j} \in \mathcal{O}} \Phi_i (o_{i..j})$, 
+// where $\beta_0$ represents a constant term, $\phi_i (o_i)$ represents terms containing individual 
+// options, $\Phi_i (o_{i..j})$ represents terms containing multiple options. 
+// Here, the parameters of the model (variables) are speed of the robot ($s$), kinect components ($k$) 
+// and localization algorithms ($l$), therefore, $d=3$. 
+// Let us consider the following function as a discharge function: $f(s,k,l)=2+3*s+1.2*k+10*k*l$, this 
+// means that the battery of the robot will be discharge according to $b'=b-(2+3*s+1.2*k+10*k*l)*t$, 
+// where $t$ is the time unit. 
+// In this discharge function, $s=1$ represent half speed and $s=2$ represents full speed, $k=1$ is the 
+// least accurate kinect and less energy consuming battery while $k=5$ is the most energy consuming one 
+// (note we will implement 5 different kinects that have different resolutions, etc), also 5 different 
+// localization where $l=1$ is the less energy consuming while $l=5$ is the most energy consuming one. 
+// Therefore, we encode the values of each variables by $\{1 2 3 4 5\}$ sorted by least energy consuming to the most. 
+// In this model, $k,l$ are interacting via the last terms in the model, also the coefficients of the model 
+// reflects the effect of each variable. Each of these variables could be a polynomial combinations of the three variables. 
+// So, LL specifies the function with three variables by determining the coeeficients and the terms of the model.  
+
 http://brass-th/ready
   Method: POST
   Request: No parameters
-  Response: {"mode": Integer, "start_loc": String, "target_loc": String, "discharge_function": String, "budget": Integer}
+  Response: {"mode": Integer, "start_loc": String, "target_locs": Array, "num_of_waypoints": Integer, 
+              "discharge_function": String, "budget_discharge": Integer, 
+              "charge_function": String, "budget_charge": Integer}
 
 // Indicates that there is an error in system start or the learning process
 // The TH will terminate the test if it gets this message
+// Specific to CP1 are PARSING_ERROR and LEARNING_ERROR that may happen when something went wrong during 
+// the model parsing and model evaluation, or during the learning process, note that we have two separate 
+// packages for model parsing and evaluation as well as model learning. Model learnign package use the 
+// parser to evaluate expression during learning, so the erro might happen during the model evaluation 
+// (evaluating the expression of power model), or learning process.
 http://brass-th/error
   Method: POST
   Request:
@@ -103,12 +142,16 @@ http://brass-th/error
   Response: No response
 
 // Indicates to the TH important states in the SUT and DAS. Posted periodically as interesting events occur.
+
 http://brass-th/status
    Method: POST
    Request:
-     {"STATUS": BOOTING | BOOTED | ONLINE | OFFLINE | PERTURBATION_DETECTED | MISSION_SUSPENDED | MISSION_RESUMED | MISSION_HALTED | MISSION_ABORTED | ADAPTATION_INITIATED | ADAPTATION_COMPLETED | ADAPTATION_STOPPED | TEST_ERROR | LEARNING_STARTED | LEARNING_DONE,
-      "MESSAGE": String,
-      "sim_time": Integer
+     {"STATUS": BOOTING | BOOTED | ONLINE | OFFLINE | PERTURBATION_DETECTED | MISSION_SUSPENDED 
+                | MISSION_RESUMED | MISSION_HALTED | MISSION_ABORTED | ADAPTATION_INITIATED 
+                | ADAPTATION_COMPLETED | ADAPTATION_STOPPED | TEST_ERROR | LEARNING_STARTED | LEARNING_DONE,
+      "x" : Float, "y" : Float, "w" : Float, "v" : Float,
+      "charge" : batteryLevel, "predicted_arrival" : Integer,
+      "sim_time" : Integer
      }
    Response: No response
 
@@ -117,74 +160,41 @@ http://brass-th/action/done
    Method: POST
    Request:
      {"x" : Float, "y" : Float, "w" : Float, "v" : Float,
-      "charge" : batteryLevel, "num_hidden_func_query": Integer, "sim_time": Integer, "num_adaptations": Integer
-      "learning_status": Boolean, "num_learned_func_query": Integer,
+      "charge" : batteryLevel, "predicted_arrival" : Integer,
+      "sim_time" : Integer,
       "message" : String
      }
    Response: No response
-```
 
-## Interface to the TA (API)
-
-Note, this API is notional at this stage.
-
-```javascript
 //
-// Here are the APIs related to perturbations and adaptation triggers, internal APIs??
+// Here are the APIs related to perturbations
 //
 
-// This will inject perturbations such as changing the discharge function, or setting new/in itializing battery charge, placing obstacles, removing obstacles, or changing kinect type or changing any other components of the system that typically affect the performance and discharge battery level differently.
-// Do we need to have different discharge functions that we need to discover based on components that will be replaced at runtime? If so, every time we change this via /perturb, we need to change the hidden function and call /learn
+// This will inject perturbations such as setting new battery charge, placing obstacles, removing obstacles.
 // errors to be redirected to TH /error
 // if the perturbation injected successfully, we should observe PERTURBATION_DETECTED in the /status
-http://brass-ta/perturb
+
+// tries to place an obstacle at the argument (x,y). if possible, returns a unique name for that obstacle and the (x,y)
+// of the top left and bottom right corner of the unsafe region.
+http://brass-ta/perturb/place_obstacle
    Method: POST
    Request:
-     {"ID": Integer,
-      "parameters": Array
-     }
-   Response: No response
-
-// This will trigger the learning process
-// Should this method return the status whether the function has been learned? or we get this via /status?
-http://brass-ta/action/learn
-   Method: POST
-   Request:
-    {"budget": Integer
-    }
-   Response: No response
-
-// This will trigger the adaptation process
-http://brass-ta/adapt
-   Method: POST
-   Request:
-    {"num_attempts": Integer, "charge" : batteryLevel
-    }
-   Response: No response
-
-// Enables/disables the DAS
-http://brass-ta/das
-   Method: POST
-   Request: {"enabled" : Boolean}
-   Response: No response
-
-// start the mission a->b
-http://brass-ta/action/start
-  Method: POST
-  Request: No parameters
-  Response: No response
-
-// Note, we may add additional data to the arguments as they are needed
-// for LL evaluation, how this should be different from th/status? i.e., when we should call each? should we merge the two?
-http://brass-ta/observe
-   Method: GET
-   Request: No parameters
+     {"x" : Float, "y" : Float,
+       "type" : String}
    Response:
-     {"x" : Float, "y" : Float, "w" : Float, "v" : Float,
-      "charge" : batteryLevel, "predicted_arrival" : Integer,
-      "kinect_status" : "on" | "off",
-      "sim_time" : Integer
-     }
+     {"obstacleid" : STRING_ENCODING,
+      "topleft_x" : Float, "topleft_y" : Float, "botright_x" : Float, "botright_y" : Float,
+      "sim_time" : Integer }   
+
+http://brass-ta/perturb/remove_obstacle
+   Methods: POST
+   Request: {"obstacleid" : STRING_ENCODING}
+   Result: {"sim_time" : Integer}
+
+http://brass-ta/perturb/battery
+   Method: POST
+   Request: {"charge" : batteryLevel}
+   Response: {"sim_time" : Integer}
 
 ```
 
@@ -192,22 +202,24 @@ http://brass-ta/observe
 
 The intents described on the wiki for CP1 in phase 1 still apply (Accuracy,
 timing, and safety). Also, we may consider power consumptions as a metric
-for evaluation.  These should be summed over the n missions completed by
+for evaluation. These should be summed over the `N` missions completed by
 the robot. In addition, we may evaluate the discovery mechanism with a cost
 function based on the number of queries used. Alternatively, Lincoln Labs
 can set a tunable query budget which will be used by the DAS.
 
 |             | A (p:✕,a:✕) | B (p:✔,a:✕) | C (p:✔,a:✔) |
 |-------------|-------------|-------------|-------------|
-| No PM       | ✔           | ✔           | ✔           |
-| Predefined  | ✔           | ✔           | ✔           |
-| Learned     |             |             | ✔           |
+| No PM       | `✔`         | `✔`         |             |
+| Predefined  |             |             | `✔`         |
+| Learned     |             |             | `✔`         |
+
+We implictely mean predefined is an inaccurate moddel.
 
 To evaluate intent discovery, we propose that a set of test cases, each
 describing a mission as well as perturbations for the robot (e.g.,
 navigating a simulated corridor, placing 1 obstacle and changing the
 battery level once). We should classify the test cases as `easy, medium,
-difficult, very difficult, impossible`.  We use metrics such as distance
+difficult, very difficult, impossible`. We use metrics such as distance
 from the target, power consumption, etc to evaluate the success of failure
 of the mission. We measure quality as an approximate measure of how closely
 the behavior of a system meets its intent. In this challenge problem we
