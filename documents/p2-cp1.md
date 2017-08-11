@@ -87,14 +87,17 @@ Note, this API is notional at this stage.
 * mode encodes: (pert|adaptation) & (No PM|Predefined PM|Learned PM)
 * num_of_waypoints is the number of target points, i.e., sub-missions that
   needs to be completed mode is one of the following cases, cf. table below:
- * 1: A (no purturbation, no adaptation) and no power model so the robot do
+   1. A (no purturbation, no adaptation) and no power model so the robot do
    not have a clue to charge even when the battery goes bellow a threshold
- * 2: B (purturbation, no adaptation) and no power model so the robot do
+   
+   2. B (purturbation, no adaptation) and no power model so the robot do
    not have a clue to charge even when the battery goes bellow a threshold
- * 3: C (purturbation, adaptation) and a static predefined power model (we
+   
+   3. C (purturbation, adaptation) and a static predefined power model (we
    implcitely assume this is inacurate) so the planner uses an inaccurate
    model for planning an adaptation
- * 4: C (purturbation, adaptation) and a leanred model that the planner use
+   
+   4. C (purturbation, adaptation) and a leanred model that the planner use
    for adaptation
 
 * The discharge and charge functions are what we mean by the power models.
