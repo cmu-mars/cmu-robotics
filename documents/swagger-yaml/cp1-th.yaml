@@ -17,26 +17,60 @@ paths:
           schema:
             type: object
             properties:
-              mode:
-                type: integer
-                description: TODO
+              level:
+                description: |-
+                  the level at which the DAS should operate for this test
+                    * pert - TODO
+                    * no_adaptation - TODO
+                type: string
+                enum:
+                  - pert
+                  - no_adaptation
+              model:
+                description: |-
+                  the type of power model to use for this test
+                    * no_pm - TODO
+                    * predefined_pm - TODO
+                    * learned_pm - TODO
+                type: string
+                enum:
+                  - no_pm
+                  - predefined_pm
+                  - learned_pm
               start_loc:
                 type: string
                 description: the name of the start map waypoint
-              target_loc:
-                type: string
-                description: the name of the goal map waypoint
+              target_locs:
+                type: array
+                items:
+                  type: string
+                description: >-
+                  the names of the waypoints to visit, in the order in which
+                  they must be visited
               discharge_function:
                 type: string
                 format: function_spec
                 description: >-
                   a description of the function dictating the discharge of the
-                  battery, which is what we will learn
-              budget:
+                  battery, which is what we will learn. TODO - this can't be a
+                  string
+              discharge_budget:
                 type: integer
                 description: >-
                   the maximum number of queries against the target function
                   during learning
+              charge_function:
+                type: string
+                format: function_spec
+                description: >-
+                  a description of the function dictating the recharging of the
+                  battery, which is what we will learn. TODO - this can't be a
+                  string
+              charge_budget:
+                type: integer
+                description: >-
+                  the maximum number of queries against the target recharging
+                  function during learning
         '400':
           description: TH encountered an error producing configuration data
   /error:
@@ -55,7 +89,14 @@ paths:
               - MESSAGE
             properties:
               ERROR:
-                description: one of a enumerated set of reasons that errors may arise
+                description: |-
+                  one of a enumerated set of reasons that errors may arise
+                    * TEST_DATA_FILE_ERROR - TODO
+                    * TEST_DATA_FORMAT_ERROR - TODO
+                    * DAS_LOG_FILE_ERROR - TODO
+                    * DAS_OTHER_ERROR - TODO
+                    * PARSING_ERROR - TODO
+                    * LEARNING_ERROR - TODO
                 type: string
                 enum:
                   - TEST_DATA_FILE_ERROR
@@ -80,11 +121,32 @@ paths:
             type: object
             required:
               - STATUS
-              - MESSAGE
-              - SIM_TIME
+              - sim_time
+              - x
+              - 'y'
+              - v
+              - w
+              - charge
+              - predicted_arrival
             properties:
               STATUS:
-                description: one of the possible statuses
+                description: |-
+                  one of the possible statuses
+                   * BOOTING - TODO
+                   * BOOTED - TODO
+                   * ONLINE - TODO
+                   * OFFLINE - TODO
+                   * PERTURBATION_DETECTED - TODO
+                   * MISSION_SUSPENDED - TODO
+                   * MISSION_RESUMED - TODO
+                   * MISSION_HALTED - TODO
+                   * MISSION_ABORTED - TODO
+                   * ADAPTATION_INITIATED - TODO
+                   * ADAPTATION_COMPLETED - TODO
+                   * ADAPTATION_STOPPED - TODO
+                   * TEST_ERROR - TODO
+                   * LEARNING_STARTED - TODO
+                   * LEARNING_DONE - TODO
                 type: string
                 enum:
                   - BOOTING
@@ -102,10 +164,34 @@ paths:
                   - TEST_ERROR
                   - LEARNING_STARTED
                   - LEARNING_DONE
-              MESSAGE:
-                description: human readable text describing the status
-                type: string
-              SIM_TIME:
+              x:
+                description: current x-coordinate of the turtlebot
+                type: number
+                format: float
+              'y':
+                description: current y-coordinate of the turtlebot
+                type: number
+                format: float
+              w:
+                description: current ? TODO? of the turtlebot
+                type: number
+                format: float
+              v:
+                description: current ? TODO ? of the turtlebot
+                type: number
+                format: float
+              charge:
+                description: >-
+                  current turtlebot battery charge in mWh TODO - are these mins
+                  and maxes right?
+                type: integer
+                minimum: 16000
+                maximum: 32000
+              predicted_arrival:
+                description: 'current best prediction of arrival time, in simulation time'
+                type: integer
+                minimum: 0
+              sim_time:
                 description: >-
                   the internal simulation time at the time that the status
                   message was sent
@@ -113,7 +199,9 @@ paths:
                 minimum: 0
       responses:
         '200':
-          description: TH acknowledges the status
+          description: TH acknowledges the status message
+        '400':
+          description: TH encountered an error with the status message
   /action/done:
     post:
       description: >-
@@ -130,6 +218,10 @@ paths:
               - 'y'
               - w
               - v
+              - charge
+              - sim_time
+              - predicted_arrival
+              - message
             properties:
               x:
                 description: final x-coordinate of the turtlebot
@@ -147,32 +239,24 @@ paths:
                 description: final ?TODO? of the turtlebot
                 type: number
                 format: float
-              chargeLevel:
-                description: final charge measure of the turtlebot
+              charge:
+                description: final charge measure of the turtlebot TODO - check ranges
                 type: integer
-                minimum: 16000 ## total guess
-                maximum: 32000 ## total guess
-              num_hidden_func_query:
-                description: >-
-                  number of queries made against the hidden function. must less
-                  than or equal to the budget given in the response to /ready.
-                type: integer
+                minimum: 16000
+                maximum: 32000
               sim_time:
                 description: the final internal simulation time
                 type: integer
                 minimum: 0
-              num_adaptations:
-                description: todo?
+              predicted_arrival:
+                description: 'final best prediction of arrival time, in simulation time'
                 type: integer
-              learning_status:
-                description: todo
-                type: boolean
-              num_learned_func_query:
-                description: todo
-                type: integer
+                minimum: 0
               message:
-                description: todo human readable something or other
+                description: TODO human readable something or other
                 type: string
       responses:
         '200':
           description: TH acknowledges the completion of the mission
+        '400':
+          description: TH encountered an error at the completion of the mission
