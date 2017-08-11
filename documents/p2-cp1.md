@@ -87,17 +87,17 @@ Note, this API is notional at this stage.
 * mode encodes: (pert|adaptation) & (No PM|Predefined PM|Learned PM)
 * num_of_waypoints is the number of target points, i.e., sub-missions that
   needs to be completed mode is one of the following cases, cf. table below:
-   1. A (no purturbation, no adaptation) and no power model so the robot do
+   1. A (no perturbation, no adaptation) and no power model so the robot do
    not have a clue to charge even when the battery goes bellow a threshold
-   
-   2. B (purturbation, no adaptation) and no power model so the robot do
+
+   2. B (perturbation, no adaptation) and no power model so the robot do
    not have a clue to charge even when the battery goes bellow a threshold
-   
-   3. C (purturbation, adaptation) and a static predefined power model (we
-   implcitely assume this is inacurate) so the planner uses an inaccurate
+
+   3. C (perturbation, adaptation) and a static predefined power model (we
+   implicitly assume this is inaccurate) so the planner uses an inaccurate
    model for planning an adaptation
-   
-   4. C (purturbation, adaptation) and a leanred model that the planner use
+
+   4. C (perturbation, adaptation) and a learned model that the planner use
    for adaptation
 
 * The discharge and charge functions are what we mean by the power models.
@@ -137,7 +137,7 @@ Note, this API is notional at this stage.
   the three variables.
 
   So, LL specifies the function with three variables by determining the
-  coeeficients and the terms of the model.
+  coefficients and the terms of the model.
 
 ```javascript
 http://brass-th/ready
@@ -151,8 +151,8 @@ http://brass-th/ready
 // The TH will terminate the test if it gets this message
 // Specific to CP1 are PARSING_ERROR and LEARNING_ERROR that may happen when something went wrong during
 // the model parsing and model evaluation, or during the learning process, note that we have two separate
-// packages for model parsing and evaluation as well as model learning. Model learnign package use the
-// parser to evaluate expression during learning, so the erro might happen during the model evaluation
+// packages for model parsing and evaluation as well as model learning. Model learning package use the
+// parser to evaluate expression during learning, so the error might happen during the model evaluation
 // (evaluating the expression of power model), or learning process.
 http://brass-th/error
   Method: POST
@@ -220,7 +220,7 @@ http://brass-ta/perturb/battery
 
 ## Intent Specification and Evaluation Metrics
 
-The intents described on the wiki for CP1 in phase 1 still apply (Accuracy,
+The intents described on the Wiki for CP1 in phase 1 still apply (Accuracy,
 timing, and safety). Also, we may consider power consumptions as a metric
 for evaluation. These should be summed over the `N` missions completed by
 the robot. In addition, we may evaluate the discovery mechanism with a cost
@@ -233,7 +233,7 @@ can set a tunable query budget which will be used by the DAS.
 | Predefined  |             |             | `✔`         |
 | Learned     |             |             | `✔`         |
 
-We implictely mean predefined is an inaccurate moddel.
+We implicitly mean predefined is an inaccurate model.
 
 To evaluate intent discovery, we propose that a set of test cases, each
 describing a mission as well as perturbations for the robot (e.g.,
