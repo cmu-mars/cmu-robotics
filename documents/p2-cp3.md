@@ -41,7 +41,7 @@ The test procedure will be the same as for P1CP1, except that Lincoln labs will 
 
 ## REST Interface to the TH
 
-Note that the text that follows is automatically generated from the Swagger YAML file `cp3-th.yaml`.
+Note that the text that follows is automatically generated from [cp3-th.yaml](swagger-yaml/cp3-th.yaml). At the time of writing, that file can be uploaded to [swagger](editor.swagger.io) and will load cleanly.
 
 <a name="done-post"></a>
 ### POST /done

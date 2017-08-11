@@ -84,55 +84,72 @@ beginning offline and then the online phase will be started.
 
 Note, this API is notional at this stage.
 
+* mode encodes: (pert|adaptation) & (No PM|Predefined PM|Learned PM)
+* num_of_waypoints is the number of target points, i.e., sub-missions that
+  needs to be completed mode is one of the following cases, cf. table below:
+ * 1: A (no purturbation, no adaptation) and no power model so the robot do
+   not have a clue to charge even when the battery goes bellow a threshold
+ * 2: B (purturbation, no adaptation) and no power model so the robot do
+   not have a clue to charge even when the battery goes bellow a threshold
+ * 3: C (purturbation, adaptation) and a static predefined power model (we
+   implcitely assume this is inacurate) so the planner uses an inaccurate
+   model for planning an adaptation
+ * 4: C (purturbation, adaptation) and a leanred model that the planner use
+   for adaptation
+
+* The discharge and charge functions are what we mean by the power models.
+
+  These are linear combinations of polynomial features with three different
+  variables and interactions between them.
+
+  More specifically, a power model is specified by the following general definition (formula):
+   $f(o_1,\cdots,o_d) = \beta_0 + \sum_{o_i \in \mathcal{O}} \phi_i (o_i)
+                        + \sum_{o_{i..j} \in \mathcal{O}} \Phi_i
+  (o_{i..j})$, where $\beta_0$ represents a constant term, $\phi_i (o_i)$
+  represents terms containing individual options, $\Phi_i (o_{i..j})$
+  represents terms containing multiple options.
+
+  Here, the parameters of the model (variables) are speed of the robot
+  ($s$), kinect components ($k$) and localization algorithms ($l$),
+  therefore, $d=3$.
+
+* For example, consider the following function as a discharge function:
+  $f(s,k,l)=2+3*s+1.2*k+10*k*l$, this means that the battery of the robot
+  will be discharge according to $b'=b-(2+3*s+1.2*k +10*k*l)*t$, where $t$
+  is the time unit.
+
+  In this discharge function, $s=1$ represent half speed and $s=2$
+  represents full speed, $k=1$ is the least accurate kinect and less energy
+  consuming battery while $k=5$ is the most energy consuming one (note we
+  will implement 5 different kinects that have different resolutions, etc),
+  also 5 different localization where $l=1$ is the less energy consuming
+  while $l=5$ is the most energy consuming one.
+
+  Therefore, we encode the values of each variables by $\{1 2 3 4 5\}$
+  sorted by least energy consuming to the most.
+
+  In this model, $k,l$ are interacting via the last terms in the model,
+  also the coefficients of the model reflects the effect of each
+  variable. Each of these variables could be a polynomial combinations of
+  the three variables.
+
+  So, LL specifies the function with three variables by determining the
+  coeeficients and the terms of the model.
+
 ```javascript
-
-// Revised API
-// mode encodes: (pert|adaptation) & (No PM|Predefined PM|Learned PM)
-// num_of_waypoints is the number of target points, i.e., sub-missions that needs to be completed
-// mode is one of the following cases, cf. table below: 
-// 1: A (no purturbation, no adaptation) and no power model so the robot do not have a clue to 
-// charge even when the battery goes bellow a threshold
-// 2: B (purturbation, no adaptation) and no power model so the robot do not have a clue to charge 
-// even when the battery goes bellow a threshold
-// 3: C (purturbation, adaptation) and a static predefined power model (we implcitely assume this 
-// is inacurate) so the planner uses an inaccurate model for planning an adaptation
-// 4: C (purturbation, adaptation) and a leanred model that the planner use for adaptation
-
-// The discharge and charge functions are what we mean by the power models. 
-// These are linear combinations of polynomial features with three different variables and 
-// interactions between them. 
-// More specifically, a power model is specified by the following general definition (formula): 
-//    $f(o_1,\cdots,o_d) = \beta_0 + \sum_{o_i \in \mathcal{O}} \phi_i (o_i) 
-//                         + \sum_{o_{i..j} \in \mathcal{O}} \Phi_i (o_{i..j})$, 
-// where $\beta_0$ represents a constant term, $\phi_i (o_i)$ represents terms containing individual 
-// options, $\Phi_i (o_{i..j})$ represents terms containing multiple options. 
-// Here, the parameters of the model (variables) are speed of the robot ($s$), kinect components ($k$) 
-// and localization algorithms ($l$), therefore, $d=3$. 
-// Let us consider the following function as a discharge function: $f(s,k,l)=2+3*s+1.2*k+10*k*l$, this 
-// means that the battery of the robot will be discharge according to $b'=b-(2+3*s+1.2*k+10*k*l)*t$, 
-// where $t$ is the time unit. 
-// In this discharge function, $s=1$ represent half speed and $s=2$ represents full speed, $k=1$ is the 
-// least accurate kinect and less energy consuming battery while $k=5$ is the most energy consuming one 
-// (note we will implement 5 different kinects that have different resolutions, etc), also 5 different 
-// localization where $l=1$ is the less energy consuming while $l=5$ is the most energy consuming one. 
-// Therefore, we encode the values of each variables by $\{1 2 3 4 5\}$ sorted by least energy consuming to the most. 
-// In this model, $k,l$ are interacting via the last terms in the model, also the coefficients of the model 
-// reflects the effect of each variable. Each of these variables could be a polynomial combinations of the three variables. 
-// So, LL specifies the function with three variables by determining the coeeficients and the terms of the model.  
-
 http://brass-th/ready
   Method: POST
   Request: No parameters
-  Response: {"mode": Integer, "start_loc": String, "target_locs": Array, "num_of_waypoints": Integer, 
-              "discharge_function": String, "budget_discharge": Integer, 
+  Response: {"mode": Integer, "start_loc": String, "target_locs": Array, "num_of_waypoints": Integer,
+              "discharge_function": String, "budget_discharge": Integer,
               "charge_function": String, "budget_charge": Integer}
 
 // Indicates that there is an error in system start or the learning process
 // The TH will terminate the test if it gets this message
-// Specific to CP1 are PARSING_ERROR and LEARNING_ERROR that may happen when something went wrong during 
-// the model parsing and model evaluation, or during the learning process, note that we have two separate 
-// packages for model parsing and evaluation as well as model learning. Model learnign package use the 
-// parser to evaluate expression during learning, so the erro might happen during the model evaluation 
+// Specific to CP1 are PARSING_ERROR and LEARNING_ERROR that may happen when something went wrong during
+// the model parsing and model evaluation, or during the learning process, note that we have two separate
+// packages for model parsing and evaluation as well as model learning. Model learnign package use the
+// parser to evaluate expression during learning, so the erro might happen during the model evaluation
 // (evaluating the expression of power model), or learning process.
 http://brass-th/error
   Method: POST
@@ -146,8 +163,8 @@ http://brass-th/error
 http://brass-th/status
    Method: POST
    Request:
-     {"STATUS": BOOTING | BOOTED | ONLINE | OFFLINE | PERTURBATION_DETECTED | MISSION_SUSPENDED 
-                | MISSION_RESUMED | MISSION_HALTED | MISSION_ABORTED | ADAPTATION_INITIATED 
+     {"STATUS": BOOTING | BOOTED | ONLINE | OFFLINE | PERTURBATION_DETECTED | MISSION_SUSPENDED
+                | MISSION_RESUMED | MISSION_HALTED | MISSION_ABORTED | ADAPTATION_INITIATED
                 | ADAPTATION_COMPLETED | ADAPTATION_STOPPED | TEST_ERROR | LEARNING_STARTED | LEARNING_DONE,
       "x" : Float, "y" : Float, "w" : Float, "v" : Float,
       "charge" : batteryLevel, "predicted_arrival" : Integer,
@@ -184,7 +201,7 @@ http://brass-ta/perturb/place_obstacle
    Response:
      {"obstacleid" : STRING_ENCODING,
       "topleft_x" : Float, "topleft_y" : Float, "botright_x" : Float, "botright_y" : Float,
-      "sim_time" : Integer }   
+      "sim_time" : Integer }
 
 http://brass-ta/perturb/remove_obstacle
    Methods: POST
@@ -228,9 +245,10 @@ partially restore intent (e.g., switching to an alternative kinect, less
 accurate navigation algorithm).
 
 Each test case is described by the following:
-* Mission schema: Navigation
-* Mission parameters: A->B
-* Perturbations: Obstacles + Battery level change
-* Possible adaptations: Kinects we can swap, Algorithms we may downgrade, etc
-* Evaluation metric: Power consumed, Mission accomplish time, Distance to
-  target location, Number of times we hit obstacles
+
+ * Mission schema: Navigation
+ * Mission parameters: A->B
+ * Perturbations: Obstacles + Battery level change
+ * Possible adaptations: Kinects we can swap, Algorithms we may downgrade, etc
+ * Evaluation metric: Power consumed, Mission accomplish time, Distance to
+   target location, Number of times we hit obstacles
