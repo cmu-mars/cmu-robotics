@@ -111,14 +111,14 @@ Note, this API is notional at this stage.
 // Let us consider the following function as a discharge function: $f(s,k,l)=2+3*s+1.2*k+10*k*l$, this 
 // means that the battery of the robot will be discharge according to $b'=b-(2+3*s+1.2*k+10*k*l)*t$, 
 // where $t$ is the time unit. 
-// In this discharge function, $s=1$ represent half speed and $s=2$ represent full speed, $k=1$ is the 
-// least accurate kinnect and less energy consuming batter while $k=5$ is the most energy consuming one 
+// In this discharge function, $s=1$ represent half speed and $s=2$ represents full speed, $k=1$ is the 
+// least accurate kinect and less energy consuming battery while $k=5$ is the most energy consuming one 
 // (note we will implement 5 different kinects that have different resolutions, etc), also 5 different 
 // localization where $l=1$ is the less energy consuming while $l=5$ is the most energy consuming one. 
 // Therefore, we encode the values of each variables by $\{1 2 3 4 5\}$ sorted by least energy consuming to the most. 
-// In this model, $k,l$ ae interacting via the last terms in the model, also the coefficients of the model 
+// In this model, $k,l$ are interacting via the last terms in the model, also the coefficients of the model 
 // reflects the effect of each variable. Each of these variables could be a polynomial combinations of the three variables. 
-// So, LL specify the function with three variables by determining the coeeficients and the terms of the model.  
+// So, LL specifies the function with three variables by determining the coeeficients and the terms of the model.  
 
 http://brass-th/ready
   Method: POST
