@@ -5,3 +5,180 @@ info:
 schemes:
   - http
 host: brass-ta
+paths:
+  /perturb/place_obstacle:
+    post:
+      description: 'if the test is running, place an obstacle on the map'
+      parameters:
+        - in: body
+          name: place obstacle parameters
+          schema:
+            type: object
+            required:
+              - x
+              - 'y'
+              - kind
+            properties:
+              x:
+                type: number
+                format: float
+                description: >-
+                  the x-coordinate of the center of the obstacle placement
+                  position
+              'y':
+                type: number
+                format: float
+                description: >-
+                  the y-coordinate of the center of the obstacle placement
+                  position
+              kind:
+                type: string
+                description: >-
+                  the name of the shape of object to be placed. TODO -- make
+                  this an enum not a string
+      responses:
+        '200':
+          description: the obstacle has been placed in the running test
+          schema:
+            type: object
+            required:
+              - obstacleid
+              - topleft_x
+              - topleft_y
+              - botright_x
+              - botright_y
+              - sim_time
+            properties:
+              obstacleid:
+                type: string
+                description: >-
+                  a unique identifier for this particular placed obstacle, so
+                  that it can be removed in the future
+              topleft_x:
+                type: number
+                format: float
+                description: >-
+                  the x-coordinate of the top left corner of the bounding box of
+                  the placed obstacle
+              topleft_y:
+                type: number
+                format: float
+                description: >-
+                  the y-coordinate of the top left corner of the bounding box of
+                  the placed obstacle
+              botright_x:
+                type: number
+                format: float
+                description: >-
+                  the x-coordinate of the bottom right corner of the bounding
+                  box of the placed obstacle
+              botright_y:
+                type: number
+                format: float
+                description: >-
+                  the y-coordinate of the bottom right corner of the bounding
+                  box of the placed obstacle
+              sim_time:
+                type: integer
+                description: the simulation time when the obstacle was placed
+        '400':
+          description: an error was encountered while placing the obstacle.
+          schema:
+            type: object
+            required:
+              - cause
+              - message
+            properties:
+              cause:
+                description: a reason for the error condition
+                type: string
+                enum:
+                  - bad_coordiantes
+                  - other_error
+              message:
+                type: string
+                description: human readable info about what went wrong
+  /perturb/remove_obstacle:
+    post:
+      description: 'if the test is running, remove a previously placed obstacle from the map'
+      parameters:
+        - in: body
+          name: place obstacle parameters
+          schema:
+            type: object
+            required:
+              - obstacleid
+            properties:
+              obstacleid:
+                type: string
+                description: >-
+                  the obstacle ID given by /perturb/place_obstacle of the
+                  obstacle to be removed
+      responses:
+        '200':
+          description: the obstacle has been removed from the running test
+          schema:
+            type: object
+            required:
+              - sim_time
+            properties:
+              sim_time:
+                type: integer
+                description: the simulation time when the obstacle was placed
+        '400':
+          description: an error was encountered while removing the obstacle.
+          schema:
+            type: object
+            required:
+              - cause
+              - message
+            properties:
+              cause:
+                description: a reason for the error condition
+                type: string
+                enum:
+                  - bad_obstacleid
+                  - other_error
+              message:
+                type: string
+                description: human readable info about what went wrong
+  /perturb/battery:
+    post:
+      description: set the level of the battery in a currently running test
+      parameters:
+        - in: body
+          name: place obstacle parameters
+          schema:
+            type: object
+            required:
+              - charge
+            properties:
+              charge:
+                type: number
+                minimum: 16000
+                maximum: 32000
+                description: >-
+                  the level to which the battery should be set, in mWh. TODO --
+                  are those the right constants? i have no idea; does it matter
+                  if battery sets are monotonically decreasing
+      responses:
+        '200':
+          description: the battery has been set to the requested level
+          schema:
+            type: object
+            required:
+              - sim_time
+            properties:
+              sim_time:
+                type: integer
+                description: the simulation time when the battery was set
+        '400':
+          description: an error was encountered while setting the battery
+          schema:
+            type: object
+            required:
+              - message
+            properties:
+              message:
+                type: string
+                description: human readable info about what went wrong
