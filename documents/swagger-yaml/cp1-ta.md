@@ -65,7 +65,7 @@ set the level of the battery in a currently running test
 ### POST /perturb/place_obstacle
 
 #### Description
-if the test is running, place an obstacle on the map
+if the test is running, then place an obstacle on the map
 
 
 #### Parameters

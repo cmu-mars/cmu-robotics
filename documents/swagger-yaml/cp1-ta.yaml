@@ -8,7 +8,7 @@ host: brass-ta
 paths:
   /perturb/place_obstacle:
     post:
-      description: 'if the test is running, place an obstacle on the map'
+      description: 'if the test is running, then place an obstacle on the map'
       parameters:
         - in: body
           name: place obstacle parameters
