@@ -5,3 +5,360 @@ info:
 schemes:
   - http
 host: brass-ta
+paths:
+  /query/initial:
+    get:
+      description: >-
+        after ready is reported, the TH will query this end point to get the
+        initial planned path. note that waypoint names are unique per map. the
+        `predicted_arrival_time` is a lower bound on the number of simulation
+        seconds we estimate are needed to traverse the path.
+      responses:
+        '200':
+          description: computed the initially planned planned path
+          schema:
+            type: object
+            required:
+              - path
+              - predicted_arrival_time
+            properties:
+              path:
+                type: array
+                items:
+                  type: string
+                description: >-
+                  the initially planned sequence of waypoints the turtlebot will
+                  travese, in order of planned traversal
+              predicted_arrival_time:
+                type: integer
+                description: >-
+                  the number of simulation seconds we anticipate traveling the
+                  provided path will take
+        '400':
+          description: encountered an error computing the initially planned path
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: >-
+                  human readable information about the error, if any can be
+                  provided
+  /action/das:
+    post:
+      description: enables or disables the DAS
+      parameters:
+        - in: body
+          name: das parameters
+          schema:
+            type: object
+            required:
+              - enable
+            properties:
+              enable:
+                type: boolean
+                description: 'enable the DAS if the value is `true`, disable it otherwise'
+      responses:
+        '200':
+          description: sucuessfully changed the DAS state
+        '400':
+          description: encountered an error while changing the DAS state
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: >-
+                  human readable information about the error, if any can be
+                  provided
+  /action/start:
+    post:
+      description: start the turtlebot navigating through the selected map
+      responses:
+        '200':
+          description: successfully started the experiment
+        '400':
+          description: encountered an error trying to start the experiment.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: >-
+                  human readable information about the error, if any can be
+                  provided
+  /action/observe:
+    get:
+      description: returns observations about the current state of the SUT
+      responses:
+        '200':
+          description: successfully determined the current state of the SUT
+          schema:
+            type: object
+            properties:
+              x:
+                type: number
+                format: float
+                description: current x-coordinate of the turtlebot position
+              'y':
+                type: number
+                format: float
+                description: current y-coordinate of the turtlebot position
+              w:
+                type: number
+                format: float
+                description: current yaw (TODO) of the turtlebot aspect
+              v:
+                type: number
+                format: float
+                description: current pitch (TODO) of the turtlebot aspect
+              charge:
+                type: integer
+                minimum: 16000
+                maximum: 32000
+                description: >-
+                  current charge of the battery, in mWh. TODO -- check the min
+                  and max values here
+              predicted_arrival:
+                type: integer
+                description: 'current predicted arrival time, in simulation seconds'
+              sim_time:
+                type: integer
+                description: current simulation time
+              kinect_status:
+                type: string
+                enum:
+                  - 'on'
+                  - 'off'
+                description: >-
+                  the current status of the kinect sensor. "on" means that the
+                  sensor is on and being used to gather data about the
+                  environment; "off" means that the sensor is off.
+        '400':
+          description: encountered an error determining the current state of the DAS.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: >-
+                  human readable information about the error, if any can be
+                  provided
+  /perturb/battery:
+    post:
+      description: set the level of the battery in a currently running test
+      parameters:
+        - in: body
+          name: place obstacle parameters
+          schema:
+            type: object
+            required:
+              - charge
+            properties:
+              charge:
+                type: number
+                minimum: 16000
+                maximum: 32000
+                description: >-
+                  the level to which the battery should be set, in mWh. TODO --
+                  are those the right constants? does it matter if battery sets
+                  are monotonically decreasing throughout the test? can the TH
+                  ever make the battery have more charge all of a sudden?
+      responses:
+        '200':
+          description: the battery has been set to the requested level
+          schema:
+            type: object
+            required:
+              - sim_time
+            properties:
+              sim_time:
+                type: integer
+                description: the simulation time when the battery was set
+        '400':
+          description: an error was encountered while setting the battery
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: >-
+                  human readable information about the error, if any can be
+                  provided
+  /perturb/place_obstacle:
+    post:
+      description: 'if the test is running, place an obstacle on the map'
+      parameters:
+        - in: body
+          name: place obstacle parameters
+          schema:
+            type: object
+            required:
+              - x
+              - 'y'
+              - kind
+            properties:
+              x:
+                type: number
+                format: float
+                description: >-
+                  the x-coordinate of the center of the obstacle placement
+                  position
+              'y':
+                type: number
+                format: float
+                description: >-
+                  the y-coordinate of the center of the obstacle placement
+                  position
+              kind:
+                type: string
+                description: >-
+                  the name of the shape of object to be placed. TODO -- make
+                  this an enum not a string
+      responses:
+        '200':
+          description: the obstacle has been placed in the running test
+          schema:
+            type: object
+            required:
+              - obstacleid
+              - topleft_x
+              - topleft_y
+              - botright_x
+              - botright_y
+              - sim_time
+            properties:
+              obstacleid:
+                type: string
+                description: >-
+                  a unique identifier for this particular placed obstacle, so
+                  that it can be removed in the future
+              topleft_x:
+                type: number
+                format: float
+                description: >-
+                  the x-coordinate of the top left corner of the bounding box of
+                  the placed obstacle
+              topleft_y:
+                type: number
+                format: float
+                description: >-
+                  the y-coordinate of the top left corner of the bounding box of
+                  the placed obstacle
+              botright_x:
+                type: number
+                format: float
+                description: >-
+                  the x-coordinate of the bottom right corner of the bounding
+                  box of the placed obstacle
+              botright_y:
+                type: number
+                format: float
+                description: >-
+                  the y-coordinate of the bottom right corner of the bounding
+                  box of the placed obstacle
+              sim_time:
+                type: integer
+                description: the simulation time when the obstacle was placed
+        '400':
+          description: an error was encountered while placing the obstacle.
+          schema:
+            type: object
+            required:
+              - cause
+              - message
+            properties:
+              cause:
+                description: a reason for the error condition
+                type: string
+                enum:
+                  - bad_coordiantes
+                  - other_error
+              message:
+                type: string
+                description: human readable info about what went wrong
+  /perturb/remove_obstacle:
+    post:
+      description: 'if the test is running, remove a previously placed obstacle from the map'
+      parameters:
+        - in: body
+          name: place obstacle parameters
+          schema:
+            type: object
+            required:
+              - obstacleid
+            properties:
+              obstacleid:
+                type: string
+                description: >-
+                  the obstacle ID given by /perturb/place_obstacle of the
+                  obstacle to be removed
+      responses:
+        '200':
+          description: the obstacle has been removed from the running test
+          schema:
+            type: object
+            required:
+              - sim_time
+            properties:
+              sim_time:
+                type: integer
+                description: the simulation time when the obstacle was placed
+        '400':
+          description: an error was encountered while removing the obstacle.
+          schema:
+            type: object
+            required:
+              - cause
+              - message
+            properties:
+              cause:
+                description: a reason for the error condition
+                type: string
+                enum:
+                  - bad_obstacleid
+                  - other_error
+              message:
+                type: string
+                description: human readable info about what went wrong
+  /perturb/kinect:
+    post:
+      description: set the state of the kinect
+      parameters:
+        - in: body
+          name: set kinect parameters
+          schema:
+            type: object
+            required:
+              - state
+            properties:
+              state:
+                type: string
+                enum:
+                  - 'on'
+                  - 'off'
+                description: >-
+                  the state the kinect should have after this request is
+                  processed -- "on" means the kinect is operational and can be
+                  used; "off" means it is not operational and cannot be used.
+      responses:
+        '200':
+          description: the kinect state has been set
+          schema:
+            type: object
+            required:
+              - sim_time
+            properties:
+              sim_time:
+                type: integer
+                description: the simulation time when the kinect was set
+        '400':
+          description: an error was encountered while setting the kinect
+          schema:
+            type: object
+            required:
+              - message
+            properties:
+              message:
+                type: string
+                description: human readable info about what went wrong
