@@ -199,6 +199,28 @@ at both the code and architectural levels. This tool may be used by any
 ROS-based system to improve model inference, perform automated test
 generation, and to systematically measure adaptiveness in a variety of
 scenarios.
+### API Data Structures
+
+> TODO: I'm not sure how to incorporate these into the API description
+> above or quite where they belong -- Ian
+
+#### CandidateAdaptation
+
+Used to describe the evaluation of a candidate adaptation.
+
+| Property | Type | Description | Example |
+|------|------|--------|-----------|
+| Identifier | String | A short description of the adaptation | `"Replace(14,0:14,39; 'x < 3')"` |
+| Compilation | CompilationOutcome | Details of the outcome of the compilation of this adaptation | See below |
+
+#### CompilationOutcome
+
+Used to describe the outcome of an attempted compilation.
+
+| Property | Type | Description | Example |
+|------|------|--------|-----------|
+| Successful | Bool | A flag indicating whether or not the compilation was successful | `true` |
+| Duration | Float | The number of seconds taken to (fail to) finish compilation | `3.56` |
 
 ### REST Interface to the TH
 
@@ -215,79 +237,6 @@ The Swagger file describing this interface is
 considered the canonical definition of the
 API. [swagger-yaml/cp2-ta.md](swagger-yaml/cp2-ta.md) is produced
 automatically from the Swagger definition for convenience.
-
-
-## Test Harness API
-
-### POST: /error
-
-Used to indicate that an error has occurred during the preparation or
-evaluation of a test scenario, or during the start-up of the system under test.
-The body of this method contains a single property, `ErrorMsg`, containing a
-JSON-based description of the error.
-A description of the errors produced by SUT are given below.
-
-| Error Kind | Code | Description | Parameters |
-|------------|------|-------------|------------|
-| Neutral Perturbation | `NeutralPerturbation` | One of the perturbations for the test scenario has no effect on the outcome of the test suite, and as such, it does not consistitute a fault | `Perturbation` |
-
-No response is provided by this method.
-
-### POST: /ready
-
-Used to indicate that the "system under test" is ready, and that testing
-may begin.
-
-### POST: /perturbed
-
-Used to indicate that the perturbations have been successfully injected, and that
-the system is ready for evaluation.
-
-### POST: /status
-
-Used to inform the test harness that a new adaptation has been added to the
-Pareto front (i.e., a new "best" adaptation has been found).
-
-| Request Parameter | Type | Description | Example |
-|-------------------|------|-------------|---------|
-
-No response is provided by this method.
-
-### POST: /done
-
-Used to indicate that evaluation of the test scenario has been completed.
-A summary of the results of the test scenario are provided as a JSON object. The
-entire summary is contained within `SutFinishedStatus`, as specified by the
-Lincoln Labs API. This property contains the following parameters:
-
-
-| Request Parameter | Type | Description | Example |
-|--------------|------|-------------|---------|
-| Outcome | Enum | A short description of the success of the repair process | `"repaired"` |
-| RunningTime | Float | The number of minutes taken to complete the repair process | `90.012` |
-| NumAttempts | Int | The number of repairs attempted | `120` |
-| ParetoFront | CandidateAdaptation[] | A list containing details of the final pareto front | See below |
-| Log | CandidateAdaptation[] | A list containing details of each of the attempted repairs | See below |
-
-## API Data Structures
-
-### CandidateAdaptation
-
-Used to describe the evaluation of a candidate adaptation.
-
-| Property | Type | Description | Example |
-|------|------|--------|-----------|
-| Identifier | String | A short description of the adaptation | `"Replace(14,0:14,39; 'x < 3')"` |
-| Compilation | CompilationOutcome | Details of the outcome of the compilation of this adaptation | See below |
-
-### CompilationOutcome
-
-Used to describe the outcome of an attempted compilation.
-
-| Property | Type | Description | Example |
-|------|------|--------|-----------|
-| Successful | Bool | A flag indicating whether or not the compilation was successful | `true` |
-| Duration | Float | The number of seconds taken to (fail to) finish compilation | `3.56` |
 
 ## Intent Specification and Evaluation Metrics
 

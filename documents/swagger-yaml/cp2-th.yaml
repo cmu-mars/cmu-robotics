@@ -5,3 +5,111 @@ info:
 schemes:
   - http
 host: brass-th
+paths:
+  /error:
+    post:
+      description: |-
+        Used to indicate that an error has occurred during the preparation or
+          evaluation of a test scenario, or during the start-up of the system under test. The body of this method contains a single property, `ErrorMsg`, containing a JSON-based description of the error. A description of the errors produced by SUT are given below.
+      parameters:
+        - in: body
+          name: error parameters
+          schema:
+            type: object
+            required:
+              - err-code
+            properties:
+              err-code:
+                type: string
+                enum:
+                  - NeutralPerturbation
+                description: >-
+                  One of the perturbations for the test scenario has no effect
+                  on the outcome of the test suite, and as such, it does not
+                  consistitute a fault
+
+                  TODO -- add more error codes with more description of possible
+                  bad states
+      responses:
+        '200':
+          description: the TH acknowledges the error
+        '400':
+          description: the TH has itself encontered an error processing the error
+  /ready:
+    post:
+      description: used to indicate that the SUT is ready and that testing may begin
+      responses:
+        '200':
+          description: the TH acknowledges the ready message
+        '400':
+          description: the TH has itself encontered an error processing the ready message
+  /perturbed:
+    post:
+      description: >-
+        Used to indicate that the perturbations have been successfully injected,
+        and that the system is ready for evaluation.
+      responses:
+        '200':
+          description: the TH acknowledges the ready message
+        '400':
+          description: the TH has itself encontered an error processing the ready message
+  /status:
+    post:
+      description: >-
+        Used to inform the test harness that a new adaptation has been added to
+        the Pareto front (i.e., a new "best" adaptation has been found). TODO --
+        add parameters here?
+      responses:
+        '200':
+          description: the TH acknowledges the status
+        '400':
+          description: the TH has itself encontered an error processing the status
+  /done:
+    post:
+      description: >-
+        Used to indicate that evaluation of the test scenario has been
+        completed. A summary of the results of the test scenario are provided as
+        a JSON object. The entire summary is contained within
+        `SutFinishedStatus`, as specified by the Lincoln Labs API.
+      parameters:
+        - in: body
+          name: error parameters
+          schema:
+            type: object
+            required:
+              - outcome
+              - runningtime
+              - numattempts
+              - paretofront
+              - log
+            properties:
+              outcome:
+                type: string
+                description: >-
+                  A short description of the success of the repair process TODO
+                  -- in the md, Chris had this as an enum but without values
+                  listed
+              runningtime:
+                type: number
+                format: float
+                description: The number of minutes taken to complete the repair process
+              numattempts:
+                type: integer
+                description: The number of repairs attempted
+              paretofront:
+                type: array
+                items:
+                  type: string
+                  format: CandidateAdaptation
+                description: A list containing details of the final pareto front
+              log:
+                type: array
+                items:
+                  type: string
+                  format: CandidateAdaptation
+                description: A list containing details of each of the attempted repairs
+      responses:
+        '200':
+          description: the TH acknowledges the done message
+        '400':
+          description: the TH has itself encontered an error processing the done message
