@@ -43,7 +43,7 @@ enables or disables the DAS
 
 |HTTP Code|Description|Schema|
 |---|---|---|
-|**200**|sucuessfully changed the DAS state|No Content|
+|**200**|successfully changed the DAS state|No Content|
 |**400**|encountered an error while changing the DAS state|[Response 400](#action-das-post-response-400)|
 
 <a name="action-das-post-response-400"></a>
@@ -312,7 +312,7 @@ after ready is reported, the TH will query this end point to get the initial pla
 
 |Name|Description|Schema|
 |---|---|---|
-|**path**  <br>*required*|the initially planned sequence of waypoints the turtlebot will travese, in order of planned traversal|< string > array|
+|**path**  <br>*required*|the initially planned sequence of waypoints the turtlebot will traverse, in order of planned traversal|< string > array|
 |**predicted_arrival_time**  <br>*required*|the number of simulation seconds we anticipate traveling the provided path will take|integer|
 
 <a name="query-initial-get-response-400"></a>

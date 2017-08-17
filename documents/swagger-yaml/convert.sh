@@ -11,10 +11,5 @@ fi
 for f in cp*.yaml
 do
     out=`basename -s .yaml $f`
-    if [ "$f" -ot "$out" ]
-    then
-	docker run --rm -v $(pwd):/opt swagger2markup/swagger2markup convert -i /opt/$f -f /opt/$out -c /opt/config.properties
-    else
-	echo "[[[[ skipping $f because it hasn't changed ]]]]"
-    fi
+    docker run --rm -v $(pwd):/opt swagger2markup/swagger2markup convert -i /opt/$f -f /opt/$out -c /opt/config.properties
 done
