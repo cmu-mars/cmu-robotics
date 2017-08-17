@@ -30,7 +30,16 @@ The key challenges being addressed in this challenge problem are:
 
 ## Test Data
 
-Lincoln Labs will be able to choose from a set of predefined maps that explore different aspects of scale and uncertainty. The selection will be part of the configuration data for the test. This will be done through a mnemonic in the configuration data.
+Lincoln Labs will be able to choose from a set of predefined maps that
+explore different aspects of scale and uncertainty. The selection will be
+part of the configuration data for the test. This will be done through a
+mnemonic in the configuration data.
+
+## Test Parameters
+
+> TODO: I erased what was here because it was redundant with what's
+> returned by `/ready` in the description of the TH API, but I'm not sure
+> what ought to be in its place.
 
 ## Test Procedure
 > This automaton is obsolete according to the new API

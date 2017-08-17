@@ -28,7 +28,7 @@ paths:
                   type: string
                 description: >-
                   the initially planned sequence of waypoints the turtlebot will
-                  travese, in order of planned traversal
+                  traverse, in order of planned traversal
               predicted_arrival_time:
                 type: integer
                 description: >-
@@ -60,7 +60,7 @@ paths:
                 description: 'enable the DAS if the value is `true`, disable it otherwise'
       responses:
         '200':
-          description: sucuessfully changed the DAS state
+          description: successfully changed the DAS state
         '400':
           description: encountered an error while changing the DAS state
           schema:
