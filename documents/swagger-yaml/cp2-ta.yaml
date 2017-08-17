@@ -5,3 +5,140 @@ info:
 schemes:
   - http
 host: brass-ta
+paths:
+  /perturbations:
+    get:
+      description: >-
+        Returns a list of possible perturbations of an (optionally) specified
+        kind and complexity that can be performed at a given (set of)
+        location(s) in the program.  This endpoint should be used to select a
+        suitable (set of) perturbation(s) for a test scenario.
+      parameters:
+        - in: body
+          name: perturbations parameters
+          schema:
+            type: object
+            required:
+              - file
+              - kind
+              - line
+            properties:
+              file:
+                type: string
+                description: the file in which the fault should be placed
+              kind:
+                type: string
+                description: the "kind" of the fault TODO -- vague
+              line:
+                type: integer
+                description: TODO
+      responses:
+        '200':
+          description: successfully computed the list of possible perturbations
+          schema:
+            type: object
+            properties:
+              perturbations:
+                type: array
+                items:
+                  type: string
+                description: >-
+                  list of perturbations that satisfy the query parameters
+                  provided by the request. Each perturbation is described by its
+                  Kind, the Location to which it should be applied, and any
+                  additional parameters that are required to complete the
+                  perturbation (e.g., a replacement statement). TODO -- figure
+                  out the actual types here
+        '400':
+          description: >-
+            encountered an error while computing the list of possible
+            perturbations
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: >-
+                  human readable information about the error, if any can be
+                  provided          
+  /adapt:
+    post:
+      description: Used to trigger the code adaptation process.
+      parameters:
+        - in: body
+          name: adapt parameters
+          schema:
+            type: object
+            properties:
+              timelimit:
+                type: number
+                format: float
+                description: >-
+                  An (optional) time limit for the adaptation process, given in
+                  minutes.
+              attemptlimit:
+                type: integer
+                description: >-
+                  An (optional) limit on the number of adaptations that may be
+                  attempted.
+              hint:
+                type: string
+                description: >-
+                  We could allow hints to be provided to this method? e.g., the
+                  shape(s) or location(s) of the fix(es). TODO
+      responses:
+        '200':
+          description: successfully triggered code adaptation
+        '400':
+          description: encountered an error while triggering code adaptation
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: >-
+                  human readable information about the error, if any can be
+                  provided  
+  /perturb:
+    post:
+      description: >-
+        Applies a given set of perturbations, provided as a list of JSON
+        objects, to the SUT. This method should be used to prepare a test
+        scenario for evaluation.
+      parameters:
+        - in: body
+          name: perturb parameters
+          schema:
+            type: object
+            required:
+              - perturbations
+            properties:
+              perturbations:
+                type: array
+                description: a list of perturbations to apply to the code base
+                items:
+                  type: string
+                  description: >-
+                    TODO -- define a perturbation as a @ref-able somewhere and
+                    use throughout this API
+      responses:
+        '200':
+          description: applied the perturbations to the the system successfully
+        '400':
+          description: encountered an error while applying the perturbations to the system
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: >-
+                  human readable information about the error, if any can be
+                  provided  
+  /status:
+    get:
+      description: Returns the current status of the SUT
+      responses:
+        '200':
+          description: successfully computed the status of the SUT
+        '400':
+          description: encounted an error while computing the status of the SUT

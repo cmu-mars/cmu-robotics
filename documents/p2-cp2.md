@@ -56,7 +56,7 @@ engine (via the test harness) to specify the nature of the perturbation.
 |-------------|----------------------------------------------------------------|
 | Location    | The location in the system at which the perturbation should be injected. This may be specified at a number of different granularities: ROS node, project, file, class, function, block, line or character range. Any details that are left unspecified by the user are selected at random by the perturbation engine. |
 | Schema      | The “shape” of the perturbation (e.g., swap binary operands, replace an expression, modify a method header, etc.). Each schema is intended to mimic a kind of perturbation that is frequently encountered in API migrations. If no schema is specified by the user, a suitable schema (w.r.t. the chosen location) will be randomly selected.</br></br> Certain parameterised schemas may also accept a number of parameters, describing the concrete details of a perturbation (e.g., the replacement expression). If these parameters are omitted by the user, the perturbation engine will randomly select suitable values. |
-| Difficulty | A measure of the difficulty of the perturbation, according to some yet-to-be-defined difficulty metric. If unspecified, a perturbation of the lowest difficulty will be generated. |
+| Difficulty  | A measure of the difficulty of the perturbation, according to some yet-to-be-defined difficulty metric. If unspecified, a perturbation of the lowest difficulty will be generated. |
 
 ## Test Procedure
 
@@ -175,9 +175,9 @@ additional details that may be returned by the API.
 
 | Scenario State | Description |
 |----------------|-------------|
-| generating | Indicates that the perturbation engine is currently attempting to generate and inject a suitable code-level perturbation. |
-| searching | Indicates that the code adaptation engine is currently attempting to find an intent-restoring transformation.<ul><li>A description of the injected perturbation</li><li>Number of transformations attempted</li><li>A concise history of transformation attempts, each described by a label and a quality score</li><li>A concise history of transformation attempts, each described by a label and a quality score</li></ul> |
-| finished | Indicates that the perturbation scenario has finished. Returns a short description of the evaluation. It should be possible to reproduce the results of this run by providing this description to the test harness. <ul><li>A description of the injected perturbation.</li><li>Time spent searching</li><li>Time spent generating the perturbation</li><li>Number of transformations attempted</li><li>A concise history of transformations attempts, in the same format as the response for the “searching” state.</li><li>The pareto front of transformations</li><li>A coarse summary of the extent to which (one of) the best transformation(s) restores intent: complete, partial, none.</li></ul> |
+| generating     | Indicates that the perturbation engine is currently attempting to generate and inject a suitable code-level perturbation. |
+| searching      | Indicates that the code adaptation engine is currently attempting to find an intent-restoring transformation.<ul><li>A description of the injected perturbation</li><li>Number of transformations attempted</li><li>A concise history of transformation attempts, each described by a label and a quality score</li><li>A concise history of transformation attempts, each described by a label and a quality score</li></ul> |
+| finished       | Indicates that the perturbation scenario has finished. Returns a short description of the evaluation. It should be possible to reproduce the results of this run by providing this description to the test harness. <ul><li>A description of the injected perturbation.</li><li>Time spent searching</li><li>Time spent generating the perturbation</li><li>Number of transformations attempted</li><li>A concise history of transformations attempts, in the same format as the response for the “searching” state.</li><li>The pareto front of transformations</li><li>A coarse summary of the extent to which (one of) the best transformation(s) restores intent: complete, partial, none.</li></ul> |
 
 To implement our perturbation engine, we plan to adapt and evolve our
 existing perturbation injection tool for generic ROS systems,
@@ -200,60 +200,22 @@ ROS-based system to improve model inference, perform automated test
 generation, and to systematically measure adaptiveness in a variety of
 scenarios.
 
-## SUT API
+### REST Interface to the TH
 
-### GET: /perturbations
+The Swagger file describing this interface is
+[swagger-yaml/cp2-th.yaml](swagger-yaml/cp2-th.yaml) which should be
+considered the canonical definition of the
+API. [swagger-yaml/cp2-th.md](swagger-yaml/cp2-th.md) is produced
+automatically from the Swagger definition for convenience.
 
-Returns a list of possible perturbations of an (optionally) specified kind
-and complexity that can be performed at a given (set of) location(s) in the
-program.  This endpoint should be used to select a suitable (set of)
-perturbation(s) for a test scenario.
+### REST Interface to the TA
 
-| Request Parameter | Type | Description | Example |
-|--------------|------|-------------|---------|
-| File | String | The file in which the fault should be placed | `"navigation.cpp"` |
-| Kind* | String | The "kind" of the fault. | `"DeleteStatement"` |
-| Line* | Int | The  | `[1, 4]` |
+The Swagger file describing this interface is
+[swagger-yaml/cp2-ta.yaml](swagger-yaml/cp2-ta.yaml) which should be
+considered the canonical definition of the
+API. [swagger-yaml/cp2-ta.md](swagger-yaml/cp2-ta.md) is produced
+automatically from the Swagger definition for convenience.
 
-The response of this API call is a (JSON) list of perturbations that
-satisfy the query parameters provided by the request. Each perturbation is
-described by its `Kind`, the `Location` to which it should be applied, and
-any additional parameters that are required to complete the perturbation
-(e.g., a replacement statement).
-
-### POST: /adapt
-
-Used to trigger the code adaptation process.
-
-| Request Parameter | Type | Description | Example |
-|--------------|------|-------------|---------|
-| TimeLimit* | Float | An (optional) time limit for the adaptation process, given in minutes. | `120.00` |
-| AttemptLimit* | Int | An (optional) limit on the number of adaptations that may be attempted. | `400` |
-
-If a suitable test scenario has not been successfully prepared, an error is
-returned in the response. Otherwise, the request to begin adaptation is
-simply acknowledged.
-
-**NOTE:** We could allow *hints* to be provided to this method? e.g., the
-  shape(s) or location(s) of the fix(es).
-
-### POST: /perturb
-
-Applies a given set of perturbations, provided as a list of JSON objects,
-to the SUT. This method should be used to prepare a test scenario for
-evaluation.
-
-| Request Parameter | Type | Description | Example |
-|--------------|------|-------------|---------|
-| Perturbations | Perturbation[] | A list of perturbations that should be applied to the code | `[{"kind": "DeleteStatement", "location": "foo.cpp:5,0:5,65"}]` |
-
-An empty response is returned by this method. Any errors encountered during
-the injection of the given perturbations are communicated to the test
-harness API via its `/error` method.
-
-### GET: /status
-
-Returns a description of the current state of the SUT.
 
 ## Test Harness API
 
