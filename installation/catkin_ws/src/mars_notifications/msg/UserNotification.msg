@@ -1,2 +1,0 @@
-string new_deadline
-string user_notification

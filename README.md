@@ -1,44 +1,17 @@
 cmu-robotics
 ============
 
-**Installation**
+As of 18 August, this repo has been cleaned of Phase 1 content following
+[git_process.md](https://github.mit.edu/brass/mitll/blob/master/documents/development/git_process.md).
 
-Vagrant installation can be found at: https://www.vagrantup.com/docs/installation/
+`documents` contains markdown files with draft descriptions of each
+challenge problem following the provided format. The APIs describing the
+interfaces for TA and TH in each CP case are given in
+`documents/swagger-yaml` as valid [Swagger](http://swagger.io) files---with
+automatically produced markdown also checked in for convenience.
 
-In order to run the simulation, once you've installed vagrant, etc.:
+All of these are currently still under revision and will change through the
+process as we refine our research goals.
 
-```
-vagrant up
-vagrant ssh
-./setup-cp1.sh
-./mockup.sh ## if you aren't MIT/LL but want the config and log to work
-./start.sh
-```
-
-and wait until you see `odom received!` in one of the info messages in the
-output. Then, from either the host machine or inside the vagrant guest,
-you can access the REST communications API with standard HTTP requests that
-meet the API from the wiki on port 5000. For example, at a new terminal,
-
-```
-% curl -H "Content-Type:application/json" -X POST -d '{"TIME" : "2017-02-09T21:25:59.332087", "ARGUMENTS" : {}}' localhost:5000/action/start
-{"ARGUMENTS": {}, "TIME": "2017-01-27T22:51:49.938773"}
-%
-```
-
-will start the simulation.
-
-You can see the debugging output in a few places:
-
-* the terminal that's running `vagrant ssh` into the guest machine
-
-* the ROS log files, usually in `~/.ros/log/latest/*`
-
-* the mocked-up log file shared with the TH, at `/test/log`
-
-* the terminal that you're running `curl` commands from
-
-Some example curl requests for the different endpoints given in the API,
-are found in `smoke.sh`, which you can run from the guest machine to smoke
-test the end points. That script gives the examples in wiki page order,
-which might not be the order that you would call them in a real use case.
+This readme will be expanded with instructions for running the system as we
+being to produce artefacts in the run up to RR1.
