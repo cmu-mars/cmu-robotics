@@ -2,38 +2,29 @@
 
 ## Overview
 
-This challenge problem is an evolution of Phase I Challenge Problem 1 that will adapt the TurtleBot's use of sensors, components,
-and mission to current energy levels to preserve mission intent and intents regarding internal behavior despite low power and *changing
-hardware conditions*.
+This challenge problem is an evolution of Phase 1 Challenge Problem 1 that in Phase 2 will focus on applying adaptations to the software of the robot as it performs missions. Current self adaptive systems are typically limited to selecting from pre-determined plans for adapting to specific responses - in the context of BRASS and for long-lived software, these adaptations will need to be discovered as the system is deployed. Adaptation discovery will be based on relational and probabilistic multi-objective planning over the software / hardware configurations of the robot in response to changes to characteristics of the software (unreliable components, failing sensors) and environment (resource changes, characteristics in the environment).
 
-The robot is used for a variety of tasks with different mission parameters and different mission length. In its current form the
-TurtleBot implementation does not explicitly consider energy consumption and battery life, assuming the TurtleBot can drive back
-to its home station when the battery runs low. Various ecosystem and mission changes, from obstacles on the course, to delays in
-the mission, to partial sensor failure, can interfere with those objectives.
+### Research Questions being Addressed
 
-The DAS will use both offline and online techniques to prepare possible adaptations to ecosystem changes before the mission starts.
-It will perform adaptations online during the mission.
+- Can the optimal architectural structure of a system be generated with multi-objective planning? Can we use this to manage change to the structure of the software on-line?
+- How can we manage the interplay between constraints on structure, behavior, and quality when adapting software?
+- Modern CPS are a combination of models; how can we represent global constraints over multiple models and use them to help guarantee correctness and quality of software change plans?
+- What proportion of techniques can be used on line vs. needs to be done off-line?
 
-To successfully prepare and evaluate changes, the simulator requires a sensor on the system's current energy consumption,
-e.g., whole-system energy as measured by a power meter external to the computer running the simulation or part of the computer’s
-power supply, and as approximate power consumption of the individual sensors and actuators.
+### Notes:
+Changes available to the software:
+- use of different, redundant sensor(s) for localization
+- different localization techniques for different sensors and different parts of the map
+- different map characteristics:
+     - extensive glass corridors require ultrasound sensor and associated localization changes (rather than kinect)
+     - large open space configured for poster session requires switch to SLAM, or different local planner for extensive obstacle avoidance
+     - part of building with beacons requires reconfiguration to use them for localization, but that part of software not running when not in that area.
 
-The key challenges being addressed in this challenge problem are:
-
-* Scalabilility of online adaptation planning to realistic environments and concerns
-* Uncertainty and its relationship to scale. There are various sources of uncertainty in this domain that could be included as probabilistic elements in planning; we are currently investigating the best one to use in the challenge problem. The candidates for uncertainty are:
-    * Partial obstacle occlusion meaning that the robot might be able to adjust is clearance parameters to squeeze past an obstacle with some probability of hitting the obstacle.
-    * Probabilistic information inherent in timing or power models.
-    * Probability of obstacle permanence (i.e., will an obstacle that is placed in the path stay there or be removed soon?).
-    * Uncertainty in localization from sensing.
-* Technologies for adapting software configurations and algorithms on-line.
+***Note, the rest of this challenge problem is not yet defined ***
 
 ## Test Data
 
-Lincoln Labs will be able to choose from a set of predefined maps that
-explore different aspects of scale and uncertainty. The selection will be
-part of the configuration data for the test. This will be done through a
-mnemonic in the configuration data.
+> TODO
 
 ## Test Parameters
 
@@ -42,12 +33,7 @@ mnemonic in the configuration data.
 > what ought to be in its place.
 
 ## Test Procedure
-> This automaton is obsolete according to the new API
-The test procedure will be the same as for P1CP1, except that Lincoln labs will be able to perturb multiple times for each perturbation (e.g., place/remove obstacle, set battery, fail/reinstate kinect).
-![runtime-automation](img/cp3-runtime-automation.png "Run-time Automation")
-
-> Jeff: This is based on the diagram from last time. We're hoping to find a better tool to specify the state machine with. The intent is that you should be able to place (and optionally remove) obstacles simultaneously (i.e., place more than one obstacle at a time). But, this doesn't make sense for the charge and the kinect activation. Not sure how to represent this in this notation.
-
+> TODO
 ## Interface to the Test Harness (API)
 
 ### REST Interface to the TH
