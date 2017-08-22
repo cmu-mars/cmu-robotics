@@ -149,6 +149,69 @@ Note, this API is notional at this stage.
   so the error might happen during the model evaluation (evaluating the
   expression of power model), or learning process.
 
+### Formal specification of power models
+Here, we formally define discharge and charge function, the constraints that determine their validity, as well as metrics for evaluating the test cases.
+
+In this challenge problem, the possible variations (and possible adaptation actions) determining the configuration of the robot is as follows:
+
+1- Robot's motion actuator: Two levels of speed: s1 (half speed), s2 (full speed)
+2- Robot's sensors: Five different Kinects: k1 (the least expensive one), ..., k5 (the most expensive one)
+3- Robot's computation: Five different localization algorithms: l1 (has the least computational demand and the most inaccurate localization), ..., l5 (has the most computational demand and the most accurate localization)
+
+Note that we abstracted different aspects of the robot that are known to be the main source of power consumption in robots, i.e., robot's motion actuator, sensors, and computationally intensive algorithms in the robot. These variations will be implemented by adjusting different measurement frequency of the Kinect sensor or spatial and depth resolution of the base Kinect. Also, for the localization, we will implement different components with different accuracy for localizing the robot.
+
+Therefore, the configuration of the robot is encoded by 12 boolean variables:
+C = [<s1,s2>,<k1,k2,k3,k4,k5>,<l1,l2,l3,l4,l5>]
+
+So, at each time step in the simulation, one of the variables in the vector is enabled and the rest are disabled. For example,
+C_t = [<0,1>,<0,0,0,1,0>,<1,0,0,0,0>]
+The total number of possible configuration for the robot is: 2*5*5 = 50.
+
+The power consumption model is then specified as:
+
+P(t,s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5) = \beta_0 + \beta_s1*s1*f_s1(t) + \beta_s2*s2*f_s2(t) + \beta_k1*k1*f_k1(t) + ... + \beta_k5*k5*f_k5(t) + \beta_l1*l1*f_l1(t) + ... + \beta_l5*l5*f_l5(t) + \beta_i1*s1*k1*l1*f_i1(t) + \beta_i2*s1*k1*l2*f_i2(t) + ... + \beta_i_m*s2*k5*l5*f_i_m(t) 
+
+, where t is in seconds, s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5 are boolean variables, the coefficients for the variables (\beta_*) are any positive real numbers and the coefficients for the interaction terms (\beta_i_*) are any real numbers including negative or zero, f_*(t) are non-negative integer exponents of t. f_*(t) - > [t,t^2,...,t^n], and the output of the model after evaluation is in mwh. 
+Note that if we want to omit the effect of any interactions, we simply put the corresponding coefficient to zero.  
+
+The interaction terms in the power consumption model are important. Let us give an example for the necessity of capturing interactions in the power model: If the robot is configured with a Kinect with higher accuracy, the localization and other parts of the robots might need more computational power to process the pixels, basically there is more information to process, therefore, these two variables (i.e., Kinect and Localization) might interact. This means that the consumption of the robot is bigger than the consumptions of each of the Kinect and Localization individually. 
+
+Learning budget:
+P(t,s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5) is essentially 50 time dependent functions that are forged together. If there was no interactions, we could assume that essentially the power model is an additive model of time dependent of 12 terms. With the interactions, the maximum number of terms is: 12 + C(12,2) + C(12,3) = 12 + 66 + 220 = 298. C is binomial coefficient. Therefore, the required budget for learning is:
+(the largest exponent of c1 + 1) + ... + (the largest exponent of c50 + 1). 
+
+In this challenge problem, both discharge and charge of the robot is controlled, not by law of the physics for battery but as an arbitrary function that looks similar to power model that exist int he literature but with different coefficients that meant to simulate discharge and charge functions for possible future sensory, computational, or actuating components of the robot. 
+
+Here we define some constraints for the power consumption model. The constraints will be used by LL and CMU team to evaluate whether an specified power model is a valid power model:
+1- P(t,s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5) > 0, if the power model is evaluated to be negative for a combination of input variables, then the power model is invalid.
+
+2- P(t,s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5) should be monotonically increasing with respect to t. 
+
+Both of these constraints are intuitive for power models, because we do not want to have a model that assumes the discharge operation actually increases the charge of the battery instead of discharging it.
+
+How to programatically evaluate whether a power model is invalid:
+We can differentiate the power model, for all 50 possible configurations separately, with respect to ``t'', if for all valid time ``t=[t_min,t_max]'' the sign of the derivative is positive, then the power model is monotonically increasing. So, if for ``t=t_min'', and all combination of valid configurations of the robot, ``P(t_min,.) > 0'', then the power model is valid.   
+
+How the battery will be discharged and charged:
+
+Discharge: updated_charge = current_charge - P_discharge(dt,s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5)
+Charge: updated_charge = current_charge + P_charge(dt,s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5)
+
+We also intend to specify some metrics based on which we evaluate how ``difficult'' and how ``similar'' two test cases are. Therefore, LL could generate ``challenging'' and yet ``different'' test cases, this is what we mean by interesting test cases. The metrics are dependent on both specification (including the shape of discharge/charge function and mission parameters) of the mission as well as the perturbation during the mission.
+
+The metrics for evaluating the difficulty of test cases: (i) Sum of the degree of the exponents of ``t'' for all terms in the power model; (ii) The number of obstacle placement + number of battery set. Any two test cases would be different if the difficulty levels of them are different. 
+
+The ultimate goal of CP1 is to demonstrate that the adaptation (analysis + planning) with an accurate model that we learn is better than the case with no learning, i.e, using an inaccurate model. So we assume the following cases:
+- A (no perturbation, no adaptation, no PM)
+- B (perturbation, no adaptation, no PM)
+- C (perturbation, adaptation, a static PM for discharge/charge, while planner uses a different static PM): the challenge with inaccurate model
+- D (perturbation, adaptation, a PM will be specified by LL and planner uses a learned PM): the challenge with a learned model
+
+So, an ideal situation for us is:
+A: succeed, B: failed, C: failed, D: succeed
+This situation is also good:
+A: failed, B: failed, C: failed, D: succeed
+
 
 ### REST Interface to the TH
 
