@@ -81,7 +81,7 @@ paths:
         notification of an error
       parameters:
         - in: body
-          name: error info
+          name: Parameters
           schema:
             type: object
             required:
@@ -116,7 +116,7 @@ paths:
       description: used by the TA to periodically indicate its current state to the TH
       parameters:
         - in: body
-          name: error info
+          name: Parameters
           schema:
             type: object
             required:
@@ -202,7 +202,7 @@ paths:
           description: TH acknowledges the status message
         '400':
           description: TH encountered an error with the status message
-  /action/done:
+  /done:
     post:
       description: >-
         used by the TA to indicate to the TH that the turtlebot has reached the
@@ -210,7 +210,7 @@ paths:
         missions will result in an error and not use this end point.
       parameters:
         - in: body
-          name: error info
+          name: Parameters
           schema:
             type: object
             required:

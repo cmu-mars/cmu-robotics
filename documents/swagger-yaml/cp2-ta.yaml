@@ -15,7 +15,7 @@ paths:
         suitable (set of) perturbation(s) for a test scenario.
       parameters:
         - in: body
-          name: perturbations parameters
+          name: Parameters
           schema:
             type: object
             required:
@@ -60,13 +60,13 @@ paths:
                 type: string
                 description: >-
                   human readable information about the error, if any can be
-                  provided          
+                  provided
   /adapt:
     post:
       description: Used to trigger the code adaptation process.
       parameters:
         - in: body
-          name: adapt parameters
+          name: Parameters
           schema:
             type: object
             properties:
@@ -98,7 +98,7 @@ paths:
                 type: string
                 description: >-
                   human readable information about the error, if any can be
-                  provided  
+                  provided
   /perturb:
     post:
       description: >-
@@ -107,7 +107,7 @@ paths:
         scenario for evaluation.
       parameters:
         - in: body
-          name: perturb parameters
+          name: Parameters
           schema:
             type: object
             required:
@@ -133,7 +133,7 @@ paths:
                 type: string
                 description: >-
                   human readable information about the error, if any can be
-                  provided  
+                  provided
   /status:
     get:
       description: Returns the current status of the SUT

@@ -29,10 +29,10 @@ indicates that the test is completed
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**error info**  <br>*optional*|[error info](#done-post-error-info)|
+|**Body**|**Parameters**  <br>*optional*|[Parameters](#done-post-parameters)|
 
-<a name="done-post-error-info"></a>
-**error info**
+<a name="done-post-parameters"></a>
+**Parameters**
 
 |Name|Description|Schema|
 |---|---|---|
@@ -60,10 +60,10 @@ indicates that the SUT has encountered an error in configuration data, parameter
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**error info**  <br>*optional*|[error info](#error-post-error-info)|
+|**Body**|**Parameters**  <br>*optional*|[Parameters](#error-post-parameters)|
 
-<a name="error-post-error-info"></a>
-**error info**
+<a name="error-post-parameters"></a>
+**Parameters**
 
 |Name|Description|Schema|
 |---|---|---|
@@ -130,10 +130,10 @@ indicate important state changes in the SUT to the TH. posted periodically as th
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**error info**  <br>*optional*|[error info](#status-post-error-info)|
+|**Body**|**Parameters**  <br>*optional*|[Parameters](#status-post-parameters)|
 
-<a name="status-post-error-info"></a>
-**error info**
+<a name="status-post-parameters"></a>
+**Parameters**
 
 |Name|Description|Schema|
 |---|---|---|

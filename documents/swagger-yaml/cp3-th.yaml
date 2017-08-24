@@ -55,7 +55,7 @@ paths:
         parameters, system start, or any other less specified problem
       parameters:
         - in: body
-          name: error info
+          name: Parameters
           schema:
             type: object
             required:
@@ -89,7 +89,7 @@ paths:
         periodically as the described events occur.
       parameters:
         - in: body
-          name: error info
+          name: Parameters
           schema:
             type: object
             required:
@@ -145,7 +145,7 @@ paths:
       description: indicates that the test is completed
       parameters:
         - in: body
-          name: error info
+          name: Parameters
           schema:
             type: object
             required:

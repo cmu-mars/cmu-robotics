@@ -18,8 +18,8 @@
 <a name="paths"></a>
 ## Paths
 
-<a name="action-done-post"></a>
-### POST /action/done
+<a name="done-post"></a>
+### POST /done
 
 #### Description
 used by the TA to indicate to the TH that the turtlebot has reached the goal and that the mission has been completed. note that incomplete missions will result in an error and not use this end point.
@@ -29,10 +29,10 @@ used by the TA to indicate to the TH that the turtlebot has reached the goal and
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**error info**  <br>*optional*|[error info](#action-done-post-error-info)|
+|**Body**|**Parameters**  <br>*optional*|[Parameters](#done-post-parameters)|
 
-<a name="action-done-post-error-info"></a>
-**error info**
+<a name="done-post-parameters"></a>
+**Parameters**
 
 |Name|Description|Schema|
 |---|---|---|
@@ -65,10 +65,10 @@ used by the TA to indicate to the TH that an error has occurred in the start up 
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**error info**  <br>*optional*|[error info](#error-post-error-info)|
+|**Body**|**Parameters**  <br>*optional*|[Parameters](#error-post-parameters)|
 
-<a name="error-post-error-info"></a>
-**error info**
+<a name="error-post-parameters"></a>
+**Parameters**
 
 |Name|Description|Schema|
 |---|---|---|
@@ -123,10 +123,10 @@ used by the TA to periodically indicate its current state to the TH
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**error info**  <br>*optional*|[error info](#status-post-error-info)|
+|**Body**|**Parameters**  <br>*optional*|[Parameters](#status-post-parameters)|
 
-<a name="status-post-error-info"></a>
-**error info**
+<a name="status-post-parameters"></a>
+**Parameters**
 
 |Name|Description|Schema|
 |---|---|---|

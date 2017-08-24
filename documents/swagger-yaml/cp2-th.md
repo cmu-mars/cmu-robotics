@@ -29,10 +29,10 @@ Used to indicate that evaluation of the test scenario has been completed. A summ
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**error parameters**  <br>*optional*|[error parameters](#done-post-error-parameters)|
+|**Body**|**Parameters**  <br>*optional*|[Parameters](#done-post-parameters)|
 
-<a name="done-post-error-parameters"></a>
-**error parameters**
+<a name="done-post-parameters"></a>
+**Parameters**
 
 |Name|Description|Schema|
 |---|---|---|
@@ -55,18 +55,22 @@ Used to indicate that evaluation of the test scenario has been completed. A summ
 ### POST /error
 
 #### Description
-Used to indicate that an error has occurred during the preparation or
-  evaluation of a test scenario, or during the start-up of the system under test. The body of this method contains a single property, `ErrorMsg`, containing a JSON-based description of the error. A description of the errors produced by SUT are given below.
+Used to indicate that an error has occurred during the preparation
+  or evaluation of a test scenario, or during the start-up of the
+  system under test. The body of this method contains a single
+  property, `ErrorMsg`, containing a JSON-based description of the
+  error. A description of the errors produced by SUT are given
+  below.
 
 
 #### Parameters
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**error parameters**  <br>*optional*|[error parameters](#error-post-error-parameters)|
+|**Body**|**Parameters**  <br>*optional*|[Parameters](#error-post-parameters)|
 
-<a name="error-post-error-parameters"></a>
-**error parameters**
+<a name="error-post-parameters"></a>
+**Parameters**
 
 |Name|Description|Schema|
 |---|---|---|
