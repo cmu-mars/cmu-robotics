@@ -156,9 +156,13 @@ cases.
 In this challenge problem, the possible variations (and possible adaptation
 actions) determining the configuration of the robot is as follows:
 
-1. *Robot's motion actuator*: Two levels of speed: s1 (half speed), s2 (full speed)
-2. *Robot's sensors*: Five different Kinects: k1 (the least expensive one), ..., k5 (the most expensive one)
-3. *Robot's computation*: Five different localization algorithms ranging from the least computational demand for the most inaccurate localization to the most demand for the most accurate: l1 , ..., l5
+1. *Robot's motion actuator*: Two levels of speed: s1 (half speed), s2
+   (full speed)
+2. *Robot's sensors*: Five different Kinects: k1 (the least expensive one),
+   ..., k5 (the most expensive one)
+3. *Robot's computation*: Five different localization algorithms ranging
+   from the least computational demand for the most inaccurate localization
+   to the most demand for the most accurate: l1 , ..., l5
 
 Note that we abstracted different aspects of the robot that are known to be
 the main source of power consumption in robots, i.e., robot's motion
@@ -175,8 +179,8 @@ variables
 C = [<s1,s2>,<k1,k2,k3,k4,k5>,<l1,l2,l3,l4,l5>]
 ```
 
-At each time step in the simulation, one of the variables in the vector
-is enabled and the rest are disabled. For example,
+At each time step in the simulation, one of the variables in the vector is
+enabled and the rest are disabled. For example,
 
 ```
 C_t = [<0,1>,<0,0,0,1,0>,<1,0,0,0,0>]
@@ -195,10 +199,10 @@ P(t,s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5) = \beta_0 + \beta_s1*s1*f_s1(t) +
 ```
 
 where t is in seconds, `s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5` are boolean
-variables, the coefficients for the variables (\beta_i) are any positive
-real numbers and the coefficients for the interaction terms (\beta_i_j) are
-any real numbers including negative or zero, f_i(t) are non-negative
-integer exponents of t. f_*(t) - > [t,t^2,...,t^n], and the output of the
+variables, the coefficients for the variables (\beta i) are any positive
+real numbers and the coefficients for the interaction terms (\beta i j) are
+any real numbers including negative or zero, (f i(t)) are non-negative
+integer exponents of t. f i (t) - > [t,t^2,...,t^n], and the output of the
 model after evaluation is in mWh.  Note that if we want to omit the effect
 of any interactions, we simply put the corresponding coefficient to zero.
 
@@ -233,9 +237,12 @@ Here we define some constraints for the power consumption model. The
 constraints will be used by LL and CMU team to evaluate whether an
 specified power model is a valid power model:
 
-1. P(t,s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5) > 0, if the power model is evaluated to be negative for a combination of input variables, then the power model is invalid.
+1. P(t,s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5) > 0, if the power model is
+   evaluated to be negative for a combination of input variables, then the
+   power model is invalid.
 
-2. P(t,s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5) should be monotonically increasing with respect to t.
+2. P(t,s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5) should be monotonically
+   increasing with respect to t.
 
 Both of these constraints are intuitive for power models, because we do not
 want to have a model that assumes the discharge operation actually
@@ -252,20 +259,24 @@ the power model is valid.
 
 #### How the battery will be discharged and charged:
 
-* Discharge: updated_charge = current_charge - P_discharge(dt,s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5)
-* Charge: updated_charge = current_charge + P_charge(dt,s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5)
+* *Discharge*: updated_charge = current_charge -
+  P_discharge(dt,s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5)
+* *Charge*: updated_charge = current_charge +
+  P_charge(dt,s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5)
 
 We also intend to specify some metrics based on which we evaluate how
 "difficult" and how "similar" two test cases are. Therefore, LL could
-generate "challenging" and yet "different" test cases, this is what we
-mean by interesting test cases. The metrics are dependent on both
-specification (including the shape of discharge/charge function and mission
-parameters) of the mission as well as the perturbation during the mission.
+generate "challenging" and yet "different" test cases, this is what we mean
+by interesting test cases. The metrics are dependent on both specification
+(including the shape of discharge/charge function and mission parameters)
+of the mission as well as the perturbation during the mission.
 
-#### The metrics for evaluating the difficulty of test cases: 
-1. Sum of the degree of the exponents of `t` for all terms in the power model; 
-2. The number of obstacle placement + number of battery set. Any two test cases
-would be different if the difficulty levels of them are different.
+#### The metrics for evaluating the difficulty of test cases:
+1. Sum of the degree of the exponents of `t` for all terms in the power
+   model
+
+2. The number of obstacle placement + number of battery set. Any two test
+   cases would be different if the difficulty levels of them are different.
 
 The ultimate goal of CP1 is to demonstrate that the adaptation (analysis +
 planning) with an accurate model that we learn is better than the case with
