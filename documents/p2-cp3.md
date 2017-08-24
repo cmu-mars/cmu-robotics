@@ -43,12 +43,20 @@ mnemonic in the configuration data.
 
 ## Test Procedure
 > This automaton is obsolete according to the new API
-The test procedure will be the same as for P1CP1, except that Lincoln labs will be able to perturb multiple times for each perturbation (e.g., place/remove obstacle, set battery, fail/reinstate kinect).
+
+The test procedure will be the same as for P1CP1, except that Lincoln labs
+will be able to perturb multiple times for each perturbation (e.g.,
+place/remove obstacle, set battery, fail/reinstate kinect).
+
 ![runtime-automation](img/cp3-runtime-automation.png "Run-time Automation")
 
 > Jeff: This is based on the diagram from last time. We're hoping to find a better tool to specify the state machine with. The intent is that you should be able to place (and optionally remove) obstacles simultaneously (i.e., place more than one obstacle at a time). But, this doesn't make sense for the charge and the kinect activation. Not sure how to represent this in this notation.
 
 ## Interface to the Test Harness (API)
+
+### Sequence Diagram for Interaction Pattern
+
+![alt text](sequences/cp3.mmd.png "CP3 sequence diagram")
 
 ### REST Interface to the TH
 
