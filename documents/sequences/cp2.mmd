@@ -1,0 +1,26 @@
+sequenceDiagram
+	participant TH
+	participant TA
+
+	TA ->> TH: /ready
+	# Note over TA,TH: ??
+	TH -->> TA: configuration data
+	TH ->> TA: /perturbations
+	TA -->> TH: possible perturbations
+	TH ->> TA: /perturb
+	## TA -->> TH: confirm application
+	TA ->> TH: /perturbed  ## todo: this might be redundant
+
+	opt adaptive
+	     TH ->> TA: /adapt
+	     loop intermittent
+	     	  TA ->> TH: /status
+	     end
+	     TA ->> TH: /adapted
+	end
+
+	TH ->> TA: /validate
+	loop intermittent
+	     TA ->> TH: /status
+	end
+	TA ->> TH: /done
