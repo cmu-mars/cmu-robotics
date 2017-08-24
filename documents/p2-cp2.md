@@ -224,6 +224,9 @@ Used to describe the outcome of an attempted compilation.
 
 ### Sequence Diagram for Interaction Pattern
 
+Implicitly, the TA can hit the `/error` endpoint on the TH at any time in
+this sequence. This interaction is omitted for clarity.
+
 ![alt text](sequences/cp2.mmd.png "CP2 sequence diagram")
 
 ### REST Interface to the TH

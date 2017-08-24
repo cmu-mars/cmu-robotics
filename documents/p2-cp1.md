@@ -305,6 +305,9 @@ A: failed, B: failed, C: failed, D: succeed
 
 ### Sequence Diagram for Interaction Pattern
 
+Implicitly, the TA can hit the `/error` endpoint on the TH at any time in
+this sequence. This interaction is omitted for clarity.
+
 ![alt text](sequences/cp1.mmd.png "CP1 sequence diagram")
 
 ### REST Interface to the TH

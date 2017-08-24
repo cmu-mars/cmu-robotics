@@ -56,6 +56,9 @@ place/remove obstacle, set battery, fail/reinstate kinect).
 
 ### Sequence Diagram for Interaction Pattern
 
+Implicitly, the TA can hit the `/error` endpoint on the TH at any time in
+this sequence. This interaction is omitted for clarity.
+
 ![alt text](sequences/cp3.mmd.png "CP3 sequence diagram")
 
 ### REST Interface to the TH
