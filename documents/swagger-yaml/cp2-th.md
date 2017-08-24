@@ -81,21 +81,6 @@ Used to indicate that an error has occurred during the preparation or
 |**400**|the TH has itself encontered an error processing the error|No Content|
 
 
-<a name="perturbed-post"></a>
-### POST /perturbed
-
-#### Description
-Used to indicate that the perturbations have been successfully injected, and that the system is ready for evaluation.
-
-
-#### Responses
-
-|HTTP Code|Description|Schema|
-|---|---|---|
-|**200**|the TH acknowledges the ready message|No Content|
-|**400**|the TH has itself encontered an error processing the ready message|No Content|
-
-
 <a name="ready-post"></a>
 ### POST /ready
 

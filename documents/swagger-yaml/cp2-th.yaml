@@ -43,16 +43,6 @@ paths:
           description: the TH acknowledges the ready message
         '400':
           description: the TH has itself encontered an error processing the ready message
-  /perturbed:
-    post:
-      description: >-
-        Used to indicate that the perturbations have been successfully injected,
-        and that the system is ready for evaluation.
-      responses:
-        '200':
-          description: the TH acknowledges the ready message
-        '400':
-          description: the TH has itself encontered an error processing the ready message
   /status:
     post:
       description: >-

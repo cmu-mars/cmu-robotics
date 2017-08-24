@@ -8,8 +8,7 @@ sequenceDiagram
 	TH ->> TA: /perturbations
 	TA -->> TH: possible perturbations
 	TH ->> TA: /perturb
-	## TA -->> TH: confirm application
-	TA ->> TH: /perturbed  ## todo: this might be redundant
+	TA -->> TH: confirm perturbed
 
 	opt adaptive
 	     TH ->> TA: /adapt
