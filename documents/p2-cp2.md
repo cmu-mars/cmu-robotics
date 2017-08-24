@@ -222,6 +222,10 @@ Used to describe the outcome of an attempted compilation.
 | Successful | Bool | A flag indicating whether or not the compilation was successful | `true` |
 | Duration | Float | The number of seconds taken to (fail to) finish compilation | `3.56` |
 
+### Sequence Diagram for Interaction Pattern
+
+![alt text](sequences/cp2.mmd.png "CP2 sequence diagram")
+
 ### REST Interface to the TH
 
 The Swagger file describing this interface is
