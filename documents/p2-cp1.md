@@ -44,6 +44,17 @@ phase 1. Differences should be observable in terms of mission failures
 (e.g., running out of energy) and completion time (e.g., recharging more
 effectively with fewer disruptions to the mission).
 
+## Research Questions
+**RQ1**: Can the use of learning an accurate power model improve the score of mission comparing with using inaccurate model and no model?
++ There might be some cases that using an accurate model might tell us that we can finish a mission without going to the charge station and therefore score a better mission. 
++ We would like to explore corner cases that an accurate model can provide us benefit by saving time, saving energy or both, and therefore hitting a better score in total
++ Using an inaccurate model might tell us that we can go to the target but the discharge is quicker (t^2) that what the robot expects (t) and therefore fail the mission
+- There might be some cases where the model tell us we need to go to the charging station, but we could finish the mission without going to the station
+
+**RQ2**: Can the use of learning an accurate power model improve the quality of adaptations? 
++ There might be some cases where accurate model leads to the quality of the decisions made by the planner and analyzer. For example, an accurate model might trigger fewer adaptations, an accurate model might lead to a better decision making by not going too much to the charging station or going when it is needed.
+
+**RQ3**: Can the use of a model that is accurate for short horizon (i.e., t=[t_min, t_max/\alpha]) beneficial for accomplishing a mission comparing with a model that is more accurate for the longer horizon?
 
 ## Test Data
 
