@@ -44,33 +44,6 @@ paths:
                 description: >-
                   human readable information about the error, if any can be
                   provided
-  /action/das:
-    post:
-      description: enables or disables the DAS
-      parameters:
-        - in: body
-          name: Parameters
-          schema:
-            type: object
-            required:
-              - enable
-            properties:
-              enable:
-                type: boolean
-                description: 'enable the DAS if the value is `true`, disable it otherwise'
-      responses:
-        '200':
-          description: successfully changed the DAS state
-        '400':
-          description: encountered an error while changing the DAS state
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-                description: >-
-                  human readable information about the error, if any can be
-                  provided
   /action/start:
     post:
       description: start the turtlebot navigating through the selected map
@@ -149,7 +122,7 @@ paths:
       description: set the level of the battery in a currently running test
       parameters:
         - in: body
-          name: Parameters
+          name: place obstacle parameters
           schema:
             type: object
             required:
@@ -190,7 +163,7 @@ paths:
       description: 'if the test is running, place an obstacle on the map'
       parameters:
         - in: body
-          name: Parameters
+          name: place obstacle parameters
           schema:
             type: object
             required:
@@ -282,7 +255,7 @@ paths:
       description: 'if the test is running, remove a previously placed obstacle from the map'
       parameters:
         - in: body
-          name: Parameters
+          name: place obstacle parameters
           schema:
             type: object
             required:
@@ -326,11 +299,7 @@ paths:
       description: introduce an error in the robot software
       parameters:
         - in: body
-<<<<<<< HEAD
           name: set a part of the robot to fail
-=======
-          name: Parameters
->>>>>>> master
           schema:
             type: object
             required:
@@ -349,7 +318,7 @@ paths:
                 enum:
                   - 'on'
                   - 'off'
-                  - 'failing'
+                  - failing
                 description: >-
                   the state the kinect should have after this request is
                   processed -- "on" means the kinect is operational and can be
