@@ -1,4 +1,4 @@
-# CMU MARS (Alrdich), CP3: Robot obstacle avoidance, timeliness, power, and scale
+# CMU MARS (Alrdich), CP3: On-line robotic adaptation to software failure, unexpected environments
 
 ## Overview
 
@@ -20,17 +20,17 @@ Changes available to the software:
      - large open space configured for poster session requires switch to SLAM, or different local planner for extensive obstacle avoidance
      - part of building with beacons requires reconfiguration to use them for localization, but that part of software not running when not in that area.
 
-***Note, the rest of this challenge problem is not yet defined ***
-
 ## Test Data
 
-> TODO
+No specific test data will be required for this challenge problem, other than that sent in response to the th/ready endpoint.
 
 ## Test Parameters
 
-> TODO: I erased what was here because it was redundant with what's
-> returned by `/ready` in the description of the TH API, but I'm not sure
-> what ought to be in its place.
+The test will be able to be parameterized in a number of ways, and this will be done via the response to ready. The elements that may be specified for the test are:
+
+- the map, chosen from a fixed set of generated maps. These maps will vary in their size (number of waypoints) and their environment (lighting conditions, area crowding in terms of obstacles)
+- the initial robot position, as well as the target location for the robot, which constitutes the mission
+- the initial robot configuration, in term of active sensors and navigation algorithm
 
 ## Test Procedure
 > TODO
