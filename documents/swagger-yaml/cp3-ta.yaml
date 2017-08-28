@@ -111,7 +111,7 @@ paths:
               v:
                 type: number
                 format: float
-                description: current pitch (TODO) of the turtlebot aspect
+                description: current velocity of the turtlebot
               charge:
                 type: integer
                 minimum: 16000
@@ -321,22 +321,31 @@ paths:
               message:
                 type: string
                 description: human readable info about what went wrong
-  /perturb/kinect:
+  /perturb/robot:
     post:
-      description: set the state of the kinect
+      description: introduce an error in the robot software
       parameters:
         - in: body
-          name: set kinect parameters
+          name: set a part of the robot to fail
           schema:
             type: object
             required:
+              - item
               - state
             properties:
+              item:
+                type: string
+                enum:
+                  - kinect
+                  - ultrasound
+                  - node1
+                  - node2
               state:
                 type: string
                 enum:
                   - 'on'
                   - 'off'
+                  - 'failing'
                 description: >-
                   the state the kinect should have after this request is
                   processed -- "on" means the kinect is operational and can be
