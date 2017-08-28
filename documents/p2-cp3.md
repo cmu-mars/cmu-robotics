@@ -2,7 +2,7 @@
 
 ## Overview
 
-This challenge problem is an evolution of Phase 1 Challenge Problem 1 that in Phase 2 will focus on applying adaptations to the software of the robot as it performs missions. Current self adaptive systems are typically limited to selecting from pre-determined plans for adapting to specific responses - in the context of BRASS and for long-lived software, these adaptations will need to be discovered as the system is deployed. Adaptation discovery will be based on relational and probabilistic multi-objective planning over the software / hardware configurations of the robot in response to changes to characteristics of the software (unreliable components, failing sensors) and environment (resource changes, characteristics in the environment).
+This challenge problem is an evolution of Phase 1 Challenge Problem 1 that in Phase 2 will focus on applying adaptations to the software of the robot as it performs missions. Regardless of the source of changes that BRASS-enabled systems will encounter, in many sysems these will need to be applied during system operation. Current self adaptive systems are typically limited to selecting from pre-determined plans for adapting to specific responses - in the context of BRASS and for long-lived software, these adaptations will need to be discovered when the system is in operation. Adaptation discovery will be based on relational and probabilistic multi-objective planning over the software / hardware configurations of the robot in response to changes to characteristics of the software (unreliable components, failing sensors) and environment (resource changes, characteristics in the environment).
 
 ### Research Questions being Addressed
 
@@ -10,6 +10,10 @@ This challenge problem is an evolution of Phase 1 Challenge Problem 1 that in Ph
 - How can we manage the interplay between constraints on structure, behavior, and quality when adapting software?
 - Modern CPS are a combination of models; how can we represent global constraints over multiple models and use them to help guarantee correctness and quality of software change plans?
 - What proportion of techniques can be used on line vs. needs to be done off-line?
+
+### Exploring the Research Questions through the Test
+
+The perturbations available to the test are designed to trigger software configuration changes that can be handled on-line (changes to actual code are being addressed in CP2). These perturbations will be drawn from the following set of possible perturbations: (a) Changing lighting conditions dynamically in the environment, (b) causing failure or error of a sensor on the robot, (c) placing obstacles in the path of the robot, (d) killing (with random amounts of persistence) software nodes on the robot. The aim here is explore a variety of difficulties of software configuration changes on-line, from relatively simple changes affecting one node (e.g., its resilience or parameterization) to nodes with a large number of dependencies, causing system-wide changes to the architecture structure of the software.
 
 ### Notes:
 Changes available to the software:
