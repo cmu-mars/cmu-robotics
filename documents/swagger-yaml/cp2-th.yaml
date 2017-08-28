@@ -9,11 +9,15 @@ paths:
   /error:
     post:
       description: |-
-        Used to indicate that an error has occurred during the preparation or
-          evaluation of a test scenario, or during the start-up of the system under test. The body of this method contains a single property, `ErrorMsg`, containing a JSON-based description of the error. A description of the errors produced by SUT are given below.
+        Used to indicate that an error has occurred during the preparation
+          or evaluation of a test scenario, or during the start-up of the
+          system under test. The body of this method contains a single
+          property, `ErrorMsg`, containing a JSON-based description of the
+          error. A description of the errors produced by SUT are given
+          below.
       parameters:
         - in: body
-          name: error parameters
+          name: Parameters
           schema:
             type: object
             required:
@@ -24,12 +28,12 @@ paths:
                 enum:
                   - NeutralPerturbation
                 description: >-
-                  One of the perturbations for the test scenario has no effect
-                  on the outcome of the test suite, and as such, it does not
-                  consistitute a fault
+                  One of the perturbations for the test scenario has no
+                  effect on the outcome of the test suite, and as such, it
+                  does not consistitute a fault
 
-                  TODO -- add more error codes with more description of possible
-                  bad states
+                  TODO -- add more error codes with more description of
+                  possible bad states
       responses:
         '200':
           description: the TH acknowledges the error
@@ -38,16 +42,6 @@ paths:
   /ready:
     post:
       description: used to indicate that the SUT is ready and that testing may begin
-      responses:
-        '200':
-          description: the TH acknowledges the ready message
-        '400':
-          description: the TH has itself encontered an error processing the ready message
-  /perturbed:
-    post:
-      description: >-
-        Used to indicate that the perturbations have been successfully injected,
-        and that the system is ready for evaluation.
       responses:
         '200':
           description: the TH acknowledges the ready message
@@ -73,7 +67,7 @@ paths:
         `SutFinishedStatus`, as specified by the Lincoln Labs API.
       parameters:
         - in: body
-          name: error parameters
+          name: Parameters
           schema:
             type: object
             required:

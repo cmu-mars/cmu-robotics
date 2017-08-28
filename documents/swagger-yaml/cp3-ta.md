@@ -29,10 +29,10 @@ enables or disables the DAS
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**das parameters**  <br>*optional*|[das parameters](#action-das-post-das-parameters)|
+|**Body**|**Parameters**  <br>*optional*|[Parameters](#action-das-post-parameters)|
 
-<a name="action-das-post-das-parameters"></a>
-**das parameters**
+<a name="action-das-post-parameters"></a>
+**Parameters**
 
 |Name|Description|Schema|
 |---|---|---|
@@ -123,10 +123,10 @@ set the level of the battery in a currently running test
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**place obstacle parameters**  <br>*optional*|[place obstacle parameters](#perturb-battery-post-place-obstacle-parameters)|
+|**Body**|**Parameters**  <br>*optional*|[Parameters](#perturb-battery-post-parameters)|
 
-<a name="perturb-battery-post-place-obstacle-parameters"></a>
-**place obstacle parameters**
+<a name="perturb-battery-post-parameters"></a>
+**Parameters**
 
 |Name|Description|Schema|
 |---|---|---|
@@ -166,10 +166,10 @@ set the state of the kinect
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**set kinect parameters**  <br>*optional*|[set kinect parameters](#perturb-kinect-post-set-kinect-parameters)|
+|**Body**|**Parameters**  <br>*optional*|[Parameters](#perturb-kinect-post-parameters)|
 
-<a name="perturb-kinect-post-set-kinect-parameters"></a>
-**set kinect parameters**
+<a name="perturb-kinect-post-parameters"></a>
+**Parameters**
 
 |Name|Description|Schema|
 |---|---|---|
@@ -209,10 +209,10 @@ if the test is running, place an obstacle on the map
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**place obstacle parameters**  <br>*optional*|[place obstacle parameters](#perturb-place_obstacle-post-place-obstacle-parameters)|
+|**Body**|**Parameters**  <br>*optional*|[Parameters](#perturb-place_obstacle-post-parameters)|
 
-<a name="perturb-place_obstacle-post-place-obstacle-parameters"></a>
-**place obstacle parameters**
+<a name="perturb-place_obstacle-post-parameters"></a>
+**Parameters**
 
 |Name|Description|Schema|
 |---|---|---|
@@ -260,10 +260,10 @@ if the test is running, remove a previously placed obstacle from the map
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**place obstacle parameters**  <br>*optional*|[place obstacle parameters](#perturb-remove_obstacle-post-place-obstacle-parameters)|
+|**Body**|**Parameters**  <br>*optional*|[Parameters](#perturb-remove_obstacle-post-parameters)|
 
-<a name="perturb-remove_obstacle-post-place-obstacle-parameters"></a>
-**place obstacle parameters**
+<a name="perturb-remove_obstacle-post-parameters"></a>
+**Parameters**
 
 |Name|Description|Schema|
 |---|---|---|

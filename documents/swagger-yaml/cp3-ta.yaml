@@ -49,7 +49,7 @@ paths:
       description: enables or disables the DAS
       parameters:
         - in: body
-          name: das parameters
+          name: Parameters
           schema:
             type: object
             required:
@@ -149,7 +149,7 @@ paths:
       description: set the level of the battery in a currently running test
       parameters:
         - in: body
-          name: place obstacle parameters
+          name: Parameters
           schema:
             type: object
             required:
@@ -190,7 +190,7 @@ paths:
       description: 'if the test is running, place an obstacle on the map'
       parameters:
         - in: body
-          name: place obstacle parameters
+          name: Parameters
           schema:
             type: object
             required:
@@ -282,7 +282,7 @@ paths:
       description: 'if the test is running, remove a previously placed obstacle from the map'
       parameters:
         - in: body
-          name: place obstacle parameters
+          name: Parameters
           schema:
             type: object
             required:
@@ -326,7 +326,11 @@ paths:
       description: introduce an error in the robot software
       parameters:
         - in: body
+<<<<<<< HEAD
           name: set a part of the robot to fail
+=======
+          name: Parameters
+>>>>>>> master
           schema:
             type: object
             required:

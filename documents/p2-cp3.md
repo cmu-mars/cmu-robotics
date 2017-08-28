@@ -26,7 +26,7 @@ Changes available to the software:
 
 ## Test Data
 
-No specific test data will be required for this challenge problem, other than that sent in response to the th/ready endpoint. The candidate maps will be delivered for inspection by Lincoln Labs. The maps will include (a) the graph of waypoints, indicating their location in meters from an origin, (b) properties associated with each edge and node (including whether it is a charging station, the lighting conditions along the path, and the crowdedness of the corridors). 
+No specific test data will be required for this challenge problem, other than that sent in response to the th/ready endpoint. The candidate maps will be delivered for inspection by Lincoln Labs. The maps will include (a) the graph of waypoints, indicating their location in meters from an origin, (b) properties associated with each edge and node (including whether it is a charging station, the lighting conditions along the path, and the crowdedness of the corridors).
 
 >TODO: Need to be clear about what is known by the DAS (definitely waypoints and locations) and what is not (e.g., do we know up front the properties of the map - if not, which ones are hidden from us?)
 
@@ -41,6 +41,13 @@ The test will be able to be parameterized in a number of ways, and this will be 
 ## Test Procedure
 > TODO
 ## Interface to the Test Harness (API)
+
+### Sequence Diagram for Interaction Pattern
+
+Implicitly, the TA can hit the `/error` endpoint on the TH at any time in
+this sequence. This interaction is omitted for clarity.
+
+![alt text](sequences/cp3.mmd.png "CP3 sequence diagram")
 
 ### REST Interface to the TH
 

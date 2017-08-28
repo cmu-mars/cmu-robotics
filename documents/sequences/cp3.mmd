@@ -1,0 +1,8 @@
+sequenceDiagram
+	participant TH
+	participant TA
+
+	TA ->> TH: /ready
+	TH -->> TA: configuration data
+	TH ->> TA: /query/initial
+	TA -->> TH: initial path info

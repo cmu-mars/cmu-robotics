@@ -29,10 +29,10 @@ Used to trigger the code adaptation process.
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**adapt parameters**  <br>*optional*|[adapt parameters](#adapt-post-adapt-parameters)|
+|**Body**|**Parameters**  <br>*optional*|[Parameters](#adapt-post-parameters)|
 
-<a name="adapt-post-adapt-parameters"></a>
-**adapt parameters**
+<a name="adapt-post-parameters"></a>
+**Parameters**
 
 |Name|Description|Schema|
 |---|---|---|
@@ -67,10 +67,10 @@ Applies a given set of perturbations, provided as a list of JSON objects, to the
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**perturb parameters**  <br>*optional*|[perturb parameters](#perturb-post-perturb-parameters)|
+|**Body**|**Parameters**  <br>*optional*|[Parameters](#perturb-post-parameters)|
 
-<a name="perturb-post-perturb-parameters"></a>
-**perturb parameters**
+<a name="perturb-post-parameters"></a>
+**Parameters**
 
 |Name|Description|Schema|
 |---|---|---|
@@ -103,10 +103,10 @@ Returns a list of possible perturbations of an (optionally) specified kind and c
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**perturbations parameters**  <br>*optional*|[perturbations parameters](#perturbations-get-perturbations-parameters)|
+|**Body**|**Parameters**  <br>*optional*|[Parameters](#perturbations-get-parameters)|
 
-<a name="perturbations-get-perturbations-parameters"></a>
-**perturbations parameters**
+<a name="perturbations-get-parameters"></a>
+**Parameters**
 
 |Name|Description|Schema|
 |---|---|---|

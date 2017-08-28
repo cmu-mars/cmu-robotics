@@ -1,0 +1,25 @@
+sequenceDiagram
+	participant TH
+	participant TA
+
+	Note right of TA: setting up, unable to process input
+	TA ->> TH: /ready
+	TH -->> TA: configuration data
+	TH ->> TA: /perturbations
+	TA -->> TH: all possible perturbations
+	TH ->> TA: /perturb
+	TA -->> TH: confirm perturbed
+
+	opt in adaptive case
+	     TH ->> TA: /adapt
+	     loop periodical
+	     	  TA ->> TH: /status
+	     end
+	     TA ->> TH: /adapted
+	end
+
+	TH ->> TA: /validate
+	loop periodical
+	     TA ->> TH: /status
+	end
+	TA ->> TH: /done
