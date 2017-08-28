@@ -22,7 +22,9 @@ Changes available to the software:
 
 ## Test Data
 
-No specific test data will be required for this challenge problem, other than that sent in response to the th/ready endpoint.
+No specific test data will be required for this challenge problem, other than that sent in response to the th/ready endpoint. The candidate maps will be delivered for inspection by Lincoln Labs. The maps will include (a) the graph of waypoints, indicating their location in meters from an origin, (b) properties associated with each edge and node (including whether it is a charging station, the lighting conditions along the path, and the crowdedness of the corridors). 
+
+>TODO: Need to be clear about what is known by the DAS (definitely waypoints and locations) and what is not (e.g., do we know up front the properties of the map - if not, which ones are hidden from us?)
 
 ## Test Parameters
 
