@@ -1,12 +1,12 @@
-# CMU MARS (Alrdich), CP3: On-line robotic adaptation to software failure, unexpected environments
+# CMU MARS (Aldrich), CP3: On-line robotic adaptation to software failure, unexpected environments
 
 ## Overview
 
-This challenge problem is an evolution of Phase 1 Challenge Problem 1 that in Phase 2 will focus on applying adaptations to the software of the robot as it performs missions. Regardless of the source of changes that BRASS-enabled systems will encounter, in many sysems these will need to be applied during system operation. Current self adaptive systems are typically limited to selecting from pre-determined plans for adapting to specific responses - in the context of BRASS and for long-lived software, these adaptations will need to be discovered when the system is in operation. Adaptation discovery will be based on relational and probabilistic multi-objective planning over the software / hardware configurations of the robot in response to changes to characteristics of the software (unreliable components, failing sensors) and environment (resource changes, characteristics in the environment).
+This challenge problem is an evolution of Phase 1 Challenge Problem 1 that in Phase 2 will focus on applying adaptations to the software of the robot as it performs missions. Regardless of the source of changes that BRASS-enabled systems will encounter, in many systems these changes will have to be applied during system operation. Current self adaptive systems are typically limited to selecting from pre-determined plans for adapting to specific responses - in the context of BRASS and for long-lived software, these adaptations will need to be discovered when the system is in operation. Adaptation discovery will be based on relational and probabilistic multi-objective planning over the software / hardware configurations of the robot in response to changes to characteristics of the software (unreliable components, failing sensors) and environment (resource changes, characteristics in the environment).
 
 ### Research Questions being Addressed
 
-- Can the optimal architectural structure of a system be generated with multi-objective planning? Can we use this to manage change to the structure of the software on-line?
+- Can the optimal architectural structure of a system (with respect to the satisfaction of mission goals) be generated with multi-objective planning? Can we use this to manage change to the structure of the software on-line?
 - How can we manage the interplay between constraints on structure, behavior, and quality when adapting software?
 - Modern CPS are a combination of models; how can we represent global constraints over multiple models and use them to help guarantee correctness and quality of software change plans?
 - What proportion of techniques can be used on line vs. needs to be done off-line?
@@ -21,14 +21,14 @@ Changes available to the software:
 - different localization techniques for different sensors and different parts of the map
 - different map characteristics:
      - extensive glass corridors require ultrasound sensor and associated localization changes (rather than kinect)
-     - large open space configured for poster session requires switch to SLAM, or different local planner for extensive obstacle avoidance
-     - part of building with beacons requires reconfiguration to use them for localization, but that part of software not running when not in that area.
+     - large open space configured for poster session requires switch to SLAM, or different local planner for extensive obstacle avoidance. Different planners may have different degrees of reliability in the presence of crowds (e.g., follow-the-carrot is time optimal because it follows a straight line but less reliable than elastic band, because it does not adjust the trajectory of the robot in the presence of obstacles).
+     - part of building with beacons requires reconfiguration to use them for localization, but the part of the software that makes use of them should not be running when not in that area.
 
 ## Test Data
 
 No specific test data will be required for this challenge problem, other than that sent in response to the th/ready endpoint. The candidate maps will be delivered for inspection by Lincoln Labs. The maps will include (a) the graph of waypoints, indicating their location in meters from an origin, (b) properties associated with each edge and node (including whether it is a charging station, the lighting conditions along the path, and the crowdedness of the corridors).
 
->TODO: Need to be clear about what is known by the DAS (definitely waypoints and locations) and what is not (e.g., do we know up front the properties of the map - if not, which ones are hidden from us?)
+>TODO: Need to be clear about what is known by the DAS (definitely waypoints and locations) and what is not (e.g., do we know up front the properties of the map - if not, which ones are hidden from us?) Perhaps a possibility would be adding knowledge with some degree of uncertainty (e.g., the existence of a crowd will be known with certainty once the robot gets close to it, but before that, the likelihood of a crowd in some part of the map is abstracted as a probability distribution - same for current light conditions).
 
 ## Test Parameters
 
