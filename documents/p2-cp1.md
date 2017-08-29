@@ -6,8 +6,8 @@ The goal of this challenge problem is to discover the power model of the
 mobile robotics platform and use the discovered model to adapt for optimal
 mission performance. The intent of this challenge problem is to simulate
 robots with different hardware, algorithms, and workload and therefore
-different power usage characteristics, in which we intentionally simulate
-also severe changes that might be caused by unanticipated and yet-unknown
+different power usage characteristics, in which we also intentionally simulate
+severe changes that might be caused by unanticipated and yet-unknown
 future environment changes. This challenge problem tests whether we can
 adapt our robotic platform successfully to such situations.
 
@@ -19,17 +19,18 @@ Lincoln Labs will select a secret power model which is a function with a
 large number of inputs (e.g. `20`) and outputs energy consumption over
 time. That is, Lincoln Labs can provide drastic differences for energy
 consumption of hardware and software components that may not reflect
-current but possibly distant-future hardware and software. There will be a
-query mechanism whereby the MARS DAS can provide a particular set of inputs
-and receive back the related output. In addition, the power model is used
+current but possibly distant-future hardware and software. The MARS DAS
+will be able to query the model by providing inputs and receiving back 
+the output from the power model. In addition, the power model is used
 during the evaluation to compute the battery level during simulation.
 
 The challenge problem will proceed in two phases. First, the DAS will use
 the query mechanism to query the power consumption for certain inputs
 (simulating the idea of running experiments in practice to measure power
 consumption in specific configurations). The DAS will query only a small
-number of inputs up to a query budget is reached. The DAS will use the
-information gleaned to learn an approximation of the secret power model.
+number of inputs until a query budget (specified by Lincoln Labs) is reached. 
+The DAS will use the information gleaned to learn an approximation of the 
+secret power model.
 
 In the second phase, the robot will be asked to complete `n` missions
 within a map without running out of energy. There are charging stations on
@@ -45,16 +46,16 @@ phase 1. Differences should be observable in terms of mission failures
 effectively with fewer disruptions to the mission).
 
 ## Research Questions
-**RQ1**: Can the use of learning an accurate power model improve the score of mission comparing with using inaccurate model and no model?
-+ There might be some cases that using an accurate model might tell us that we can finish a mission without going to the charge station and therefore score a better mission. 
-+ We would like to explore corner cases that an accurate model can provide us benefit by saving time, saving energy or both, and therefore hitting a better score in total
-+ Using an inaccurate model might tell us that we can go to the target but the discharge is quicker (t^2) that what the robot expects (t) and therefore fail the mission
-- There might be some cases where the model tell us we need to go to the charging station, but we could finish the mission without going to the station
+**RQ1**: Can the use of learning an accurate power model improve the score of mission compared with using inaccurate model and no model?
++ There might be some cases where using an accurate model might tell us that we can finish a mission without going to the charge station and therefore score better in the mission. 
++ We would like to explore corner cases that an accurate model can provide us benefit by saving time, saving energy or both, and therefore hitting a better score in total.
++ Using an inaccurate model might tell us that we can go to the target but the discharge is quicker (t^2) than what the robot expects (t) and therefore fail the mission
+- There might be some cases where the inaccurate model tells us we need to go to the charging station, but we could finish the mission without going to the station.
 
 **RQ2**: Can the use of learning an accurate power model improve the quality of adaptations? 
-+ There might be some cases where accurate model leads to the quality of the decisions made by the planner and analyzer. For example, an accurate model might trigger fewer adaptations, an accurate model might lead to a better decision making by not going too much to the charging station or going when it is needed.
++ There might be some cases where an accurate model leads to the quality of the decisions made by the planner and analyzer. For example, an accurate model might trigger fewer adaptations, an accurate model might lead to better decision making by not going too much to the charging station or going only when it is needed.
 
-**RQ3**: Can the use of a model that is accurate for short horizon (i.e., t=[t_min, t_max/\alpha]) beneficial for accomplishing a mission comparing with a model that is more accurate for the longer horizon?
+**RQ3**: Can the use of a model that is accurate for a short horizon (i.e., t=[t_min, t_max/\alpha]) be beneficial for accomplishing a mission compared with a model that is more accurate for the longer horizon?
 
 ## Test Data
 
@@ -98,17 +99,17 @@ Note, this API is notional at this stage.
 * mode encodes: (pert|adaptation) & (No PM|Predefined PM|Learned PM)
 * num_of_waypoints is the number of target points, i.e., sub-missions that
   needs to be completed mode is one of the following cases, cf. table below:
-   1. A (no perturbation, no adaptation) and no power model so the robot do
-   not have a clue to charge even when the battery goes bellow a threshold
+   1. A (no perturbation, no adaptation, no power model) so the robot does
+   not have a clue to charge even when the battery goes below a threshold
 
-   2. B (perturbation, no adaptation) and no power model so the robot do
-   not have a clue to charge even when the battery goes bellow a threshold
+   2. B (perturbation, no adaptation, no power model) so the robot does
+   not have a clue to charge even when the battery goes below a threshold
 
-   3. C (perturbation, adaptation) and a static predefined power model (we
-   implicitly assume this is inaccurate) so the planner uses an inaccurate
-   model for planning an adaptation
+   3. C (perturbation, adaptation, static predefined power model) so the 
+   planner uses an inaccurate model for planning an adaptation.  (We
+   implicitly assume this is inaccurate.)
 
-   4. C (perturbation, adaptation) and a learned model that the planner use
+   4. C (perturbation, adaptation, learned model) that the planner use
    for adaptation
 
 * The discharge and charge functions are what we mean by the power models.
