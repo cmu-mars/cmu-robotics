@@ -28,5 +28,5 @@ sequenceDiagram
 
         Note right of TA: won't send until validation is over and all logs cleaned up
         TA ->> TH: /done
-        TH --> TA: ack. /done
+        TH -->> TA: ack. /done
         Note left of TH: TH may shutdown before this is processed

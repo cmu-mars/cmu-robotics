@@ -6,12 +6,13 @@ sequenceDiagram
 
         TA ->>+ TH: /ready
         TH -->>- TA: configuration data
-        TH ->>+ TA: /query/initial
-        TA -->>- TH: initial path info
 
         TA ->>+ TH: /status live
         Note left of TH: system live, ready for perturbs
         TH -->>- TA: ack. status
+
+        TH ->>+ TA: /query/initial
+        TA -->>- TH: initial path info
 
         opt initial perturbs
             opt for any X
@@ -46,6 +47,6 @@ sequenceDiagram
 
         Note right of TA: won't send until the mission is over and all logs cleaned up
         TA ->> TH: /done
-        TH --> TA: ack. /done
+        TH -->> TA: ack. /done
 
         Note left of TH: TH may shutdown before this is processed
