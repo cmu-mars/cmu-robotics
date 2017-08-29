@@ -2,6 +2,8 @@ sequenceDiagram
         participant TH
         participant TA
 
+	Note right of TA: setting up, activity on any endpoint is an error
+
         TA ->>+ TH: /ready
         TH -->>- TA: configuration data
         TH ->>+ TA: /query/initial

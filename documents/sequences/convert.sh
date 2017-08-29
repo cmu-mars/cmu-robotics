@@ -2,5 +2,5 @@
 
 for f in *.mmd
 do
-    mermaid -w 500 $f
+    mermaid $f
 done
