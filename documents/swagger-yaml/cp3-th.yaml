@@ -31,7 +31,7 @@ paths:
               target_loc:
                 type: string
                 description: the name of the goal map waypoint
-              initial_config: 
+              initial_config:
                 type: object
                 description: >-
                   Specifies the initial configuration of the robot (subject to change)
@@ -43,14 +43,14 @@ paths:
                     description: the set of sensors
                   localization:
                     type: string
-                    enum: 
+                    enum:
                       - algo1
                       - algo2
                       - algo3
                     description: which localization algorithm to use
                   navigation_config:
                     type : string
-                    enum: 
+                    enum:
                       - algo1
                       - algo2
                       - algo3
@@ -61,16 +61,6 @@ paths:
                   `false` then the DAS will not sure adaptive behaiviours
         '400':
           description: TH encountered an error producing configuration data
-  /start:
-    post:
-      description: >-
-        indicates that the SUT is ready to recieve perturbations and that the
-        test has started
-      responses:
-        '200':
-          description: the TH acknowledges that the SUT has started
-        '400':
-          description: the TH has encountered an error
   /error:
     post:
       description: >-
