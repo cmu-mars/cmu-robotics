@@ -47,7 +47,7 @@ The test will be able to be parameterized in a number of ways, and this will be 
 Implicitly, the TA can hit the `/error` endpoint on the TH at any time in
 this sequence. This interaction is omitted for clarity.
 
-![alt text](sequences/cp3.mmd.png "CP3 sequence diagram")
+<img src="sequences/cp3.mmd.png" alt="cp3 seq diagram" width="400">
 
 ### REST Interface to the TH
 
