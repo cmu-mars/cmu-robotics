@@ -18,47 +18,11 @@
 <a name="paths"></a>
 ## Paths
 
-<a name="action-das-post"></a>
-### POST /action/das
-
-#### Description
-enables or disables the DAS
-
-
-#### Parameters
-
-|Type|Name|Schema|
-|---|---|---|
-|**Body**|**Parameters**  <br>*optional*|[Parameters](#action-das-post-parameters)|
-
-<a name="action-das-post-parameters"></a>
-**Parameters**
-
-|Name|Description|Schema|
-|---|---|---|
-|**enable**  <br>*required*|enable the DAS if the value is `true`, disable it otherwise|boolean|
-
-
-#### Responses
-
-|HTTP Code|Description|Schema|
-|---|---|---|
-|**200**|successfully changed the DAS state|No Content|
-|**400**|encountered an error while changing the DAS state|[Response 400](#action-das-post-response-400)|
-
-<a name="action-das-post-response-400"></a>
-**Response 400**
-
-|Name|Description|Schema|
-|---|---|---|
-|**message**  <br>*optional*|human readable information about the error, if any can be provided|string|
-
-
 <a name="action-observe-get"></a>
 ### GET /action/observe
 
 #### Description
-returns observations about the current state of the SUT
+the current state of the SUT
 
 
 #### Responses
@@ -66,7 +30,7 @@ returns observations about the current state of the SUT
 |HTTP Code|Description|Schema|
 |---|---|---|
 |**200**|successfully determined the current state of the SUT|[Response 200](#action-observe-get-response-200)|
-|**400**|encountered an error determining the current state of the DAS.|[Response 400](#action-observe-get-response-400)|
+|**400**|encountered an error determining the current state of the SUT.|[Response 400](#action-observe-get-response-400)|
 
 <a name="action-observe-get-response-200"></a>
 **Response 200**
@@ -76,8 +40,8 @@ returns observations about the current state of the SUT
 |**charge**  <br>*optional*|current charge of the battery, in mWh. TODO -- check the min and max values here  <br>**Minimum value** : `16000`  <br>**Maximum value** : `32000`|integer|
 |**kinect_status**  <br>*optional*|the current status of the kinect sensor. "on" means that the sensor is on and being used to gather data about the environment; "off" means that the sensor is off.|enum (on, off)|
 |**predicted_arrival**  <br>*optional*|current predicted arrival time, in simulation seconds|integer|
-|**sim_time**  <br>*optional*|current simulation time|integer|
-|**v**  <br>*optional*|current pitch (TODO) of the turtlebot aspect|number (float)|
+|**sim_time**  <br>*optional*|current simulation time  <br>**Minimum value** : `0`|integer|
+|**v**  <br>*optional*|current velocity of the turtlebot|number (float)|
 |**w**  <br>*optional*|current yaw (TODO) of the turtlebot aspect|number (float)|
 |**x**  <br>*optional*|current x-coordinate of the turtlebot position|number (float)|
 |**y**  <br>*optional*|current y-coordinate of the turtlebot position|number (float)|
@@ -116,14 +80,14 @@ start the turtlebot navigating through the selected map
 ### POST /perturb/battery
 
 #### Description
-set the level of the battery in a currently running test
+set the level of the battery. using this end point before getting a `live` status message is an error.
 
 
 #### Parameters
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**Parameters**  <br>*optional*|[Parameters](#perturb-battery-post-parameters)|
+|**Body**|**Parameters**  <br>*required*|[Parameters](#perturb-battery-post-parameters)|
 
 <a name="perturb-battery-post-parameters"></a>
 **Parameters**
@@ -138,7 +102,7 @@ set the level of the battery in a currently running test
 |HTTP Code|Description|Schema|
 |---|---|---|
 |**200**|the battery has been set to the requested level|[Response 200](#perturb-battery-post-response-200)|
-|**400**|an error was encountered while setting the battery|[Response 400](#perturb-battery-post-response-400)|
+|**400**|an error was encountered while setting the battery level|[Response 400](#perturb-battery-post-response-400)|
 
 <a name="perturb-battery-post-response-200"></a>
 **Response 200**
@@ -155,64 +119,21 @@ set the level of the battery in a currently running test
 |**message**  <br>*optional*|human readable information about the error, if any can be provided|string|
 
 
-<a name="perturb-kinect-post"></a>
-### POST /perturb/kinect
-
-#### Description
-set the state of the kinect
-
-
-#### Parameters
-
-|Type|Name|Schema|
-|---|---|---|
-|**Body**|**Parameters**  <br>*optional*|[Parameters](#perturb-kinect-post-parameters)|
-
-<a name="perturb-kinect-post-parameters"></a>
-**Parameters**
-
-|Name|Description|Schema|
-|---|---|---|
-|**state**  <br>*required*|the state the kinect should have after this request is processed -- "on" means the kinect is operational and can be used; "off" means it is not operational and cannot be used.|enum (on, off)|
-
-
-#### Responses
-
-|HTTP Code|Description|Schema|
-|---|---|---|
-|**200**|the kinect state has been set|[Response 200](#perturb-kinect-post-response-200)|
-|**400**|an error was encountered while setting the kinect|[Response 400](#perturb-kinect-post-response-400)|
-
-<a name="perturb-kinect-post-response-200"></a>
-**Response 200**
-
-|Name|Description|Schema|
-|---|---|---|
-|**sim_time**  <br>*required*|the simulation time when the kinect was set|integer|
-
-<a name="perturb-kinect-post-response-400"></a>
-**Response 400**
-
-|Name|Description|Schema|
-|---|---|---|
-|**message**  <br>*required*|human readable info about what went wrong|string|
-
-
 <a name="perturb-place_obstacle-post"></a>
 ### POST /perturb/place_obstacle
 
 #### Description
-if the test is running, place an obstacle on the map
+place an obstacle on the map.  using this end point before getting a `live` status message is an error.
 
 
 #### Parameters
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**Parameters**  <br>*optional*|[Parameters](#perturb-place_obstacle-post-parameters)|
+|**Body**|**place obstacle parameters**  <br>*required*|[place obstacle parameters](#perturb-place_obstacle-post-place-obstacle-parameters)|
 
-<a name="perturb-place_obstacle-post-parameters"></a>
-**Parameters**
+<a name="perturb-place_obstacle-post-place-obstacle-parameters"></a>
+**place obstacle parameters**
 
 |Name|Description|Schema|
 |---|---|---|
@@ -253,14 +174,14 @@ if the test is running, place an obstacle on the map
 ### POST /perturb/remove_obstacle
 
 #### Description
-if the test is running, remove a previously placed obstacle from the map
+remove a previously placed obstacle from the map. using this end point before getting a `live` status message is an error. sending any obstacle ID string that was not recived from a previous use of the `place_obstacle` end point is an error.
 
 
 #### Parameters
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**Parameters**  <br>*optional*|[Parameters](#perturb-remove_obstacle-post-parameters)|
+|**Body**|**Parameters**  <br>*required*|[Parameters](#perturb-remove_obstacle-post-parameters)|
 
 <a name="perturb-remove_obstacle-post-parameters"></a>
 **Parameters**
@@ -293,18 +214,62 @@ if the test is running, remove a previously placed obstacle from the map
 |**message**  <br>*required*|human readable info about what went wrong|string|
 
 
-<a name="query-initial-get"></a>
-### GET /query/initial
+<a name="perturb-robot-post"></a>
+### POST /perturb/robot
 
 #### Description
-after ready is reported, the TH will query this end point to get the initial planned path. note that waypoint names are unique per map. the `predicted_arrival_time` is a lower bound on the number of simulation seconds we estimate are needed to traverse the path.
+introduce an error in the robot software. using this end point before getting a `live` status message is an error.
+
+
+#### Parameters
+
+|Type|Name|Schema|
+|---|---|---|
+|**Body**|**set a part of the robot to fail**  <br>*required*|[set a part of the robot to fail](#perturb-robot-post-set-a-part-of-the-robot-to-fail)|
+
+<a name="perturb-robot-post-set-a-part-of-the-robot-to-fail"></a>
+**set a part of the robot to fail**
+
+|Name|Description|Schema|
+|---|---|---|
+|**item**  <br>*required*||enum (kinect, ultrasound, node1, node2)|
+|**state**  <br>*required*|the state the kinect should have after this request is processed -- "on" means the kinect is operational and can be used; "off" means it is not operational and cannot be used.|enum (on, off, failing)|
 
 
 #### Responses
 
 |HTTP Code|Description|Schema|
 |---|---|---|
-|**200**|computed the initially planned planned path|[Response 200](#query-initial-get-response-200)|
+|**200**|the error has been introduced into the robot software|[Response 200](#perturb-robot-post-response-200)|
+|**400**|an error was encountered while introducing an error into the robot software|[Response 400](#perturb-robot-post-response-400)|
+
+<a name="perturb-robot-post-response-200"></a>
+**Response 200**
+
+|Name|Description|Schema|
+|---|---|---|
+|**sim_time**  <br>*required*|the simulation time when the error was introduced|integer|
+
+<a name="perturb-robot-post-response-400"></a>
+**Response 400**
+
+|Name|Description|Schema|
+|---|---|---|
+|**message**  <br>*required*|human readable info about what went wrong|string|
+
+
+<a name="query-initial-get"></a>
+### GET /query/initial
+
+#### Description
+after ready is reported, the TH will query this end point to get the initial planned path. note that waypoint names are unique per map.
+
+
+#### Responses
+
+|HTTP Code|Description|Schema|
+|---|---|---|
+|**200**|computed the initially planned path|[Response 200](#query-initial-get-response-200)|
 |**400**|encountered an error computing the initially planned path|[Response 400](#query-initial-get-response-400)|
 
 <a name="query-initial-get-response-200"></a>
@@ -312,8 +277,8 @@ after ready is reported, the TH will query this end point to get the initial pla
 
 |Name|Description|Schema|
 |---|---|---|
-|**path**  <br>*required*|the initially planned sequence of waypoints the turtlebot will traverse, in order of planned traversal|< string > array|
-|**predicted_arrival_time**  <br>*required*|the number of simulation seconds we anticipate traveling the provided path will take|integer|
+|**path**  <br>*required*|the initially planned sequence of waypoints the turtlebot will traverse, in order of planned traversal|< string (waypoint-names) > array|
+|**predicted_arrival_time**  <br>*required*|a lower bound estimate of the number of simulation seconds needed for the robot to traverse the planned path  <br>**Minimum value** : `0`|integer|
 
 <a name="query-initial-get-response-400"></a>
 **Response 400**
