@@ -10,12 +10,10 @@ paths:
     get:
       description: >-
         after ready is reported, the TH will query this end point to get the
-        initial planned path. note that waypoint names are unique per map. the
-        `predicted_arrival_time` is a lower bound on the number of simulation
-        seconds we estimate are needed to traverse the path.
+        initial planned path. note that waypoint names are unique per map.
       responses:
         '200':
-          description: computed the initially planned planned path
+          description: computed the initially planned path
           schema:
             type: object
             required:
@@ -26,14 +24,16 @@ paths:
                 type: array
                 items:
                   type: string
+                  format: waypoint-names
                 description: >-
                   the initially planned sequence of waypoints the turtlebot will
                   traverse, in order of planned traversal
               predicted_arrival_time:
                 type: integer
+                minimum: 0
                 description: >-
-                  the number of simulation seconds we anticipate traveling the
-                  provided path will take
+                  a lower bound estimate of the number of simulation
+                  seconds needed for the robot to traverse the planned path
         '400':
           description: encountered an error computing the initially planned path
           schema:
@@ -62,7 +62,7 @@ paths:
                   provided
   /action/observe:
     get:
-      description: returns observations about the current state of the SUT
+      description: the current state of the SUT
       responses:
         '200':
           description: successfully determined the current state of the SUT
@@ -97,6 +97,7 @@ paths:
                 description: 'current predicted arrival time, in simulation seconds'
               sim_time:
                 type: integer
+                minimum: 0
                 description: current simulation time
               kinect_status:
                 type: string
@@ -108,7 +109,7 @@ paths:
                   sensor is on and being used to gather data about the
                   environment; "off" means that the sensor is off.
         '400':
-          description: encountered an error determining the current state of the DAS.
+          description: encountered an error determining the current state of the SUT.
           schema:
             type: object
             properties:
@@ -119,10 +120,11 @@ paths:
                   provided
   /perturb/battery:
     post:
-      description: set the level of the battery in a currently running test
+      description: set the level of the battery. using this end point before getting a `live` status message is an error.
       parameters:
         - in: body
-          name: place obstacle parameters
+          name: Parameters
+          required: true
           schema:
             type: object
             required:
@@ -149,7 +151,7 @@ paths:
                 type: integer
                 description: the simulation time when the battery was set
         '400':
-          description: an error was encountered while setting the battery
+          description: an error was encountered while setting the battery level
           schema:
             type: object
             properties:
@@ -160,10 +162,11 @@ paths:
                   provided
   /perturb/place_obstacle:
     post:
-      description: 'if the test is running, place an obstacle on the map'
+      description: 'place an obstacle on the map.  using this end point before getting a `live` status message is an error.'
       parameters:
         - in: body
           name: place obstacle parameters
+          required: true
           schema:
             type: object
             required:
@@ -252,10 +255,11 @@ paths:
                 description: human readable info about what went wrong
   /perturb/remove_obstacle:
     post:
-      description: 'if the test is running, remove a previously placed obstacle from the map'
+      description: 'remove a previously placed obstacle from the map. using this end point before getting a `live` status message is an error. sending any obstacle ID string that was not recived from a previous use of the `place_obstacle` end point is an error.'
       parameters:
         - in: body
-          name: place obstacle parameters
+          name: Parameters
+          required: true
           schema:
             type: object
             required:
@@ -296,10 +300,11 @@ paths:
                 description: human readable info about what went wrong
   /perturb/robot:
     post:
-      description: introduce an error in the robot software
+      description: introduce an error in the robot software. using this end point before getting a `live` status message is an error.
       parameters:
         - in: body
           name: set a part of the robot to fail
+          required: true
           schema:
             type: object
             required:
@@ -325,7 +330,7 @@ paths:
                   used; "off" means it is not operational and cannot be used.
       responses:
         '200':
-          description: the kinect state has been set
+          description: the error has been introduced into the robot software
           schema:
             type: object
             required:
@@ -333,9 +338,9 @@ paths:
             properties:
               sim_time:
                 type: integer
-                description: the simulation time when the kinect was set
+                description: the simulation time when the error was introduced
         '400':
-          description: an error was encountered while setting the kinect
+          description: an error was encountered while introducing an error into the robot software
           schema:
             type: object
             required:

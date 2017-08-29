@@ -34,13 +34,13 @@ paths:
               initial_config:
                 type: object
                 description: >-
-                  Specifies the initial configuration of the robot (subject to change)
+                  initial configuration of the robot internals (subject to change)
                 properties:
                   sensors:
                     type: array
                     items:
                       type: string
-                    description: the set of sensors
+                    description: the set of sensors TODO
                   localization:
                     type: string
                     enum:
@@ -58,7 +58,7 @@ paths:
                 type: boolean
                 description: >-
                   if `true`, then the DAS will use adapative behaiviours; if
-                  `false` then the DAS will not sure adaptive behaiviours
+                  `false` then the DAS will not use adaptive behaiviours
         '400':
           description: TH encountered an error producing configuration data
   /error:
@@ -93,7 +93,7 @@ paths:
             shut down the test
         '400':
           description: >-
-            the TH has encountered an error in processing the error from the SUt
+            the TH has encountered an error in processing the error from the SUT
             and will also shut down the test
   /status:
     post:
@@ -183,4 +183,4 @@ paths:
         '400':
           description: >-
             the TH has encountered an error in processing the done message of
-            the SUT
+            the SUT and is shutting down the test
