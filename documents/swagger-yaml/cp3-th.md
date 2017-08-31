@@ -29,7 +29,7 @@ indicates that the test is completed
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**Parameters**  <br>*optional*|[Parameters](#done-post-parameters)|
+|**Body**|**Parameters**  <br>*required*|[Parameters](#done-post-parameters)|
 
 <a name="done-post-parameters"></a>
 **Parameters**
@@ -46,7 +46,7 @@ indicates that the test is completed
 |HTTP Code|Description|Schema|
 |---|---|---|
 |**200**|the TH acknowledges the done message from the SUT and is shutting down the test|No Content|
-|**400**|the TH has encountered an error in processing the done message of the SUT|No Content|
+|**400**|the TH has encountered an error in processing the done message of the SUT and is shutting down the test|No Content|
 
 
 <a name="error-post"></a>
@@ -60,14 +60,14 @@ indicates that the SUT has encountered an error in configuration data, parameter
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**Parameters**  <br>*optional*|[Parameters](#error-post-parameters)|
+|**Body**|**Parameters**  <br>*required*|[Parameters](#error-post-parameters)|
 
 <a name="error-post-parameters"></a>
 **Parameters**
 
 |Name|Description|Schema|
 |---|---|---|
-|**ERROR**  <br>*required*|one of a enumerated set of reasons that errors may arise|enum (TEST_DATA_FILE_ERROR, TEST_DATA_FORMAT_ERROR, DAS_LOG_FILE_ERROR, DAS_OTHER_ERROR)|
+|**ERROR**  <br>*required*|one of a enumerated set of reasons that errors may arise|enum (TEST_CONFIG_ERROR, TEST_DATA_FORMAT_ERROR, DAS_LOG_FILE_ERROR, DAS_OTHER_ERROR)|
 |**MESSAGE**  <br>*required*|human readable text describing the error|string|
 
 
@@ -76,7 +76,7 @@ indicates that the SUT has encountered an error in configuration data, parameter
 |HTTP Code|Description|Schema|
 |---|---|---|
 |**200**|the TH acknowledges that the SUT has encountered an error and will shut down the test|No Content|
-|**400**|the TH has encountered an error in processing the error from the SUt and will also shut down the test|No Content|
+|**400**|the TH has encountered an error in processing the error from the SUT and will also shut down the test|No Content|
 
 
 <a name="ready-post"></a>
@@ -98,25 +98,20 @@ indicate to the TH that the TA is ready to recieve configuration data and contin
 
 |Name|Description|Schema|
 |---|---|---|
+|**initial_config**  <br>*optional*|initial configuration of the robot internals (subject to change)|[initial_config](#ready-post-initial_config)|
 |**map_to_use**  <br>*optional*|the name of the map to use for this test, must be from the list of agreed upon map names|string (MapMnemonic)|
 |**start_loc**  <br>*optional*|the name of the start map waypoint. must be a valid way point for the map given in `map_to_use`.|string|
 |**target_loc**  <br>*optional*|the name of the goal map waypoint|string|
-|**use_adaptation**  <br>*optional*|if `true`, then the DAS will use adapative behaiviours; if `false` then the DAS will not sure adaptive behaiviours|boolean|
+|**use_adaptation**  <br>*optional*|if `true`, then the DAS will use adapative behaiviours; if `false` then the DAS will not use adaptive behaiviours|boolean|
 
+<a name="ready-post-initial_config"></a>
+**initial_config**
 
-<a name="start-post"></a>
-### POST /start
-
-#### Description
-indicates that the SUT is ready to recieve perturbations and that the test has started
-
-
-#### Responses
-
-|HTTP Code|Description|Schema|
+|Name|Description|Schema|
 |---|---|---|
-|**200**|the TH acknowledges that the SUT has started|No Content|
-|**400**|the TH has encountered an error|No Content|
+|**localization**  <br>*optional*|which localization algorithm to use|enum (algo1, algo2, algo3)|
+|**navigation_config**  <br>*optional*||enum (algo1, algo2, algo3)|
+|**sensors**  <br>*optional*|the set of sensors TODO|< string > array|
 
 
 <a name="status-post"></a>
@@ -130,7 +125,7 @@ indicate important state changes in the SUT to the TH. posted periodically as th
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**Parameters**  <br>*optional*|[Parameters](#status-post-parameters)|
+|**Body**|**Parameters**  <br>*required*|[Parameters](#status-post-parameters)|
 
 <a name="status-post-parameters"></a>
 **Parameters**

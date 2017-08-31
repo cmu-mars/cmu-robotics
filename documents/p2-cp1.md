@@ -320,7 +320,7 @@ A: failed, B: failed, C: failed, D: succeed
 Implicitly, the TA can hit the `/error` endpoint on the TH at any time in
 this sequence. This interaction is omitted for clarity.
 
-![alt text](sequences/cp1.mmd.png "CP1 sequence diagram")
+<img src="sequences/cp1.mmd.png" alt="cp1 seq diagram" width="400">
 
 ### REST Interface to the TH
 

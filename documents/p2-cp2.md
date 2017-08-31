@@ -227,7 +227,7 @@ Used to describe the outcome of an attempted compilation.
 Implicitly, the TA can hit the `/error` endpoint on the TH at any time in
 this sequence. This interaction is omitted for clarity.
 
-![alt text](sequences/cp2.mmd.png "CP2 sequence diagram")
+<img src="sequences/cp2.mmd.png" alt="cp2 seq diagram" width="400">
 
 ### REST Interface to the TH
 

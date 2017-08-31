@@ -2,5 +2,38 @@ sequenceDiagram
 	participant TH
 	participant TA
 
-	TA ->> TH: /ready
-	TH -->> TA: configuration data
+	Note right of TA: setting up, activity on any endpoint is an error
+
+        TA ->>+ TH: /ready
+        TH -->>- TA: configuration data
+
+	opt adaptive case
+	        TA ->>+ TH: /status learning_started
+        	TH -->>- TA: ack. status
+
+        	TA ->>+ TH: /status learning_done
+		TH -->>- TA: ack. status
+	end
+
+	TA ->>+ TH: /status running
+	TH -->>- TA: ack. status
+
+	loop as desired
+                opt dynamic perturbs
+                            opt for any X
+                                 TH ->>+ TA: /perturb/X
+                                 TA -->>- TH: ack. /perturb/X
+                            end
+                end
+
+                opt as needed
+                    TA -x+ TH: /status
+                    TH --x- TA: ack. status
+                end
+        end
+
+	Note right of TA: won't send until everything is evaluated and all logs cleaned up
+        TA ->> TH: /done
+        TH -->> TA: ack. /done
+
+        Note left of TH: TH may shutdown before this is processed

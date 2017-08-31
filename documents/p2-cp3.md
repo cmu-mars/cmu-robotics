@@ -1,57 +1,45 @@
-# CMU MARS (Alrdich), CP3: Robot obstacle avoidance, timeliness, power, and scale
+# CMU MARS (Aldrich), CP3: On-line robotic adaptation to software failure, unexpected environments
 
 ## Overview
 
-This challenge problem is an evolution of Phase I Challenge Problem 1 that will adapt the TurtleBot's use of sensors, components,
-and mission to current energy levels to preserve mission intent and intents regarding internal behavior despite low power and *changing
-hardware conditions*.
+This challenge problem is an evolution of Phase 1 Challenge Problem 1 that in Phase 2 will focus on applying adaptations to the software of the robot as it performs missions. Regardless of the source of changes that BRASS-enabled systems will encounter, in many systems these changes will have to be applied during system operation. Current self adaptive systems are typically limited to selecting from pre-determined plans for adapting to specific responses - in the context of BRASS and for long-lived software, these adaptations will need to be discovered when the system is in operation. Adaptation discovery will be based on relational and probabilistic multi-objective planning over the software / hardware configurations of the robot in response to changes to characteristics of the software (unreliable components, failing sensors) and environment (resource changes, characteristics in the environment).
 
-The robot is used for a variety of tasks with different mission parameters and different mission length. In its current form the
-TurtleBot implementation does not explicitly consider energy consumption and battery life, assuming the TurtleBot can drive back
-to its home station when the battery runs low. Various ecosystem and mission changes, from obstacles on the course, to delays in
-the mission, to partial sensor failure, can interfere with those objectives.
+### Research Questions being Addressed
 
-The DAS will use both offline and online techniques to prepare possible adaptations to ecosystem changes before the mission starts.
-It will perform adaptations online during the mission.
+- Can the optimal architectural structure of a system (with respect to the satisfaction of mission goals) be generated with multi-objective planning? Can we use this to manage change to the structure of the software on-line?
+- How can we manage the interplay between constraints on structure, behavior, and quality when adapting software?
+- Modern CPS are a combination of models; how can we represent global constraints over multiple models and use them to help guarantee correctness and quality of software change plans?
+- What proportion of techniques can be used on line vs. needs to be done off-line?
 
-To successfully prepare and evaluate changes, the simulator requires a sensor on the system's current energy consumption,
-e.g., whole-system energy as measured by a power meter external to the computer running the simulation or part of the computer’s
-power supply, and as approximate power consumption of the individual sensors and actuators.
+### Exploring the Research Questions through the Test
 
-The key challenges being addressed in this challenge problem are:
+The perturbations available to the test are designed to trigger software configuration changes that can be handled on-line (changes to actual code are being addressed in CP2). These perturbations will be drawn from the following set of possible perturbations: (a) Changing lighting conditions dynamically in the environment, (b) causing failure or error of a sensor on the robot, (c) placing obstacles in the path of the robot, (d) killing (with random amounts of persistence) software nodes on the robot. The aim here is explore a variety of difficulties of software configuration changes on-line, from relatively simple changes affecting one node (e.g., its resilience or parameterization) to nodes with a large number of dependencies, causing system-wide changes to the architecture structure of the software.
 
-* Scalabilility of online adaptation planning to realistic environments and concerns
-* Uncertainty and its relationship to scale. There are various sources of uncertainty in this domain that could be included as probabilistic elements in planning; we are currently investigating the best one to use in the challenge problem. The candidates for uncertainty are:
-    * Partial obstacle occlusion meaning that the robot might be able to adjust is clearance parameters to squeeze past an obstacle with some probability of hitting the obstacle.
-    * Probabilistic information inherent in timing or power models.
-    * Probability of obstacle permanence (i.e., will an obstacle that is placed in the path stay there or be removed soon?).
-    * Uncertainty in localization from sensing.
-* Technologies for adapting software configurations and algorithms on-line.
+### Notes:
+Changes available to the software:
+- use of different, redundant sensor(s) for localization
+- different localization techniques for different sensors and different parts of the map
+- different map characteristics:
+     - extensive glass corridors require ultrasound sensor and associated localization changes (rather than kinect)
+     - large open space configured for poster session requires switch to SLAM, or different local planner for extensive obstacle avoidance. Different planners may have different degrees of reliability in the presence of crowds (e.g., follow-the-carrot is time optimal because it follows a straight line but less reliable than elastic band, because it does not adjust the trajectory of the robot in the presence of obstacles).
+     - part of building with beacons requires reconfiguration to use them for localization, but the part of the software that makes use of them should not be running when not in that area.
 
 ## Test Data
 
-Lincoln Labs will be able to choose from a set of predefined maps that
-explore different aspects of scale and uncertainty. The selection will be
-part of the configuration data for the test. This will be done through a
-mnemonic in the configuration data.
+No specific test data will be required for this challenge problem, other than that sent in response to the th/ready endpoint. The candidate maps will be delivered for inspection by Lincoln Labs. The maps will include (a) the graph of waypoints, indicating their location in meters from an origin, (b) properties associated with each edge and node (including whether it is a charging station, the lighting conditions along the path, and the crowdedness of the corridors).
+
+>TODO: Need to be clear about what is known by the DAS (definitely waypoints and locations) and what is not (e.g., do we know up front the properties of the map - if not, which ones are hidden from us?) Perhaps a possibility would be adding knowledge with some degree of uncertainty (e.g., the existence of a crowd will be known with certainty once the robot gets close to it, but before that, the likelihood of a crowd in some part of the map is abstracted as a probability distribution - same for current light conditions).
 
 ## Test Parameters
 
-> TODO: I erased what was here because it was redundant with what's
-> returned by `/ready` in the description of the TH API, but I'm not sure
-> what ought to be in its place.
+The test will be able to be parameterized in a number of ways, and this will be done via the response to ready. The elements that may be specified for the test are:
+
+- the map, chosen from a fixed set of generated maps. These maps will vary in their size (number of waypoints) and their environment (lighting conditions, area crowding in terms of obstacles)
+- the initial robot position, as well as the target location for the robot, which constitutes the mission
+- the initial robot configuration, in term of active sensors and navigation algorithm
 
 ## Test Procedure
-> This automaton is obsolete according to the new API
-
-The test procedure will be the same as for P1CP1, except that Lincoln labs
-will be able to perturb multiple times for each perturbation (e.g.,
-place/remove obstacle, set battery, fail/reinstate kinect).
-
-![runtime-automation](img/cp3-runtime-automation.png "Run-time Automation")
-
-> Jeff: This is based on the diagram from last time. We're hoping to find a better tool to specify the state machine with. The intent is that you should be able to place (and optionally remove) obstacles simultaneously (i.e., place more than one obstacle at a time). But, this doesn't make sense for the charge and the kinect activation. Not sure how to represent this in this notation.
-
+> TODO
 ## Interface to the Test Harness (API)
 
 ### Sequence Diagram for Interaction Pattern
@@ -59,7 +47,7 @@ place/remove obstacle, set battery, fail/reinstate kinect).
 Implicitly, the TA can hit the `/error` endpoint on the TH at any time in
 this sequence. This interaction is omitted for clarity.
 
-![alt text](sequences/cp3.mmd.png "CP3 sequence diagram")
+<img src="sequences/cp3.mmd.png" alt="cp3 seq diagram" width="400">
 
 ### REST Interface to the TH
 

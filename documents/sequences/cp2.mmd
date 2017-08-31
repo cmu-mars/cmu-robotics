@@ -2,24 +2,31 @@ sequenceDiagram
 	participant TH
 	participant TA
 
-	Note right of TA: setting up, unable to process input
-	TA ->> TH: /ready
-	TH -->> TA: configuration data
-	TH ->> TA: /perturbations
-	TA -->> TH: all possible perturbations
-	TH ->> TA: /perturb
-	TA -->> TH: confirm perturbed
+	Note right of TA: setting up, activity on any endpoint is an error
+
+	TA ->>+ TH: /ready
+	TH -->>- TA: configuration data
+	TH ->>+ TA: /perturbations
+	TA -->>- TH: all possible perturbations
+	TH ->>+ TA: /perturb
+	TA -->>- TH: ack. perturbed
 
 	opt in adaptive case
 	     TH ->> TA: /adapt
 	     loop periodical
-	     	  TA ->> TH: /status
+	     	  TA ->>+ TH: /status
+		  TH -->>- TA: ack. status
 	     end
 	     TA ->> TH: /adapted
 	end
 
-	TH ->> TA: /validate
+	TH ->>+ TA: /validate
+	TA -->>- TH: ack. starting to validate
 	loop periodical
 	     TA ->> TH: /status
 	end
-	TA ->> TH: /done
+
+        Note right of TA: won't send until validation is over and all logs cleaned up
+        TA ->> TH: /done
+        TH -->> TA: ack. /done
+        Note left of TH: TH may shutdown before this is processed
