@@ -40,8 +40,8 @@ used by the TA to indicate to the TH that the turtlebot has reached the goal and
 |**message**  <br>*required*|TODO human readable something or other|string|
 |**predicted_arrival**  <br>*required*|final best prediction of arrival time, in simulation time  <br>**Minimum value** : `0`|integer|
 |**sim_time**  <br>*required*|the final internal simulation time  <br>**Minimum value** : `0`|integer|
-|**v**  <br>*required*|final ?TODO? of the turtlebot|number (float)|
-|**w**  <br>*required*|final ?TODO? of the turtlebot|number (float)|
+|**v**  <br>*required*|final velocity of the turtlebot|number (float)|
+|**w**  <br>*required*|final yaw of the turtlebot|number (float)|
 |**x**  <br>*required*|final x-coordinate of the turtlebot|number (float)|
 |**y**  <br>*required*|final y-coordinate of the turtlebot|number (float)|
 
@@ -72,8 +72,8 @@ used by the TA to indicate to the TH that an error has occurred in the start up 
 
 |Name|Description|Schema|
 |---|---|---|
-|**ERROR**  <br>*required*|one of a enumerated set of reasons that errors may arise<br>  * TEST_DATA_FILE_ERROR - TODO<br>  * TEST_DATA_FORMAT_ERROR - TODO<br>  * DAS_LOG_FILE_ERROR - TODO<br>  * DAS_OTHER_ERROR - TODO<br>  * PARSING_ERROR - TODO<br>  * LEARNING_ERROR - TODO|enum (TEST_DATA_FILE_ERROR, TEST_DATA_FORMAT_ERROR, DAS_LOG_FILE_ERROR, DAS_OTHER_ERROR, PARSING_ERROR, LEARNING_ERROR)|
-|**MESSAGE**  <br>*required*|human readable text describing the error|string|
+|**error**  <br>*required*|TODO -- add more error codes for other possible problems<br><br>one of a enumerated set of reasons that errors may arise<br> * parsing-error - one or more of the function<br>                   descriptions failed to parse<br> * learning-error - an error was encountered in learning<br>                    one or more of the hidden functions<br> * other-error - an error was encountered that is not<br>                 covered by the other error codees|enum (parsing-error, learning-error, other-error)|
+|**message**  <br>*optional*|human readable text describing the error, if available|string|
 
 
 #### Responses
@@ -102,14 +102,13 @@ indicate to the TH that the TA is ready to recieve configuration data to continu
 
 |Name|Description|Schema|
 |---|---|---|
-|**charge_budget**  <br>*optional*|the maximum number of queries against the target recharging function during learning|integer|
-|**charge_function**  <br>*optional*|a description of the function dictating the recharging of the battery, which is what we will learn. TODO - this can't be a string|string (function_spec)|
-|**discharge_budget**  <br>*optional*|the maximum number of queries against the target function during learning|integer|
-|**discharge_function**  <br>*optional*|a description of the function dictating the discharge of the battery, which is what we will learn. TODO - this can't be a string|string (function_spec)|
-|**level**  <br>*optional*|the level at which the DAS should operate for this test<br>  * pert - TODO<br>  * no_adaptation - TODO|enum (pert, no_adaptation)|
-|**model**  <br>*optional*|the type of power model to use for this test<br>  * no_pm - TODO<br>  * predefined_pm - TODO<br>  * learned_pm - TODO|enum (no_pm, predefined_pm, learned_pm)|
-|**start_loc**  <br>*optional*|the name of the start map waypoint|string|
-|**target_locs**  <br>*optional*|the names of the waypoints to visit, in the order in which they must be visited|< string > array|
+|**charge-budget**  <br>*optional*|if in level d, the maximum number of queries against the target recharging function during learning|integer|
+|**charge-function**  <br>*optional*|if in level d, a description of the function dictating the recharging of the battery, which is what we will learn. TODO - this cant be a string|string (function_spec)|
+|**discharge-budget**  <br>*optional*|if in level d, the maximum number of queries against the target function during learning|integer|
+|**discharge-function**  <br>*optional*|if in level d, a description of the function dictating the discharge of the battery, which is what we will learn.  TODO - this cant be a string|string (function_spec)|
+|**level**  <br>*required*|the level at which the DAS should operate for this test.<br>as given in the CP definition,<br><br>  * a - no perturbations, no adaptation, no power model<br>  * b - perturbations, but no adaptation, no power model<br>  * c - perturbations and adaptation, but a static power<br>        model for discharge/charge, while planner uses a<br>        different static power model<br>  * d - perturbations and adaptation, with charge and<br>        discharge power models provided and learned|enum (a, b, c, d)|
+|**start-loc**  <br>*required*|the name of the start map waypoint|string|
+|**target-locs**  <br>*required*|the names of the waypoints to visit, in the order in which they must be visited. each name must be a valid name of a waypoint on the map|< string > array|
 
 
 <a name="status-post"></a>
@@ -130,12 +129,12 @@ used by the TA to periodically indicate its current state to the TH
 
 |Name|Description|Schema|
 |---|---|---|
-|**STATUS**  <br>*required*|one of the possible statuses<br> * BOOTING - TODO<br> * BOOTED - TODO<br> * ONLINE - TODO<br> * OFFLINE - TODO<br> * PERTURBATION_DETECTED - TODO<br> * MISSION_SUSPENDED - TODO<br> * MISSION_RESUMED - TODO<br> * MISSION_HALTED - TODO<br> * MISSION_ABORTED - TODO<br> * ADAPTATION_INITIATED - TODO<br> * ADAPTATION_COMPLETED - TODO<br> * ADAPTATION_STOPPED - TODO<br> * TEST_ERROR - TODO<br> * LEARNING_STARTED - TODO<br> * LEARNING_DONE - TODO|enum (BOOTING, BOOTED, ONLINE, OFFLINE, PERTURBATION_DETECTED, MISSION_SUSPENDED, MISSION_RESUMED, MISSION_HALTED, MISSION_ABORTED, ADAPTATION_INITIATED, ADAPTATION_COMPLETED, ADAPTATION_STOPPED, TEST_ERROR, LEARNING_STARTED, LEARNING_DONE)|
 |**charge**  <br>*required*|current turtlebot battery charge in mWh TODO - are these mins and maxes right?  <br>**Minimum value** : `16000`  <br>**Maximum value** : `32000`|integer|
 |**predicted_arrival**  <br>*required*|current best prediction of arrival time, in simulation time  <br>**Minimum value** : `0`|integer|
 |**sim_time**  <br>*required*|the internal simulation time at the time that the status message was sent  <br>**Minimum value** : `0`|integer|
-|**v**  <br>*required*|current ? TODO ? of the turtlebot|number (float)|
-|**w**  <br>*required*|current ? TODO? of the turtlebot|number (float)|
+|**status**  <br>*required*|one of the possible status codes<br> * learning-started - the learning phase has started<br> * learning-done - the learning phase has been<br> * adapt-started - the SUT has started adapting and<br>                   cannot be perturbed<br> * adapt-done - the SUT has finished adapting<br> * charging-started - the turtlebot is currently charging<br> * charging-done - the turtlebot has stopped charging|enum (learning-started, learning-done, adapt-started, adapt-done, charging-started, charging-done)|
+|**v**  <br>*required*|current velocity of the turtlebot|number (float)|
+|**w**  <br>*required*|current yaw of the turtlebot|number (float)|
 |**x**  <br>*required*|current x-coordinate of the turtlebot|number (float)|
 |**y**  <br>*required*|current y-coordinate of the turtlebot|number (float)|
 

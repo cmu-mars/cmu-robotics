@@ -18,6 +18,63 @@
 <a name="paths"></a>
 ## Paths
 
+<a name="action-observe-get"></a>
+### GET /action/observe
+
+#### Description
+the current state of the SUT
+
+
+#### Responses
+
+|HTTP Code|Description|Schema|
+|---|---|---|
+|**200**|successfully determined the current state of the SUT|[Response 200](#action-observe-get-response-200)|
+|**400**|encountered an error determining the current state of the SUT.|[Response 400](#action-observe-get-response-400)|
+
+<a name="action-observe-get-response-200"></a>
+**Response 200**
+
+|Name|Description|Schema|
+|---|---|---|
+|**charge**  <br>*optional*|current charge of the battery, in mWh. TODO -- check the min and max values here  <br>**Minimum value** : `16000`  <br>**Maximum value** : `32000`|integer|
+|**predicted_arrival**  <br>*optional*|current predicted arrival time, in simulation seconds|integer|
+|**sim_time**  <br>*optional*|current simulation time  <br>**Minimum value** : `0`|integer|
+|**v**  <br>*optional*|current velocity of the turtlebot|number (float)|
+|**w**  <br>*optional*|current yaw of the turtlebot aspect|number (float)|
+|**x**  <br>*optional*|current x-coordinate of the turtlebot position|number (float)|
+|**y**  <br>*optional*|current y-coordinate of the turtlebot position|number (float)|
+
+<a name="action-observe-get-response-400"></a>
+**Response 400**
+
+|Name|Description|Schema|
+|---|---|---|
+|**message**  <br>*optional*|human readable information about the error, if any can be provided|string|
+
+
+<a name="action-start-post"></a>
+### POST /action/start
+
+#### Description
+start the turtlebot on the mission
+
+
+#### Responses
+
+|HTTP Code|Description|Schema|
+|---|---|---|
+|**200**|successfully started the mission|No Content|
+|**400**|encountered an error in starting the mission|[Response 400](#action-start-post-response-400)|
+
+<a name="action-start-post-response-400"></a>
+**Response 400**
+
+|Name|Description|Schema|
+|---|---|---|
+|**message**  <br>*optional*|human readable information about the error, if any can be provided|string|
+
+
 <a name="perturb-battery-post"></a>
 ### POST /perturb/battery
 

@@ -42,7 +42,7 @@ the current state of the SUT
 |**predicted_arrival**  <br>*optional*|current predicted arrival time, in simulation seconds|integer|
 |**sim_time**  <br>*optional*|current simulation time  <br>**Minimum value** : `0`|integer|
 |**v**  <br>*optional*|current velocity of the turtlebot|number (float)|
-|**w**  <br>*optional*|current yaw (TODO) of the turtlebot aspect|number (float)|
+|**w**  <br>*optional*|current yaw of the turtlebot|number (float)|
 |**x**  <br>*optional*|current x-coordinate of the turtlebot position|number (float)|
 |**y**  <br>*optional*|current y-coordinate of the turtlebot position|number (float)|
 
