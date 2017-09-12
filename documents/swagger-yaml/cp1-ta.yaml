@@ -158,9 +158,10 @@ paths:
                 minimum: 16000
                 maximum: 32000
                 description: >-
-                  the level to which the battery should be set, in mWh. TODO --
-                  are those the right constants? i have no idea; does it matter
-                  if battery sets are monotonically decreasing
+                  the level to which the battery should be set, in
+                  mWh. TODO -- are those the right constants? i have no
+                  idea; does it matter if battery sets are monotonically
+                  decreasing
       responses:
         '200':
           description: the battery has been set to the requested level
@@ -182,3 +183,68 @@ paths:
               message:
                 type: string
                 description: human readable info about what went wrong
+  /action/start:
+    post:
+      description: start the turtlebot on the mission
+      responses:
+        '200':
+          description: successfully started the mission
+        '400':
+          description: encountered an error in starting the mission
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: >-
+                  human readable information about the error, if any can be
+                  provided
+  /action/observe:
+    get:
+      description: the current state of the SUT
+      responses:
+        '200':
+          description: successfully determined the current state of the SUT
+          schema:
+            type: object
+            properties:
+              x:
+                type: number
+                format: float
+                description: current x-coordinate of the turtlebot position
+              'y':
+                type: number
+                format: float
+                description: current y-coordinate of the turtlebot position
+              w:
+                type: number
+                format: float
+                description: current yaw of the turtlebot aspect
+              v:
+                type: number
+                format: float
+                description: current velocity of the turtlebot
+              charge:
+                type: integer
+                minimum: 16000
+                maximum: 32000
+                description: >-
+                  current charge of the battery, in mWh. TODO -- check the min
+                  and max values here
+              predicted_arrival:
+                type: integer
+                description: 'current predicted arrival time, in simulation seconds'
+              sim_time:
+                type: integer
+                minimum: 0
+                description: current simulation time
+        '400':
+          description: encountered an error determining the current state of the SUT.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: >-
+                  human readable information about the error, if any can be
+                  provided
