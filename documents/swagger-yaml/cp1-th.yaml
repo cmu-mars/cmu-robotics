@@ -52,7 +52,7 @@ paths:
                 format: function_spec
                 description: >-
                   a description of the function dictating the discharge of the
-                  battery, which is what we will learn. TODO - this can't be a
+                  battery, which is what we will learn. TODO - this cant be a
                   string
               discharge_budget:
                 type: integer
@@ -64,7 +64,7 @@ paths:
                 format: function_spec
                 description: >-
                   a description of the function dictating the recharging of the
-                  battery, which is what we will learn. TODO - this can't be a
+                  battery, which is what we will learn. TODO - this cant be a
                   string
               charge_budget:
                 type: integer
