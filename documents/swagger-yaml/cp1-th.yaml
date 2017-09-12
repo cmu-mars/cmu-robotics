@@ -16,61 +16,64 @@ paths:
           description: TH is ready to produce configuration data
           schema:
             type: object
+            required:
+              - level
+              - start-loc
+              - target-locs
             properties:
               level:
                 description: |-
-                  the level at which the DAS should operate for this test
-                    * pert - TODO
-                    * no_adaptation - TODO
+                  the level at which the DAS should operate for this test.
+                  as given in the CP definition,
+
+                    * a - no perturbations, no adaptation, no power model
+                    * b - perturbations, but no adaptation, no power model
+                    * c - perturbations and adaptation, but a static power
+                          model for discharge/charge, while planner uses a
+                          different static power model
+                    * d - perturbations and adaptation, with charge and
+                          discharge power models provided and learned
                 type: string
                 enum:
-                  - pert
-                  - no_adaptation
-              model:
-                description: |-
-                  the type of power model to use for this test
-                    * no_pm - TODO
-                    * predefined_pm - TODO
-                    * learned_pm - TODO
-                type: string
-                enum:
-                  - no_pm
-                  - predefined_pm
-                  - learned_pm
-              start_loc:
+                  - a
+                  - b
+                  - c
+                  - d
+              start-loc:
                 type: string
                 description: the name of the start map waypoint
-              target_locs:
+              target-locs:
                 type: array
                 items:
                   type: string
                 description: >-
-                  the names of the waypoints to visit, in the order in which
-                  they must be visited
-              discharge_function:
+                  the names of the waypoints to visit, in the order in
+                  which they must be visited. each name must be a valid
+                  name of a waypoint on the map
+              discharge-function:
                 type: string
                 format: function_spec
                 description: >-
-                  a description of the function dictating the discharge of the
-                  battery, which is what we will learn. TODO - this can't be a
-                  string
-              discharge_budget:
+                  if in level d, a description of the function dictating
+                  the discharge of the battery, which is what we will
+                  learn.  TODO - this cant be a string
+              discharge-budget:
                 type: integer
                 description: >-
-                  the maximum number of queries against the target function
-                  during learning
-              charge_function:
+                  if in level d, the maximum number of queries against the
+                  target function during learning
+              charge-function:
                 type: string
                 format: function_spec
                 description: >-
-                  a description of the function dictating the recharging of the
-                  battery, which is what we will learn. TODO - this can't be a
-                  string
-              charge_budget:
+                  if in level d, a description of the function dictating
+                  the recharging of the battery, which is what we will
+                  learn. TODO - this cant be a string
+              charge-budget:
                 type: integer
                 description: >-
-                  the maximum number of queries against the target recharging
-                  function during learning
+                  if in level d, the maximum number of queries against the
+                  target recharging function during learning
         '400':
           description: TH encountered an error producing configuration data
   /error:
@@ -85,28 +88,27 @@ paths:
           schema:
             type: object
             required:
-              - ERROR
-              - MESSAGE
+              - error
             properties:
-              ERROR:
+              error:
                 description: |-
+                  TODO -- add more error codes for other possible problems
+
                   one of a enumerated set of reasons that errors may arise
-                    * TEST_DATA_FILE_ERROR - TODO
-                    * TEST_DATA_FORMAT_ERROR - TODO
-                    * DAS_LOG_FILE_ERROR - TODO
-                    * DAS_OTHER_ERROR - TODO
-                    * PARSING_ERROR - TODO
-                    * LEARNING_ERROR - TODO
+                   * parsing-error - one or more of the function
+                                     descriptions failed to parse
+                   * learning-error - an error was encountered in learning
+                                      one or more of the hidden functions
+                   * other-error - an error was encountered that is not
+                                   covered by the other error codees
                 type: string
                 enum:
-                  - TEST_DATA_FILE_ERROR
-                  - TEST_DATA_FORMAT_ERROR
-                  - DAS_LOG_FILE_ERROR
-                  - DAS_OTHER_ERROR
-                  - PARSING_ERROR
-                  - LEARNING_ERROR
-              MESSAGE:
-                description: human readable text describing the error
+                  - parsing-error
+                  - learning-error
+                  - other-error
+              message:
+                description: |-
+                  human readable text describing the error, if available
                 type: string
       responses:
         '200':
@@ -120,7 +122,7 @@ paths:
           schema:
             type: object
             required:
-              - STATUS
+              - status
               - sim_time
               - x
               - 'y'
@@ -129,41 +131,25 @@ paths:
               - charge
               - predicted_arrival
             properties:
-              STATUS:
+              status:
                 description: |-
-                  one of the possible statuses
-                   * BOOTING - TODO
-                   * BOOTED - TODO
-                   * ONLINE - TODO
-                   * OFFLINE - TODO
-                   * PERTURBATION_DETECTED - TODO
-                   * MISSION_SUSPENDED - TODO
-                   * MISSION_RESUMED - TODO
-                   * MISSION_HALTED - TODO
-                   * MISSION_ABORTED - TODO
-                   * ADAPTATION_INITIATED - TODO
-                   * ADAPTATION_COMPLETED - TODO
-                   * ADAPTATION_STOPPED - TODO
-                   * TEST_ERROR - TODO
-                   * LEARNING_STARTED - TODO
-                   * LEARNING_DONE - TODO
+                  one of the possible status codes
+                   * learning-started - the learning phase has started
+                   * learning-done - the learning phase has been
+                   * adapt-started - the SUT has started adapting and
+                                     cannot be perturbed
+                   * adapt-done - the SUT has finished adapting
+                   * charging-started - the turtlebot is currently charging
+                   * charging-done - the turtlebot has stopped charging
+
                 type: string
                 enum:
-                  - BOOTING
-                  - BOOTED
-                  - ONLINE
-                  - OFFLINE
-                  - PERTURBATION_DETECTED
-                  - MISSION_SUSPENDED
-                  - MISSION_RESUMED
-                  - MISSION_HALTED
-                  - MISSION_ABORTED
-                  - ADAPTATION_INITIATED
-                  - ADAPTATION_COMPLETED
-                  - ADAPTATION_STOPPED
-                  - TEST_ERROR
-                  - LEARNING_STARTED
-                  - LEARNING_DONE
+                  - learning-started
+                  - learning-done
+                  - adapt-started
+                  - adapt-done
+                  - charging-started
+                  - charging-done
               x:
                 description: current x-coordinate of the turtlebot
                 type: number
@@ -173,11 +159,11 @@ paths:
                 type: number
                 format: float
               w:
-                description: current ? TODO? of the turtlebot
+                description: current yaw of the turtlebot
                 type: number
                 format: float
               v:
-                description: current ? TODO ? of the turtlebot
+                description: current velocity of the turtlebot
                 type: number
                 format: float
               charge:
@@ -232,11 +218,11 @@ paths:
                 type: number
                 format: float
               w:
-                description: final ?TODO? of the turtlebot
+                description: final yaw of the turtlebot
                 type: number
                 format: float
               v:
-                description: final ?TODO? of the turtlebot
+                description: final velocity of the turtlebot
                 type: number
                 format: float
               charge:

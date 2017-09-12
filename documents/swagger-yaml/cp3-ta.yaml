@@ -80,7 +80,7 @@ paths:
               w:
                 type: number
                 format: float
-                description: current yaw (TODO) of the turtlebot aspect
+                description: current yaw of the turtlebot
               v:
                 type: number
                 format: float
