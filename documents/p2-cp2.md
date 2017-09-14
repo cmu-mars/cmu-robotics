@@ -261,13 +261,25 @@ of how closely the behaviour of a system meets its intent. This definition
 allows us to recognise valuable adaptations that partially restore intent (e.g.,
 switching to an alternative, less accurate navigation algorithm).
 
-### Quality of Service Metrics
+### Measurement
 
 Given a test mission, we use an oracle to define a set of expected values for
 each of the system's QoS attributes. We also use the oracle to determine a
-suitable standard deviation for each of the QoS attributes.
+suitable standard deviation for each of the QoS attributes. After performing
+the test, the observed QoS values are compared against the expected values. If
+the observed values are within one std. dev. of the expected value, intent is
+said to have been maintained (with respect to a particular mission and QoS
+metric). If the difference between the observed and expected values is greater
+than one std. dev., the system is said to be *degraded*.
 
-![alt text](img/cp2-intent-vector.png "Intent Vector")
+To simplify the measurement of overall system quality, and to account for
+inherent measurement errors, the *degradation* of a particular QoS attribute for
+a given mission is measured in units of standard deviation. The overall
+degradation of the system is measured by first computing a degradation vector,
+shown below.
+
+![alt text](img/cp2-degradation-vector.png "Degradation Vector")
+
 
 ### Test Suite
 
