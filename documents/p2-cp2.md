@@ -250,16 +250,26 @@ automatically from the Swagger definition for convenience.
 To evaluate candidate code-level transformations, we propose that a set of
 integration tests, each describing a mission for the robot (e.g.,
 navigating a simulated corridor), be performed in simulation. Instead of
-describing the outcome of a mission as a success or failure, we describe
-outcomes in terms of a set of predefined quality attributes (e.g., distance
-from the target, power consumption, etc.). We define the intent of the
-system in terms of these quality attributes: a system maintains intent if
-it completes a set of missions to a satisfactory level of quality. If the
-system fails to meet this expected level of quality, we deem it to be
-degraded. We define system quality as an approximate measure of how closely
-the behaviour of a system meets its intent. This definition allows us to
-recognise valuable adaptations that partially restore intent (e.g.,
+describing the outcome of a mission in terms of success or failure, we describe
+outcomes in terms of a set of predefined quality-of-service (QoS) attributes
+(e.g., distance from the target, power consumption, etc.).
+We define the intent of the system in terms of its QoS attributes: a system
+maintains intent if it completes a set of missions to a satisfactory level of
+quality. If the system fails to meet this expected level of quality, we deem
+it to be degraded. We define overall system quality as an approximate measure
+of how closely the behaviour of a system meets its intent. This definition
+allows us to recognise valuable adaptations that partially restore intent (e.g.,
 switching to an alternative, less accurate navigation algorithm).
+
+### Quality of Service Metrics
+
+Given a test mission, we use an oracle to define a set of expected values for
+each of the system's QoS attributes. We also use the oracle to determine a
+suitable standard deviation for each of the QoS attributes.
+
+![alt text](img/cp2-intent-vector.png "Intent Vector")
+
+### Test Suite
 
 Each test case, or mission, is described by the following:
 
@@ -283,7 +293,6 @@ produces a gradient).
 The original and adapted system may be compared using the test suite and a
 set of evaluation metrics.
 
-*
 
 ## References
 
