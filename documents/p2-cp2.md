@@ -261,7 +261,7 @@ of how closely the behaviour of a system meets its intent. This definition
 allows us to recognise valuable adaptations that partially restore intent (e.g.,
 switching to an alternative, less accurate navigation algorithm).
 
-### Measurement
+### Degradation
 
 Given a test mission, we use an oracle to define a set of expected values for
 each of the system's QoS attributes. We also use the oracle to determine a
@@ -280,6 +280,17 @@ test suite) using a degradation matrix, shown below.
 
 ![alt text](img/cp2-degradation-vector.png "Degradation Vector")
 
+Naively, we can produce a scalar summary of the overall system degradation by
+simply summing all values in the degradation matrix. Alternatively, we can
+summarise system degradation using either a *QoS degradation vector* or a
+*mission degradation vector*:
+
+* The *QoS degradation vector* contains the sum of each column in the degradation
+  matrix, and summarises the degradation of the system (across all tests) in
+  terms of each of the QoS attributes.
+* The *mission degradation vector* is given by the sum of each row in the
+  degradation matrix, and describes the overall system degradation (across all
+  QoS attributes) for each test.
 
 ### Test Suite
 
@@ -299,6 +310,11 @@ return a perturbed system as close to its intent as possible. From the
 perspective of the code-level adaptation engine, this metric also
 transforms the problem into one that is more amenable to search (i.e., it
 produces a gradient).
+
+
+### Oracle
+
+
 
 ### Comparison to the Baseline
 
