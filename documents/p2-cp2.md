@@ -276,7 +276,8 @@ To simplify the measurement of overall system quality, and to account for
 inherent measurement errors, the *degradation* of a particular QoS attribute for
 a given mission is measured in units of standard deviation. The overall
 degradation of the system is measured by first computing a degradation vector,
-shown below.
+shown below. **(TODO: this would be better described as a matrix, although the
+MOO community tend to stick to vectors.)**
 
 ![alt text](img/cp2-degradation-vector.png "Degradation Vector")
 
