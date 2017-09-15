@@ -292,6 +292,15 @@ summarise system degradation using either a *QoS degradation vector* or a
   degradation matrix, and describes the overall system degradation (across all
   QoS attributes) for each test.
 
+
+### Quality of Service Attributes
+
+* distance to target
+* power consumption
+* time taken
+* number of collisions
+
+
 ### Test Suite
 
 Each test case, or mission, is described by the following:
