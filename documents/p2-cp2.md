@@ -295,10 +295,15 @@ summarise system degradation using either a *QoS degradation vector* or a
 
 ### Quality of Service Attributes
 
+We plan to measure quality of service using the following attributes:
+
 * distance to target
 * power consumption
 * time taken
 * number of collisions
+
+Note, our approach is generic and can be easily extended to accommodate a
+different set of attributes.
 
 
 ### Test Suite
@@ -311,24 +316,37 @@ Each test case, or mission, is described by the following:
 	as a concrete mission. (e.g., move from A to B.)
 * a simulated environment. (e.g., a randomly-generated maze.)
 * a configuration for the robot. (e.g., a certain node may be disabled.)
-* a mission quality metric, defined by its schema, responsible for
+* a set of quality of service metrics, defined by its schema, responsible for
 	measuring the success of a mission.
 
 This metric succinctly captures our goal for code-level adaptation: to
-return a perturbed system as close to its intent as possible. From the
-perspective of the code-level adaptation engine, this metric also
+return a perturbed system as close to its intent as possible (or alternatively,
+to reduce degradation).
+From the perspective of the code-level adaptation engine, this metric also
 transforms the problem into one that is more amenable to search (i.e., it
 produces a gradient).
 
 
 ### Oracle
 
+The expected quality of service for each attribute is determined by using the
+unperturbed system as an oracle. After executing each mission several times,
+the expected QoS values and standard deviations are calculated from the
+observed results.
 
 
 ### Comparison to the Baseline
 
-The original and adapted system may be compared using the test suite and a
-set of evaluation metrics.
+To compare the adaptive and non-adaptive behaviours of the system, we measure
+the degradation of the pareto set of adaptations, found during the adaptive
+case, against the degradation of the original system.
+
+* *complete repair*: if the sum of the degradation matrix for a given
+  adaptation is equal to zero (implying that intent was satisfied).
+* *partial repair*: if any adaptation within the pareto set dominates the
+  unadapted case in terms of degradation.
+* *no repair*: if the adaptive case is unable to find an adaptation that
+  dominates the unadapted case in terms of degradation.
 
 
 ## References
@@ -336,4 +354,4 @@ set of evaluation metrics.
 [Pearson et al., 2017] Pearson, S., Campos, J., Just, R., Fraser, G., Abreu, R., Ernst,
 M. D., Pang, D., and Keller, B. (2017). Evaluating and improving fault localization.
 In Proceedings of the 2017 International Conference on Software Engineering, ICSE
-’17. ACM. (To appear).
+’17. ACM.
