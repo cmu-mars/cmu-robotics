@@ -6,15 +6,56 @@ schemes:
   - http
 host: brass-ta
 definitions:
-  Perturbation:
+  SourceLocation:
     type: object
-    required:
-      - file
     properties:
       file:
         type: string
+        required: true
         description: >-
-          The file at which the perturbation resides.
+          The file at which this source location resides.
+      cucumber:
+        type: int
+        minimum: 0
+        description: >-
+          The character offset between the start of the file and this location.
+
+  SourceRange:
+    type: object
+    properties:
+      start:
+        $ref: '#/definitions/SourceLocation'
+        required: true
+        description: >-
+          The location that marks the start of this source range.
+      stop:
+        $ref: '#/definitions/SourceLocation'
+        required: true
+        description: >-
+          The location that marks the end of this source range.
+
+  Perturbation:
+    type: object
+    required:
+      - kind
+      - file
+    discriminator: kind
+    properties:
+      kind:
+        type: string
+        description: >-
+          Used to discriminate between different kinds of perturbation.
+
+  DeletionPerturbation:
+    type: object
+    allOf:
+      - $ref: '#/definitions/Perturbation'
+      - properties:
+          locationRange:
+            $ref: '#/definitions/SourceRange'
+            description: >-
+              The range of code that is deleted by the perturbation.
+
 paths:
   /perturbations:
     get:
@@ -31,7 +72,6 @@ paths:
             required:
               - file
               - shape
-              - line
             properties:
               file:
                 type: string
@@ -84,16 +124,21 @@ paths:
               time-limit:
                 type: number
                 format: float
+                minimum: 1.0
+                required: false
                 description: >-
                   An (optional) time limit for the adaptation process,
                   specified in minutes.
               attempt-limit:
                 type: integer
+                minimum: 1
+                required: false
                 description: >-
                   An (optional) limit on the number of adaptations that may be
                   attempted.
               hint:
                 type: string
+                required: false
                 description: >-
                   We could allow hints to be provided to this method? e.g., the
                   shape(s) or location(s) of the fix(es). TODO
@@ -108,7 +153,7 @@ paths:
               message:
                 type: string
                 description: >-
-                  human readable information about the error, if any can be
+                  human-readable information about the error, if any can be
                   provided
   /perturb:
     post:
@@ -141,7 +186,7 @@ paths:
               message:
                 type: string
                 description: >-
-                  human readable information about the error, if any can be
+                  human-readable information about the error, if any can be
                   provided
   /status:
     get:
