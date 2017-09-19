@@ -10,11 +10,11 @@ paths:
     post:
       description: |-
         Used to indicate that an error has occurred during the preparation
-          or evaluation of a test scenario, or during the start-up of the
-          system under test. The body of this method contains a single
-          property, `ErrorMsg`, containing a JSON-based description of the
-          error. A description of the errors produced by SUT are given
-          below.
+        or evaluation of a test scenario, or during the start-up of the
+        system under test. The body of this method contains a single
+        property, `ErrorMsg`, containing a JSON-based description of the
+        error. A description of the errors produced by SUT is given
+        below.
       parameters:
         - in: body
           name: Parameters
@@ -38,7 +38,7 @@ paths:
         '200':
           description: the TH acknowledges the error
         '400':
-          description: the TH has itself encontered an error processing the error
+          description: the TH has itself encountered an error processing the error
   /ready:
     post:
       description: used to indicate that the SUT is ready and that testing may begin
@@ -51,7 +51,7 @@ paths:
     post:
       description: >-
         Used to inform the test harness that a new adaptation has been added to
-        the Pareto front (i.e., a new "best" adaptation has been found). TODO --
+        the Pareto set (i.e., a new "best" adaptation has been found). TODO --
         add parameters here?
       responses:
         '200':
@@ -72,7 +72,7 @@ paths:
             type: object
             required:
               - outcome
-              - runningtime
+              - running-time
               - numattempts
               - paretofront
               - log
@@ -83,19 +83,23 @@ paths:
                   A short description of the success of the repair process TODO
                   -- in the md, Chris had this as an enum but without values
                   listed
-              runningtime:
+              running-time:
                 type: number
                 format: float
-                description: The number of minutes taken to complete the repair process
+                description: >-
+                  The number of minutes taken to complete the repair process.
               numattempts:
                 type: integer
-                description: The number of repairs attempted
+                description: >-
+                  The number of code adaptations attempted.
               paretofront:
                 type: array
                 items:
                   type: string
                   format: CandidateAdaptation
-                description: A list containing details of the final pareto front
+                description: >-
+                  A list containing details of all adaptations within the
+                  pareto set.
               log:
                 type: array
                 items:

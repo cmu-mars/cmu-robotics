@@ -10,7 +10,7 @@ paths:
     get:
       description: >-
         Returns a list of possible perturbations of an (optionally) specified
-        kind and complexity that can be performed at a given (set of)
+        shape and complexity that can be performed at a given (set of)
         location(s) in the program.  This endpoint should be used to select a
         suitable (set of) perturbation(s) for a test scenario.
       parameters:
@@ -25,13 +25,18 @@ paths:
             properties:
               file:
                 type: string
-                description: the file in which the fault should be placed
-              kind:
+                description: >-
+                  The file at which the perturbation should be injected.
+              shape:
                 type: string
-                description: the "kind" of the fault TODO -- vague
+                description: >-
+                  The shape of the fault (e.g., incorrect conditional,
+                  missing control flow).
               line:
                 type: integer
-                description: TODO
+                description: >-
+                  The number of the line at which the perturbation should be
+                  injected. N.b. a file must be specified.
       responses:
         '200':
           description: successfully computed the list of possible perturbations
@@ -41,9 +46,9 @@ paths:
               perturbations:
                 type: array
                 items:
-                  type: string
+                  type: Perturbation
                 description: >-
-                  list of perturbations that satisfy the query parameters
+                  A list of perturbations that satisfy the query parameters
                   provided by the request. Each perturbation is described by its
                   Kind, the Location to which it should be applied, and any
                   additional parameters that are required to complete the
@@ -59,7 +64,7 @@ paths:
               message:
                 type: string
                 description: >-
-                  human readable information about the error, if any can be
+                  human-readable information about the error, if any can be
                   provided
   /adapt:
     post:
