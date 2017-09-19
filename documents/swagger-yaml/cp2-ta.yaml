@@ -8,53 +8,94 @@ host: brass-ta
 definitions:
   SourceLocation:
     type: object
+    required:
+      - file
+      - offset
     properties:
       file:
         type: string
-        required: true
         description: >-
           The file at which this source location resides.
-      cucumber:
-        type: int
+      offset:
+        type: integer
         minimum: 0
         description: >-
           The character offset between the start of the file and this location.
-
   SourceRange:
     type: object
+    required:
+      - start
+      - stop
     properties:
       start:
         $ref: '#/definitions/SourceLocation'
-        required: true
         description: >-
           The location that marks the start of this source range.
       stop:
         $ref: '#/definitions/SourceLocation'
-        required: true
         description: >-
           The location that marks the end of this source range.
 
   Perturbation:
     type: object
+    discriminator: kind
     required:
       - kind
-      - file
-    discriminator: kind
     properties:
       kind:
         type: string
         description: >-
           Used to discriminate between different kinds of perturbation.
 
-  DeletionPerturbation:
+  DeleteStatementPerturbation:
     type: object
     allOf:
       - $ref: '#/definitions/Perturbation'
+      - required:
+          - kind
+          - locationRange
       - properties:
           locationRange:
             $ref: '#/definitions/SourceRange'
             description: >-
               The range of code that is deleted by the perturbation.
+
+  ReplaceStatementPerturbation:
+    type: object
+    allOf:
+      - $ref: '#/definitions/Perturbation'
+      - required:
+          - kind
+          - locationRange
+      - properties:
+          locationRange:
+            $ref: '#/definitions/SourceRange'
+            description: >-
+              The range of code that is replaced by the perturbation.
+          statement:
+            type: string
+            description:
+              The source code for the replacement statement.
+
+  InsertStatementPerturbation:
+    type: object
+    allOf:
+      - $ref: '#/definitions/Perturbation'
+      - required:
+          - kind
+          - location
+          - statement
+      - properties:
+          location:
+            $ref: '#/definitions/SourceRange'
+            description: >-
+              The location immediately before the location at which the
+              statement will be inserted.
+          statement:
+            type: string
+            description:
+              The source code for the inserted statement.
+
 
 paths:
   /perturbations:
@@ -86,7 +127,8 @@ paths:
                 type: integer
                 description: >-
                   The number of the line at which the perturbation should be
-                  injected. N.b. a file must be specified.
+                  injected. N.b. if this parameter is used, then the file
+                  parameter must also be specified.
       responses:
         '200':
           description: successfully computed the list of possible perturbations
