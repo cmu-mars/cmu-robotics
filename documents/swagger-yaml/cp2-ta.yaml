@@ -5,6 +5,16 @@ info:
 schemes:
   - http
 host: brass-ta
+definitions:
+  Perturbation:
+    type: object
+    required:
+      - file
+    properties:
+      file:
+        type: string
+        description: >-
+          The file at which the perturbation resides.
 paths:
   /perturbations:
     get:
@@ -20,7 +30,7 @@ paths:
             type: object
             required:
               - file
-              - kind
+              - shape
               - line
             properties:
               file:
@@ -46,18 +56,14 @@ paths:
               perturbations:
                 type: array
                 items:
-                  type: Perturbation
+                  $ref: '#/definitions/Perturbation'
                 description: >-
                   A list of perturbations that satisfy the query parameters
-                  provided by the request. Each perturbation is described by its
-                  Kind, the Location to which it should be applied, and any
-                  additional parameters that are required to complete the
-                  perturbation (e.g., a replacement statement). TODO -- figure
-                  out the actual types here
+                  provided by the request.
         '400':
           description: >-
-            encountered an error while computing the list of possible
-            perturbations
+            Encountered an error while computing the list of possible
+            perturbations.
           schema:
             type: object
             properties:
@@ -75,13 +81,13 @@ paths:
           schema:
             type: object
             properties:
-              timelimit:
+              time-limit:
                 type: number
                 format: float
                 description: >-
-                  An (optional) time limit for the adaptation process, given in
-                  minutes.
-              attemptlimit:
+                  An (optional) time limit for the adaptation process,
+                  specified in minutes.
+              attempt-limit:
                 type: integer
                 description: >-
                   An (optional) limit on the number of adaptations that may be
@@ -107,9 +113,9 @@ paths:
   /perturb:
     post:
       description: >-
-        Applies a given set of perturbations, provided as a list of JSON
-        objects, to the SUT. This method should be used to prepare a test
-        scenario for evaluation.
+        Applies a set of perturbations, given as a list of JSON objects,
+        to the SUT. This endpoint should be used to prepare a test scenario
+        for evaluation.
       parameters:
         - in: body
           name: Parameters
@@ -120,12 +126,10 @@ paths:
             properties:
               perturbations:
                 type: array
-                description: a list of perturbations to apply to the code base
+                description: a non-empty list of perturbations to apply to the
+                  codebase
                 items:
-                  type: string
-                  description: >-
-                    TODO -- define a perturbation as a @ref-able somewhere and
-                    use throughout this API
+                  $ref: '#/definitions/Perturbation'
       responses:
         '200':
           description: applied the perturbations to the the system successfully
