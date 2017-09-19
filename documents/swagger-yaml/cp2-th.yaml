@@ -5,6 +5,11 @@ info:
 schemes:
   - http
 host: brass-th
+
+definitions:
+  CandidateAdaptation:
+    type: object
+
 paths:
   /error:
     post:
@@ -41,7 +46,8 @@ paths:
           description: the TH has itself encountered an error processing the error
   /ready:
     post:
-      description: used to indicate that the SUT is ready and that testing may begin
+      description: >-
+        Used to indicate that the SUT is ready and that testing may begin.
       responses:
         '200':
           description: the TH acknowledges the ready message
@@ -73,8 +79,8 @@ paths:
             required:
               - outcome
               - running-time
-              - numattempts
-              - paretofront
+              - num-attempts
+              - pareto-set
               - log
             properties:
               outcome:
@@ -88,24 +94,23 @@ paths:
                 format: float
                 description: >-
                   The number of minutes taken to complete the repair process.
-              numattempts:
+              num-attempts:
                 type: integer
                 description: >-
                   The number of code adaptations attempted.
-              paretofront:
+              pareto-set:
                 type: array
                 items:
-                  type: string
-                  format: CandidateAdaptation
+                  $ref: '#/definitions/CandidateAdaptation'
                 description: >-
                   A list containing details of all adaptations within the
                   pareto set.
               log:
                 type: array
                 items:
-                  type: string
-                  format: CandidateAdaptation
-                description: A list containing details of each of the attempted repairs
+                  $ref: '#/definitions/CandidateAdaptation'
+                description: >-
+                  A list containing details of each of the attempted repairs.
       responses:
         '200':
           description: the TH acknowledges the done message
