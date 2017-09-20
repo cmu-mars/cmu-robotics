@@ -36,11 +36,11 @@ Used to indicate that evaluation of the test scenario has been completed. A summ
 
 |Name|Description|Schema|
 |---|---|---|
-|**log**  <br>*required*|A list containing details of each of the attempted repairs|< string (CandidateAdaptation) > array|
-|**numattempts**  <br>*required*|The number of repairs attempted|integer|
+|**log**  <br>*required*|A list containing details of each of the attempted repairs.|< [CandidateAdaptation](#candidateadaptation) > array|
+|**num-attempts**  <br>*required*|The number of code adaptations attempted.|integer|
 |**outcome**  <br>*required*|A short description of the success of the repair process TODO -- in the md, Chris had this as an enum but without values listed|string|
-|**paretofront**  <br>*required*|A list containing details of the final pareto front|< string (CandidateAdaptation) > array|
-|**runningtime**  <br>*required*|The number of minutes taken to complete the repair process|number (float)|
+|**pareto-set**  <br>*required*|A list containing details of all adaptations within the pareto set.|< [CandidateAdaptation](#candidateadaptation) > array|
+|**running-time**  <br>*required*|The number of minutes taken to complete the repair process.|number (float)|
 
 
 #### Responses
@@ -56,11 +56,11 @@ Used to indicate that evaluation of the test scenario has been completed. A summ
 
 #### Description
 Used to indicate that an error has occurred during the preparation
-  or evaluation of a test scenario, or during the start-up of the
-  system under test. The body of this method contains a single
-  property, `ErrorMsg`, containing a JSON-based description of the
-  error. A description of the errors produced by SUT are given
-  below.
+or evaluation of a test scenario, or during the start-up of the
+system under test. The body of this method contains a single
+property, `ErrorMsg`, containing a JSON-based description of the
+error. A description of the errors produced by SUT is given
+below.
 
 
 #### Parameters
@@ -82,14 +82,14 @@ Used to indicate that an error has occurred during the preparation
 |HTTP Code|Description|Schema|
 |---|---|---|
 |**200**|the TH acknowledges the error|No Content|
-|**400**|the TH has itself encontered an error processing the error|No Content|
+|**400**|the TH has itself encountered an error processing the error|No Content|
 
 
 <a name="ready-post"></a>
 ### POST /ready
 
 #### Description
-used to indicate that the SUT is ready and that testing may begin
+Used to indicate that the SUT is ready and that testing may begin.
 
 
 #### Responses
@@ -104,7 +104,7 @@ used to indicate that the SUT is ready and that testing may begin
 ### POST /status
 
 #### Description
-Used to inform the test harness that a new adaptation has been added to the Pareto front (i.e., a new "best" adaptation has been found). TODO -- add parameters here?
+Used to inform the test harness that a new adaptation has been added to the Pareto set (i.e., a new "best" adaptation has been found). TODO -- add parameters here?
 
 
 #### Responses
@@ -115,6 +115,14 @@ Used to inform the test harness that a new adaptation has been added to the Pare
 |**400**|the TH has itself encontered an error processing the status|No Content|
 
 
+
+
+<a name="definitions"></a>
+## Definitions
+
+<a name="candidateadaptation"></a>
+### CandidateAdaptation
+*Type* : object
 
 
 
