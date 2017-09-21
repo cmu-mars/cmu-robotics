@@ -46,12 +46,12 @@ effectively with fewer disruptions to the mission).
 
 ## Research Questions
 **RQ1**: Can the use of learning an accurate power model improve the score of mission comparing with using inaccurate model and no model?
-+ There might be some cases that using an accurate model might tell us that we can finish a mission without going to the charge station and therefore score a better mission. 
++ There might be some cases that using an accurate model might tell us that we can finish a mission without going to the charge station and therefore score a better mission.
 + We would like to explore corner cases that an accurate model can provide us benefit by saving time, saving energy or both, and therefore hitting a better score in total
 + Using an inaccurate model might tell us that we can go to the target but the discharge is quicker (t^2) that what the robot expects (t) and therefore fail the mission
 - There might be some cases where the model tell us we need to go to the charging station, but we could finish the mission without going to the station
 
-**RQ2**: Can the use of learning an accurate power model improve the quality of adaptations? 
+**RQ2**: Can the use of learning an accurate power model improve the quality of adaptations?
 + There might be some cases where accurate model leads to the quality of the decisions made by the planner and analyzer. For example, an accurate model might trigger fewer adaptations, an accurate model might lead to a better decision making by not going too much to the charging station or going when it is needed.
 
 **RQ3**: Can the use of a model that is accurate for short horizon (i.e., t=[t_min, t_max/\alpha]) beneficial for accomplishing a mission comparing with a model that is more accurate for the longer horizon?
@@ -116,8 +116,9 @@ Note, this API is notional at this stage.
   These are linear combinations of polynomial features with three different
   variables and interactions between them.
 
-  More specifically, a power model is specified by the following general definition (formula):
-   $f(o_1,\cdots,o_d) = \beta_0 + \sum_{o_i \in \mathcal{O}} \phi_i (o_i)
+  More specifically, a power model is specified by the following general
+   definition (formula): $f(o_1,\cdots,o_d) = \beta_0 + \sum_{o_i \in
+   \mathcal{O}} \phi_i (o_i)
                         + \sum_{o_{i..j} \in \mathcal{O}} \Phi_i
   (o_{i..j})$, where $\beta_0$ represents a constant term, $\phi_i (o_i)$
   represents terms containing individual options, $\Phi_i (o_{i..j})$
@@ -329,6 +330,36 @@ considered the canonical definition of the
 API. [swagger-yaml/cp1-th.md](swagger-yaml/cp1-th.md) is produced
 automatically from the Swagger definition for convenience.
 
+This API is currently still a draft. Some, but not all, possible future
+changes include:
+ * adding more constants to the enumerated error codes in the TH `/error`
+   end point
+
+ * adding more constants to the enumerated status codes in the TH `/status`
+   end point
+
+The format `function-spec`, used to in the `/ready` end point to
+describe the charge and discharge functions, is given by the following BNF:
+
+```
+polynomial ::= term | term "+" polynomial
+term ::= factor | factor ops2 term | ops1"(" term ")"
+factor ::= constant | variable | "(" polynomial ")"
+variable ::= letter | variable digitSequence
+constant ::= digitSequence | "-" digitSequence
+digitSequence ::= digit | digit digitSequence
+digit ::= "0" | "1" | "2" | ... | "9" | "e" | "PI"
+letter ::= "s1" | "s2" | "k1" | ... | "k5" | "l1 ... "l5"
+ops1 ::= "sqrt" | "exp" | "log" | "abs" | "-"
+ops2 ::= "*" | "/" | "^"
+```
+
+Additionally, we require two semantic properties of the polynomials `f`
+described with this syntax:
+
+ 1. _monotonicity_: For all times `t`, `df/dt(t) > 0`
+ 2. _positivity_: For all times `t`, `f(t) > 0`
+
 ### REST Interface to the TA
 
 The Swagger file describing this interface is
@@ -336,6 +367,12 @@ The Swagger file describing this interface is
 considered the canonical definition of the
 API. [swagger-yaml/cp1-ta.md](swagger-yaml/cp1-ta.md) is produced
 automatically from the Swagger definition for convenience.
+
+This API is currently still a draft. Some, but not all, possible future
+changes include:
+ * adding more constants to the enumerated error codes in the `400` returns
+   from different end points.
+
 
 
 ## Intent Specification and Evaluation Metrics

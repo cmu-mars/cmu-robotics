@@ -8,7 +8,9 @@ host: brass-ta
 paths:
   /perturb/place_obstacle:
     post:
-      description: 'if the test is running, then place an obstacle on the map'
+      description: >-
+        if the test is running, then place an instance of the obstacle on
+        the map
       parameters:
         - in: body
           name: Parameters
@@ -31,11 +33,6 @@ paths:
                 description: >-
                   the y-coordinate of the center of the obstacle placement
                   position
-              kind:
-                type: string
-                description: >-
-                  the name of the shape of object to be placed. TODO -- make
-                  this an enum not a string
       responses:
         '200':
           description: the obstacle has been placed in the running test
@@ -100,7 +97,9 @@ paths:
                 description: human readable info about what went wrong
   /perturb/remove_obstacle:
     post:
-      description: 'if the test is running, remove a previously placed obstacle from the map'
+      description: >-
+        if the test is running, remove a previously placed obstacle from
+        the map
       parameters:
         - in: body
           name: Parameters
@@ -113,7 +112,7 @@ paths:
                 type: string
                 description: >-
                   the obstacle ID given by /perturb/place_obstacle of the
-                  obstacle to be removed
+                  obstacle to be removed.
       responses:
         '200':
           description: the obstacle has been removed from the running test
@@ -134,7 +133,11 @@ paths:
               - message
             properties:
               cause:
-                description: a reason for the error condition
+                description: >-
+                  a reason for the error condition. `bad_obstacleid` is
+                  used if this endpoint is given a obstacleid in its
+                  parameters that was not given out by place_obstacle;
+                  `other_error` is used in all other instances.
                 type: string
                 enum:
                   - bad_obstacleid
@@ -155,13 +158,11 @@ paths:
             properties:
               charge:
                 type: number
-                minimum: 16000
-                maximum: 32000
+                minimum: 0
                 description: >-
                   the level to which the battery should be set, in
-                  mWh. TODO -- are those the right constants? i have no
-                  idea; does it matter if battery sets are monotonically
-                  decreasing
+                  mWh. cannot be more than the maximum given in the TH
+                  response to `/ready`.
       responses:
         '200':
           description: the battery has been set to the requested level
@@ -226,11 +227,10 @@ paths:
                 description: current velocity of the turtlebot
               charge:
                 type: integer
-                minimum: 16000
-                maximum: 32000
+                minimum: 0
                 description: >-
-                  current charge of the battery, in mWh. TODO -- check the min
-                  and max values here
+                  current charge of the battery, in mWh. cannot be more
+                  than the maximum given in the TH response to `/ready`.
               predicted_arrival:
                 type: integer
                 description: 'current predicted arrival time, in simulation seconds'
