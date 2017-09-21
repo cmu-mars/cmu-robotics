@@ -243,9 +243,6 @@ paths:
                 description: 'final best prediction of arrival time, in simulation time'
                 type: integer
                 minimum: 0
-              message:
-                description: TODO human readable something or other
-                type: string
       responses:
         '200':
           description: TH acknowledges the completion of the mission

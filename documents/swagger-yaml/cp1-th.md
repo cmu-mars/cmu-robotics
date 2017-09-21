@@ -36,8 +36,7 @@ used by the TA to indicate to the TH that the turtlebot has reached the goal and
 
 |Name|Description|Schema|
 |---|---|---|
-|**charge**  <br>*required*|final charge measure of the turtlebot TODO - check ranges  <br>**Minimum value** : `16000`  <br>**Maximum value** : `32000`|integer|
-|**message**  <br>*required*|TODO human readable something or other|string|
+|**charge**  <br>*required*|final charge measure of the turtlebot. cannot be more than the maximum specified in the response from `/ready`.  <br>**Minimum value** : `0`|integer|
 |**predicted_arrival**  <br>*required*|final best prediction of arrival time, in simulation time  <br>**Minimum value** : `0`|integer|
 |**sim_time**  <br>*required*|the final internal simulation time  <br>**Minimum value** : `0`|integer|
 |**v**  <br>*required*|final velocity of the turtlebot|number (float)|
@@ -72,7 +71,7 @@ used by the TA to indicate to the TH that an error has occurred in the start up 
 
 |Name|Description|Schema|
 |---|---|---|
-|**error**  <br>*required*|TODO -- add more error codes for other possible problems<br><br>one of a enumerated set of reasons that errors may arise<br> * parsing-error - one or more of the function<br>                   descriptions failed to parse<br> * learning-error - an error was encountered in learning<br>                    one or more of the hidden functions<br> * other-error - an error was encountered that is not<br>                 covered by the other error codees|enum (parsing-error, learning-error, other-error)|
+|**error**  <br>*required*|one of a enumerated set of reasons that errors may arise<br> * parsing-error - one or more of the function<br>                   descriptions failed to parse<br> * learning-error - an error was encountered in learning<br>                    one or more of the hidden functions<br> * other-error - an error was encountered that is not<br>                 covered by the other error codees|enum (parsing-error, learning-error, other-error)|
 |**message**  <br>*optional*|human readable text describing the error, if available|string|
 
 
@@ -103,10 +102,11 @@ indicate to the TH that the TA is ready to recieve configuration data to continu
 |Name|Description|Schema|
 |---|---|---|
 |**charge-budget**  <br>*optional*|if in level d, the maximum number of queries against the target recharging function during learning|integer|
-|**charge-function**  <br>*optional*|if in level d, a description of the function dictating the recharging of the battery, which is what we will learn. TODO - this cant be a string|string (function_spec)|
+|**charge-function**  <br>*optional*|if in level d, a description of the function dictating the recharging of the battery, which is what we will learn.|string (function-spec)|
 |**discharge-budget**  <br>*optional*|if in level d, the maximum number of queries against the target function during learning|integer|
-|**discharge-function**  <br>*optional*|if in level d, a description of the function dictating the discharge of the battery, which is what we will learn.  TODO - this cant be a string|string (function_spec)|
+|**discharge-function**  <br>*optional*|if in level d, a description of the function dictating the discharge of the battery, which is what we will learn.|string (function-spec)|
 |**level**  <br>*required*|the level at which the DAS should operate for this test.<br>as given in the CP definition,<br><br>  * a - no perturbations, no adaptation, no power model<br>  * b - perturbations, but no adaptation, no power model<br>  * c - perturbations and adaptation, but a static power<br>        model for discharge/charge, while planner uses a<br>        different static power model<br>  * d - perturbations and adaptation, with charge and<br>        discharge power models provided and learned|enum (a, b, c, d)|
+|**max-charge**  <br>*optional*|the maximum charge the battery can hold, in mWh. implicitly, all batteries have a minimum possible charge of 0 mWh  <br>**Minimum value** : `0`|integer|
 |**start-loc**  <br>*required*|the name of the start map waypoint|string|
 |**target-locs**  <br>*required*|the names of the waypoints to visit, in the order in which they must be visited. each name must be a valid name of a waypoint on the map|< string > array|
 
@@ -129,7 +129,7 @@ used by the TA to periodically indicate its current state to the TH
 
 |Name|Description|Schema|
 |---|---|---|
-|**charge**  <br>*required*|current turtlebot battery charge in mWh TODO - are these mins and maxes right?  <br>**Minimum value** : `16000`  <br>**Maximum value** : `32000`|integer|
+|**charge**  <br>*required*|current turtlebot battery charge in mWh. cannot be more than the maximum specified in the response from `/ready`.  <br>**Minimum value** : `0`|integer|
 |**predicted_arrival**  <br>*required*|current best prediction of arrival time, in simulation time  <br>**Minimum value** : `0`|integer|
 |**sim_time**  <br>*required*|the internal simulation time at the time that the status message was sent  <br>**Minimum value** : `0`|integer|
 |**status**  <br>*required*|one of the possible status codes<br> * learning-started - the learning phase has started<br> * learning-done - the learning phase has been<br> * adapt-started - the SUT has started adapting and<br>                   cannot be perturbed<br> * adapt-done - the SUT has finished adapting<br> * charging-started - the turtlebot is currently charging<br> * charging-done - the turtlebot has stopped charging|enum (learning-started, learning-done, adapt-started, adapt-done, charging-started, charging-done)|
