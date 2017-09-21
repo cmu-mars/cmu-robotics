@@ -37,7 +37,7 @@ the current state of the SUT
 
 |Name|Description|Schema|
 |---|---|---|
-|**charge**  <br>*optional*|current charge of the battery, in mWh. TODO -- check the min and max values here  <br>**Minimum value** : `16000`  <br>**Maximum value** : `32000`|integer|
+|**charge**  <br>*optional*|current charge of the battery, in mWh. cannot be more than the maximum given in the TH response to `/ready`.  <br>**Minimum value** : `0`|integer|
 |**predicted_arrival**  <br>*optional*|current predicted arrival time, in simulation seconds|integer|
 |**sim_time**  <br>*optional*|current simulation time  <br>**Minimum value** : `0`|integer|
 |**v**  <br>*optional*|current velocity of the turtlebot|number (float)|
@@ -93,7 +93,7 @@ set the level of the battery in a currently running test
 
 |Name|Description|Schema|
 |---|---|---|
-|**charge**  <br>*required*|the level to which the battery should be set, in mWh. TODO -- are those the right constants? i have no idea; does it matter if battery sets are monotonically decreasing  <br>**Minimum value** : `16000`  <br>**Maximum value** : `32000`|number|
+|**charge**  <br>*required*|the level to which the battery should be set, in mWh. cannot be more than the maximum given in the TH response to `/ready`.  <br>**Minimum value** : `0`|number|
 
 
 #### Responses
@@ -122,7 +122,7 @@ set the level of the battery in a currently running test
 ### POST /perturb/place_obstacle
 
 #### Description
-if the test is running, then place an obstacle on the map
+if the test is running, then place an instance of the obstacle on the map
 
 
 #### Parameters
@@ -136,7 +136,6 @@ if the test is running, then place an obstacle on the map
 
 |Name|Description|Schema|
 |---|---|---|
-|**kind**  <br>*required*|the name of the shape of object to be placed. TODO -- make this an enum not a string|string|
 |**x**  <br>*required*|the x-coordinate of the center of the obstacle placement position|number (float)|
 |**y**  <br>*required*|the y-coordinate of the center of the obstacle placement position|number (float)|
 
@@ -187,7 +186,7 @@ if the test is running, remove a previously placed obstacle from the map
 
 |Name|Description|Schema|
 |---|---|---|
-|**obstacleid**  <br>*required*|the obstacle ID given by /perturb/place_obstacle of the obstacle to be removed|string|
+|**obstacleid**  <br>*required*|the obstacle ID given by /perturb/place_obstacle of the obstacle to be removed.|string|
 
 
 #### Responses
@@ -209,7 +208,7 @@ if the test is running, remove a previously placed obstacle from the map
 
 |Name|Description|Schema|
 |---|---|---|
-|**cause**  <br>*required*|a reason for the error condition|enum (bad_obstacleid, other_error)|
+|**cause**  <br>*required*|a reason for the error condition. `bad_obstacleid` is used if this endpoint is given a obstacleid in its parameters that was not given out by place_obstacle; `other_error` is used in all other instances.|enum (bad_obstacleid, other_error)|
 |**message**  <br>*required*|human readable info about what went wrong|string|
 
 

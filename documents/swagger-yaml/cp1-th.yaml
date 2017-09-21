@@ -52,11 +52,11 @@ paths:
                   name of a waypoint on the map
               discharge-function:
                 type: string
-                format: function_spec
+                format: function-spec
                 description: >-
                   if in level d, a description of the function dictating
                   the discharge of the battery, which is what we will
-                  learn.  TODO - this cant be a string
+                  learn.
               discharge-budget:
                 type: integer
                 description: >-
@@ -64,16 +64,23 @@ paths:
                   target function during learning
               charge-function:
                 type: string
-                format: function_spec
+                format: function-spec
                 description: >-
                   if in level d, a description of the function dictating
                   the recharging of the battery, which is what we will
-                  learn. TODO - this cant be a string
+                  learn.
               charge-budget:
                 type: integer
                 description: >-
                   if in level d, the maximum number of queries against the
                   target recharging function during learning
+              max-charge:
+                type: integer
+                minimum: 0
+                description: >-
+                  the maximum charge the battery can hold, in
+                  mWh. implicitly, all batteries have a minimum possible
+                  charge of 0 mWh
         '400':
           description: TH encountered an error producing configuration data
   /error:
@@ -92,8 +99,6 @@ paths:
             properties:
               error:
                 description: |-
-                  TODO -- add more error codes for other possible problems
-
                   one of a enumerated set of reasons that errors may arise
                    * parsing-error - one or more of the function
                                      descriptions failed to parse
@@ -168,11 +173,10 @@ paths:
                 format: float
               charge:
                 description: >-
-                  current turtlebot battery charge in mWh TODO - are these mins
-                  and maxes right?
+                  current turtlebot battery charge in mWh. cannot be more
+                  than the maximum specified in the response from `/ready`.
                 type: integer
-                minimum: 16000
-                maximum: 32000
+                minimum: 0
               predicted_arrival:
                 description: 'current best prediction of arrival time, in simulation time'
                 type: integer
@@ -226,10 +230,11 @@ paths:
                 type: number
                 format: float
               charge:
-                description: final charge measure of the turtlebot TODO - check ranges
+                description: >-
+                  final charge measure of the turtlebot. cannot be more
+                  than the maximum specified in the response from `/ready`.
                 type: integer
-                minimum: 16000
-                maximum: 32000
+                minimum: 0
               sim_time:
                 description: the final internal simulation time
                 type: integer
@@ -238,9 +243,6 @@ paths:
                 description: 'final best prediction of arrival time, in simulation time'
                 type: integer
                 minimum: 0
-              message:
-                description: TODO human readable something or other
-                type: string
       responses:
         '200':
           description: TH acknowledges the completion of the mission
