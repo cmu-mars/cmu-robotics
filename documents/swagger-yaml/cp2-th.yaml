@@ -117,7 +117,7 @@ paths:
       description: |-
         Used to indicate that an error has occurred during the preparation
         or evaluation of a test scenario, or during the start-up of the
-        system under test. 
+        system under test.
         \
         **Error codes**:
           * *NeutralPerturbation:* One of the perturbations for the test scenario has no
@@ -158,6 +158,17 @@ paths:
       responses:
         '200':
           description: the TH acknowledges the ready message
+          schema:
+            type: object
+            required:
+              - docker-ip
+            properties:
+              docker-ip:
+                type: string
+                format: ip-address
+                description: >-
+                  the IP address to connect to in order to allocate new
+                  worker containers
         '400':
           description: the TH has itself encontered an error processing the ready message
   /status:
