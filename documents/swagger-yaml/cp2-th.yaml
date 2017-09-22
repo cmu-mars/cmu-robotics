@@ -9,6 +9,44 @@ host: brass-th
 definitions:
   CandidateAdaptation:
     type: object
+    required:
+      - diff
+      - degradation
+    properties:
+      diff:
+        type: string
+        description: >-
+          A description of the change to the code, given in the form of a diff.
+      compilation-outcome:
+        type: object
+        $ref: '#/definitions/CompilationOutcome'
+        description: >-
+          A description of the outcome of attempting to compile this adaptation.
+      degradation:
+        type: object
+        $ref: '#/definitions/Degradation'
+        description: >-
+          A description of the level of degradation that was observed when
+          this adaptation was applied.
+
+  CompilationOutcome:
+    type: object
+    required:
+      - time-taken
+      - successful
+    properties:
+      time-taken:
+        type: number
+        format: float
+        description: The number of seconds taken to compile this adaptation.
+      successful:
+        type: boolean
+        description: >-
+          A flag indicating whether the compilation of this adaptation was
+          successful or not.
+
+  Degradation:
+    type: object
 
 paths:
   /error:
