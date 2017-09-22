@@ -16,12 +16,18 @@ paths:
       description: |-
         Used to indicate that an error has occurred during the preparation
         or evaluation of a test scenario, or during the start-up of the
-        system under test. The body of this method contains a single
-        property, `ErrorMsg`, containing a JSON-based description of the
-        error. A description of the errors produced by SUT is given
-        below.
+        system under test. 
+        \
+        **Error codes**:
+          * *NeutralPerturbation:* One of the perturbations for the test scenario has no
+            effect on the outcome of the test suite, and as such, it
+            does not consistitute a fault.
+          * *PerturbationFailedToCompile:* The perturbed version of the system
+            failed to compile.
+
       parameters:
         - in: body
+          required: true
           name: Parameters
           schema:
             type: object
@@ -32,13 +38,13 @@ paths:
                 type: string
                 enum:
                   - NeutralPerturbation
+                  - PertubationFailedToCompile
                 description: >-
-                  One of the perturbations for the test scenario has no
-                  effect on the outcome of the test suite, and as such, it
-                  does not consistitute a fault
+                  Used to indicate the type of error that has occurred.
+              err-description:
+                type: string
+                description: An optional description of the error.
 
-                  TODO -- add more error codes with more description of
-                  possible bad states
       responses:
         '200':
           description: the TH acknowledges the error
@@ -60,6 +66,7 @@ paths:
         the Pareto set (i.e., a new "best" adaptation has been found).
       parameters:
         - in: body
+          required: true
           name: Parameters
           schema:
             type: object
@@ -74,7 +81,8 @@ paths:
                   Pareto set.
               pareto-set:
                 type: array
-                items: '#/definitions/CandidateAdaptation'
+                items:
+                  $ref: '#/definitions/CandidateAdaptation'
                 description: The current contents of the Pareto-set of adaptations.
       responses:
         '200':
@@ -90,6 +98,7 @@ paths:
         `SutFinishedStatus`, as specified by the Lincoln Labs API.
       parameters:
         - in: body
+          required: true
           name: Parameters
           schema:
             type: object
