@@ -29,7 +29,7 @@ Used to trigger the code adaptation process.
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**Parameters**  <br>*optional*|[Parameters](#adapt-post-parameters)|
+|**Body**|**Parameters**  <br>*required*|[Parameters](#adapt-post-parameters)|
 
 <a name="adapt-post-parameters"></a>
 **Parameters**
@@ -37,7 +37,6 @@ Used to trigger the code adaptation process.
 |Name|Description|Schema|
 |---|---|---|
 |**attempt-limit**  <br>*optional*|An (optional) limit on the number of adaptations that may be attempted.  <br>**Minimum value** : `1`|integer|
-|**hint**  <br>*optional*|We could allow hints to be provided to this method? e.g., the shape(s) or location(s) of the fix(es). TODO|string|
 |**time-limit**  <br>*optional*|An (optional) time limit for the adaptation process, specified in minutes.  <br>**Minimum value** : `1`|number (float)|
 
 
@@ -45,15 +44,15 @@ Used to trigger the code adaptation process.
 
 |HTTP Code|Description|Schema|
 |---|---|---|
-|**200**|successfully triggered code adaptation|No Content|
-|**400**|encountered an error while triggering code adaptation|[Response 400](#adapt-post-response-400)|
+|**200**|Successfully triggered code adaptation|No Content|
+|**400**|Encountered an error while triggering code adaptation|[Response 400](#adapt-post-response-400)|
 
 <a name="adapt-post-response-400"></a>
 **Response 400**
 
 |Name|Description|Schema|
 |---|---|---|
-|**message**  <br>*optional*|human-readable information about the error, if any can be provided|string|
+|**message**  <br>*optional*|Human-readable information about the error, if any can be provided|string|
 
 
 <a name="perturb-post"></a>
@@ -67,29 +66,29 @@ Applies a set of perturbations, given as a list of JSON objects, to the SUT. Thi
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**Parameters**  <br>*optional*|[Parameters](#perturb-post-parameters)|
+|**Body**|**Parameters**  <br>*required*|[Parameters](#perturb-post-parameters)|
 
 <a name="perturb-post-parameters"></a>
 **Parameters**
 
 |Name|Description|Schema|
 |---|---|---|
-|**perturbations**  <br>*required*|a non-empty list of perturbations to apply to the codebase|< [Perturbation](#perturbation) > array|
+|**perturbations**  <br>*required*|A non-empty list of perturbations to apply to the codebase|< [Perturbation](#perturbation) > array|
 
 
 #### Responses
 
 |HTTP Code|Description|Schema|
 |---|---|---|
-|**200**|applied the perturbations to the the system successfully|No Content|
-|**400**|encountered an error while applying the perturbations to the system|[Response 400](#perturb-post-response-400)|
+|**200**|Applied the perturbations to the the system successfully|No Content|
+|**400**|Encountered an error while applying the perturbations to the system|[Response 400](#perturb-post-response-400)|
 
 <a name="perturb-post-response-400"></a>
 **Response 400**
 
 |Name|Description|Schema|
 |---|---|---|
-|**message**  <br>*optional*|human-readable information about the error, if any can be provided|string|
+|**message**  <br>*optional*|Human-readable information about the error, if any can be provided|string|
 
 
 <a name="perturbations-get"></a>
@@ -103,7 +102,7 @@ Returns a list of possible perturbations of an (optionally) specified shape and 
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**Parameters**  <br>*optional*|[Parameters](#perturbations-get-parameters)|
+|**Body**|**Parameters**  <br>*required*|[Parameters](#perturbations-get-parameters)|
 
 <a name="perturbations-get-parameters"></a>
 **Parameters**
@@ -112,14 +111,14 @@ Returns a list of possible perturbations of an (optionally) specified shape and 
 |---|---|---|
 |**file**  <br>*required*|The file at which the perturbation should be injected.|string|
 |**line**  <br>*optional*|The number of the line at which the perturbation should be injected. N.b. if this parameter is used, then the file parameter must also be specified.|integer|
-|**shape**  <br>*required*|The shape of the fault (e.g., incorrect conditional, missing control flow).|string|
+|**shape**  <br>*required*|The shape of the fault (e.g., incorrect conditional, missing control flow).|enum (DeleteStatement, ReplaceStatement, InsertStatement)|
 
 
 #### Responses
 
 |HTTP Code|Description|Schema|
 |---|---|---|
-|**200**|successfully computed the list of possible perturbations|[Response 200](#perturbations-get-response-200)|
+|**200**|Successfully computed the list of possible perturbations|[Response 200](#perturbations-get-response-200)|
 |**400**|Encountered an error while computing the list of possible perturbations.|[Response 400](#perturbations-get-response-400)|
 
 <a name="perturbations-get-response-200"></a>
@@ -134,7 +133,7 @@ Returns a list of possible perturbations of an (optionally) specified shape and 
 
 |Name|Description|Schema|
 |---|---|---|
-|**message**  <br>*optional*|human-readable information about the error, if any can be provided|string|
+|**message**  <br>*optional*|Human-readable information about the error, if any can be provided|string|
 
 
 <a name="status-get"></a>
@@ -148,8 +147,8 @@ Returns the current status of the SUT
 
 |HTTP Code|Description|Schema|
 |---|---|---|
-|**200**|successfully computed the status of the SUT|No Content|
-|**400**|encounted an error while computing the status of the SUT|No Content|
+|**200**|Successfully computed the status of the SUT|No Content|
+|**400**|Encounted an error while computing the status of the SUT|No Content|
 
 
 

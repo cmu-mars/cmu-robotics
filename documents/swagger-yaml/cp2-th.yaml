@@ -9,6 +9,107 @@ host: brass-th
 definitions:
   CandidateAdaptation:
     type: object
+    required:
+      - diff
+      - degradation
+      - compilation-outcome
+      - test-outcomes
+    properties:
+      diff:
+        type: string
+        description: >-
+          A description of the change to the code, given in the form of a diff.
+      compilation-outcome:
+        type: object
+        $ref: '#/definitions/CompilationOutcome'
+        description: >-
+          A description of the outcome of attempting to compile this adaptation.
+      degradation:
+        type: object
+        $ref: '#/definitions/Degradation'
+        description: >-
+          A description of the level of degradation that was observed when
+          this adaptation was applied.
+
+      test-outcomes:
+        type: array
+        items:
+          $ref: '#/definitions/TestOutcome'
+        description: >-
+          A summary of the outcomes for each of the test cases that this
+          adaptation was evaluated against.
+
+  TestOutcome:
+    type: object
+    required:
+      - test-id
+      - time-taken
+      - timed-out
+      - passed
+    properties:
+      test-id:
+        type: string
+        description: A unique identifier for the test to which this outcome belongs.
+      time-taken:
+        type: number
+        format: float
+        description: >-
+          The number of seconds taken to complete the test.
+      timed-out:
+        type: boolean
+        description: >-
+          A flag indicating whether or not the test timed out during execution.
+      crashed:
+        type: boolean
+        description: >-
+          A flag indicating whether or not the system crashed during execution
+          of the test.
+      qos:
+        type: object
+        $ref: '#/definitions/TestQoS'
+        description: >-
+          A summary of the quality of service that was observed during the
+          execution of the test.
+
+  CompilationOutcome:
+    type: object
+    required:
+      - time-taken
+      - successful
+    properties:
+      time-taken:
+        type: number
+        format: float
+        description: The number of seconds taken to compile this adaptation.
+      successful:
+        type: boolean
+        description: >-
+          A flag indicating whether the compilation of this adaptation was
+          successful or not.
+
+  TestQoS:
+    type: object
+    required:
+      - duration
+      - proximity
+      - collisions
+    properties:
+      duration:
+        type: object
+        description: >-
+          A measure of service quality with respect to time taken to complete
+          the test.
+      proximity:
+        type: object
+        description: >-
+          A measure of service quality with respect to proximity to the goal.
+      collisions:
+        type: object
+        description:
+          A measure of service quality with respect to the number of collisions.
+
+  Degradation:
+    type: object
 
 paths:
   /error:
@@ -16,12 +117,18 @@ paths:
       description: |-
         Used to indicate that an error has occurred during the preparation
         or evaluation of a test scenario, or during the start-up of the
-        system under test. The body of this method contains a single
-        property, `ErrorMsg`, containing a JSON-based description of the
-        error. A description of the errors produced by SUT is given
-        below.
+        system under test. 
+        \
+        **Error codes**:
+          * *NeutralPerturbation:* One of the perturbations for the test scenario has no
+            effect on the outcome of the test suite, and as such, it
+            does not consistitute a fault.
+          * *PerturbationFailedToCompile:* The perturbed version of the system
+            failed to compile.
+
       parameters:
         - in: body
+          required: true
           name: Parameters
           schema:
             type: object
@@ -32,13 +139,13 @@ paths:
                 type: string
                 enum:
                   - NeutralPerturbation
+                  - PertubationFailedToCompile
                 description: >-
-                  One of the perturbations for the test scenario has no
-                  effect on the outcome of the test suite, and as such, it
-                  does not consistitute a fault
+                  Used to indicate the type of error that has occurred.
+              err-description:
+                type: string
+                description: An optional description of the error.
 
-                  TODO -- add more error codes with more description of
-                  possible bad states
       responses:
         '200':
           description: the TH acknowledges the error
@@ -57,8 +164,27 @@ paths:
     post:
       description: >-
         Used to inform the test harness that a new adaptation has been added to
-        the Pareto set (i.e., a new "best" adaptation has been found). TODO --
-        add parameters here?
+        the Pareto set (i.e., a new "best" adaptation has been found).
+      parameters:
+        - in: body
+          required: true
+          name: Parameters
+          schema:
+            type: object
+            required:
+              - adaptation
+              - pareto-set
+            properties:
+              adaptation:
+                type: Object
+                $ref: '#/definitions/CandidateAdaptation'
+                description: The candidate adaptation that was added to the
+                  Pareto set.
+              pareto-set:
+                type: array
+                items:
+                  $ref: '#/definitions/CandidateAdaptation'
+                description: The current contents of the Pareto-set of adaptations.
       responses:
         '200':
           description: the TH acknowledges the status
@@ -73,6 +199,7 @@ paths:
         `SutFinishedStatus`, as specified by the Lincoln Labs API.
       parameters:
         - in: body
+          required: true
           name: Parameters
           schema:
             type: object
@@ -85,10 +212,18 @@ paths:
             properties:
               outcome:
                 type: string
+                enum:
+                  - CompleteRepair
+                  - PartialRepair
+                  - NoRepair
                 description: >-
-                  A short description of the success of the repair process TODO
-                  -- in the md, Chris had this as an enum but without values
-                  listed
+                  A short description of the success of the repair process.
+                  A complete repair is one which fully restores the intent of
+                  the system (i.e., system degradation is reduced to zero).
+                  A partial repair reduces the degradation of the system from
+                  its initial value to a value greater than zero. If the
+                  level of degradation remains unchanged, no (partial) repair
+                  has been found.
               running-time:
                 type: number
                 format: float
