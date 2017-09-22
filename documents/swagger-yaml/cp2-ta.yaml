@@ -120,6 +120,10 @@ paths:
                   The file at which the perturbation should be injected.
               shape:
                 type: string
+                enum:
+                  - DeleteStatement
+                  - ReplaceStatement
+                  - InsertStatement
                 description: >-
                   The shape of the fault (e.g., incorrect conditional,
                   missing control flow).
@@ -131,7 +135,7 @@ paths:
                   parameter must also be specified.
       responses:
         '200':
-          description: successfully computed the list of possible perturbations
+          description: Successfully computed the list of possible perturbations
           schema:
             type: object
             properties:
@@ -152,7 +156,7 @@ paths:
               message:
                 type: string
                 description: >-
-                  human-readable information about the error, if any can be
+                  Human-readable information about the error, if any can be
                   provided
   /adapt:
     post:
@@ -180,16 +184,16 @@ paths:
                   attempted.
       responses:
         '200':
-          description: successfully triggered code adaptation
+          description: Successfully triggered code adaptation
         '400':
-          description: encountered an error while triggering code adaptation
+          description: Encountered an error while triggering code adaptation
           schema:
             type: object
             properties:
               message:
                 type: string
                 description: >-
-                  human-readable information about the error, if any can be
+                  Human-readable information about the error, if any can be
                   provided
   /perturb:
     post:
@@ -207,28 +211,28 @@ paths:
             properties:
               perturbations:
                 type: array
-                description: a non-empty list of perturbations to apply to the
+                description: A non-empty list of perturbations to apply to the
                   codebase
                 items:
                   $ref: '#/definitions/Perturbation'
       responses:
         '200':
-          description: applied the perturbations to the the system successfully
+          description: Applied the perturbations to the the system successfully
         '400':
-          description: encountered an error while applying the perturbations to the system
+          description: Encountered an error while applying the perturbations to the system
           schema:
             type: object
             properties:
               message:
                 type: string
                 description: >-
-                  human-readable information about the error, if any can be
+                  Human-readable information about the error, if any can be
                   provided
   /status:
     get:
       description: Returns the current status of the SUT
       responses:
         '200':
-          description: successfully computed the status of the SUT
+          description: Successfully computed the status of the SUT
         '400':
-          description: encounted an error while computing the status of the SUT
+          description: Encounted an error while computing the status of the SUT
