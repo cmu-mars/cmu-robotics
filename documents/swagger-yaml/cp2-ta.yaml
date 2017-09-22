@@ -178,12 +178,6 @@ paths:
                 description: >-
                   An (optional) limit on the number of adaptations that may be
                   attempted.
-              hint:
-                type: string
-                required: false
-                description: >-
-                  We could allow hints to be provided to this method? e.g., the
-                  shape(s) or location(s) of the fix(es). TODO
       responses:
         '200':
           description: successfully triggered code adaptation
