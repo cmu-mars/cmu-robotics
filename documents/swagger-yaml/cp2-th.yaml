@@ -57,8 +57,25 @@ paths:
     post:
       description: >-
         Used to inform the test harness that a new adaptation has been added to
-        the Pareto set (i.e., a new "best" adaptation has been found). TODO --
-        add parameters here?
+        the Pareto set (i.e., a new "best" adaptation has been found).
+      parameters:
+        - in: body
+          name: Parameters
+          schema:
+            type: object
+            required:
+              - adaptation
+              - pareto-set
+            properties:
+              adaptation:
+                type: Object
+                $ref: '#/definitions/CandidateAdaptation'
+                description: The candidate adaptation that was added to the
+                  Pareto set.
+              pareto-set:
+                type: array
+                items: '#/definitions/CandidateAdaptation'
+                description: The current contents of the Pareto-set of adaptations.
       responses:
         '200':
           description: the TH acknowledges the status
