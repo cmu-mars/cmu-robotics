@@ -91,6 +91,12 @@ paths:
                   - NoRepair
                 description: >-
                   A short description of the success of the repair process.
+                  A complete repair is one which fully restores the intent of
+                  the system (i.e., system degradation is reduced to zero).
+                  A partial repair reduces the degradation of the system from
+                  its initial value to a value greater than zero. If the
+                  level of degradation remains unchanged, no (partial) repair
+                  has been found.
               running-time:
                 type: number
                 format: float
