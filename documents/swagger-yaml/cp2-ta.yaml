@@ -107,6 +107,7 @@ paths:
         suitable (set of) perturbation(s) for a test scenario.
       parameters:
         - in: body
+          required: true
           name: Parameters
           schema:
             type: object
@@ -163,6 +164,7 @@ paths:
       description: Used to trigger the code adaptation process.
       parameters:
         - in: body
+          required: true
           name: Parameters
           schema:
             type: object
@@ -203,6 +205,7 @@ paths:
         for evaluation.
       parameters:
         - in: body
+          required: true
           name: Parameters
           schema:
             type: object
