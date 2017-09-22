@@ -356,10 +356,14 @@ ops2 ::= "*" | "/" | "^"
 ```
 
 Additionally, we require two semantic properties of the polynomials `f`
-described with this syntax:
+described with this syntax.
 
  1. _monotonicity_: For all times `t`, `df/dt(t) > 0`
  2. _positivity_: For all times `t`, `f(t) > 0`
+
+Together, this corresponds to the intuition that any battery---no matter
+its charge and discharge characteristics---only discharges over time and
+never spontaneously recharges, and cannot discharge past `0 mWh`.
 
 ### REST Interface to the TA
 
