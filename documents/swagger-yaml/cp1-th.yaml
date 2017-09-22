@@ -78,8 +78,8 @@ paths:
                 type: integer
                 minimum: 0
                 description: >-
-                  the maximum charge the battery can hold, in
-                  mWh. implicitly, all batteries have a minimum possible
+                  if in level d, the maximum charge the battery can hold,
+                  in mWh. implicitly, all batteries have a minimum possible
                   charge of 0 mWh
         '400':
           description: TH encountered an error producing configuration data
@@ -211,7 +211,6 @@ paths:
               - charge
               - sim_time
               - predicted_arrival
-              - message
             properties:
               x:
                 description: final x-coordinate of the turtlebot
