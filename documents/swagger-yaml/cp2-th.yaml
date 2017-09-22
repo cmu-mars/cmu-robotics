@@ -12,6 +12,8 @@ definitions:
     required:
       - diff
       - degradation
+      - compilation-outcome
+      - test-outcomes
     properties:
       diff:
         type: string
@@ -28,6 +30,40 @@ definitions:
         description: >-
           A description of the level of degradation that was observed when
           this adaptation was applied.
+
+      test-outcomes:
+        type: array
+        items:
+          $ref: '#/definitions/TestOutcome'
+        description: >-
+          A summary of the outcomes for each of the test cases that this
+          adaptation was evaluated against.
+
+  TestOutcome:
+    type: object
+    required:
+      - test-id
+      - time-taken
+      - timed-out
+      - passed
+    properties:
+      test-id:
+        type: string
+        description: A unique identifier for the test to which this outcome belongs.
+      time-taken:
+        type: number
+        format: float
+        description: >-
+          The number of seconds taken to complete the test.
+      timed-out:
+        type: boolean
+        description: >-
+          A flag indicating whether or not the test timed out during execution.
+      crashed:
+        type: boolean
+        description: >-
+          A flag indicating whether or not the system crashed during execution
+          of the test.
 
   CompilationOutcome:
     type: object
