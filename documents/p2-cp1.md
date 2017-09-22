@@ -385,11 +385,11 @@ the robot. In addition, we may evaluate the discovery mechanism with a cost
 function based on the number of queries used. Alternatively, Lincoln Labs
 can set a tunable query budget which will be used by the DAS.
 
-|             | A (p:✕,a:✕) | B (p:✔,a:✕) | C (p:✔,a:✔) |
+|             |   (p:✕,a:✕) |   (p:✔,a:✕) | (p:✔,a:✔)   |
 |-------------|-------------|-------------|-------------|
-| No PM       | `✔`         | `✔`         |             |
-| Predefined  |             |             | `✔`         |
-| Learned     |             |             | `✔`         |
+| No PM       | `✔` (A)     | `✔` (B)     |             |
+| Predefined  |             |             | `✔` (C)     |
+| Learned     |             |             | `✔` (D)     |
 
 We implicitly mean predefined is an inaccurate model.
 
