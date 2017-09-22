@@ -85,10 +85,12 @@ paths:
             properties:
               outcome:
                 type: string
+                enum:
+                  - CompleteRepair
+                  - PartialRepair
+                  - NoRepair
                 description: >-
-                  A short description of the success of the repair process TODO
-                  -- in the md, Chris had this as an enum but without values
-                  listed
+                  A short description of the success of the repair process.
               running-time:
                 type: number
                 format: float
