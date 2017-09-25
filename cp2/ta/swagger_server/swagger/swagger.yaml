@@ -1,0 +1,207 @@
+---
+swagger: "2.0"
+info:
+  version: "0.1"
+  title: "cmu mars brass ta: phase 2, cp2"
+host: "brass-ta"
+schemes:
+- "http"
+paths:
+  /perturbations:
+    get:
+      description: "Returns a list of possible perturbations of an (optionally) specified\
+        \ shape and complexity that can be performed at a given (set of) location(s)\
+        \ in the program.  This endpoint should be used to select a suitable (set\
+        \ of) perturbation(s) for a test scenario."
+      operationId: "perturbations_get"
+      parameters:
+      - in: "body"
+        name: "Parameters"
+        required: true
+        schema:
+          $ref: "#/definitions/Parameters"
+      responses:
+        200:
+          description: "Successfully computed the list of possible perturbations"
+          schema:
+            $ref: "#/definitions/inline_response_200"
+        400:
+          description: "Encountered an error while computing the list of possible\
+            \ perturbations."
+          schema:
+            $ref: "#/definitions/inline_response_400"
+      x-swagger-router-controller: "swagger_server.controllers.default_controller"
+  /adapt:
+    post:
+      description: "Used to trigger the code adaptation process."
+      operationId: "adapt_post"
+      parameters:
+      - in: "body"
+        name: "Parameters"
+        required: true
+        schema:
+          $ref: "#/definitions/Parameters_1"
+      responses:
+        200:
+          description: "Successfully triggered code adaptation"
+        400:
+          description: "Encountered an error while triggering code adaptation"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+      x-swagger-router-controller: "swagger_server.controllers.default_controller"
+  /perturb:
+    post:
+      description: "Applies a set of perturbations, given as a list of JSON objects,\
+        \ to the SUT. This endpoint should be used to prepare a test scenario for\
+        \ evaluation."
+      operationId: "perturb_post"
+      parameters:
+      - in: "body"
+        name: "Parameters"
+        required: true
+        schema:
+          $ref: "#/definitions/Parameters_2"
+      responses:
+        200:
+          description: "Applied the perturbations to the the system successfully"
+        400:
+          description: "Encountered an error while applying the perturbations to the\
+            \ system"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+      x-swagger-router-controller: "swagger_server.controllers.default_controller"
+  /observe:
+    get:
+      description: "Returns the current status of the SUT. Note / TODO: this will\
+        \ be either filled in or removed as we work on the verdict expression and\
+        \ determine what observations are relevant to this CP."
+      operationId: "observe_get"
+      parameters: []
+      responses:
+        200:
+          description: "Successfully computed the status of the SUT"
+        400:
+          description: "Encounted an error while computing the status of the SUT"
+      x-swagger-router-controller: "swagger_server.controllers.default_controller"
+definitions:
+  SourceLocation:
+    type: "object"
+    required:
+    - "file"
+    - "offset"
+    properties:
+      file:
+        type: "string"
+        description: "The file at which this source location resides."
+      offset:
+        type: "integer"
+        description: "The character offset between the start of the file and this\
+          \ location."
+        minimum: 0
+  SourceRange:
+    type: "object"
+    required:
+    - "start"
+    - "stop"
+    properties:
+      start:
+        description: "The location that marks the start of this source range."
+        $ref: "#/definitions/SourceLocation"
+      stop:
+        description: "The location that marks the end of this source range."
+        $ref: "#/definitions/SourceLocation"
+  Perturbation:
+    type: "object"
+    required:
+    - "kind"
+    discriminator: "kind"
+    properties:
+      kind:
+        type: "string"
+        description: "Used to discriminate between different kinds of perturbation."
+  DeleteStatementPerturbation:
+    allOf:
+    - $ref: "#/definitions/Perturbation"
+    - properties:
+        locationRange:
+          description: "The range of code that is deleted by the perturbation."
+          $ref: "#/definitions/SourceRange"
+  ReplaceStatementPerturbation:
+    allOf:
+    - $ref: "#/definitions/Perturbation"
+    - properties:
+        locationRange:
+          description: "The range of code that is replaced by the perturbation."
+          $ref: "#/definitions/SourceRange"
+        statement:
+          type: "string"
+          description: "The source code for the replacement statement."
+  InsertStatementPerturbation:
+    allOf:
+    - $ref: "#/definitions/Perturbation"
+    - properties:
+        location:
+          description: "The location immediately before the location at which the\
+            \ statement will be inserted."
+          $ref: "#/definitions/SourceRange"
+        statement:
+          type: "string"
+          description: "The source code for the inserted statement."
+  Parameters:
+    type: "object"
+    required:
+    - "file"
+    - "shape"
+    properties:
+      file:
+        type: "string"
+        description: "The file at which the perturbation should be injected."
+      shape:
+        type: "string"
+        description: "The shape of the fault (e.g., incorrect conditional, missing\
+          \ control flow)."
+        enum:
+        - "DeleteStatement"
+        - "ReplaceStatement"
+        - "InsertStatement"
+      line:
+        type: "integer"
+        description: "The number of the line at which the perturbation should be injected.\
+          \ N.b. if this parameter is used, then the file parameter must also be specified."
+  inline_response_200:
+    properties:
+      perturbations:
+        type: "array"
+        description: "A list of perturbations that satisfy the query parameters provided\
+          \ by the request."
+        items:
+          $ref: "#/definitions/Perturbation"
+  inline_response_400:
+    properties:
+      message:
+        type: "string"
+        description: "Human-readable information about the error, if any can be provided"
+  Parameters_1:
+    type: "object"
+    properties:
+      time-limit:
+        type: "number"
+        format: "float"
+        description: "An (optional) time limit for the adaptation process, specified\
+          \ in minutes."
+        minimum: 1.0
+      attempt-limit:
+        type: "integer"
+        description: "An (optional) limit on the number of adaptations that may be\
+          \ attempted."
+        minimum: 1
+  Parameters_2:
+    type: "object"
+    required:
+    - "perturbations"
+    properties:
+      perturbations:
+        type: "array"
+        description: "A non-empty list of perturbations to apply to the codebase"
+        items:
+          $ref: "#/definitions/Perturbation"
