@@ -358,7 +358,9 @@ ops2 ::= "*" | "/" | "^"
 Additionally, we require two semantic properties of the polynomials `f`
 described with this syntax.
 
- 1. _monotonicity_: For all times `t`, `df/dt(t) > 0`
+ 1. _monotonicity_: For all times `t`, `df/dt(t) > 0` for the function
+    describing charging and `df/dt(t) < 0` for the function describing
+    discharging.
  2. _positivity_: For all times `t`, `f(t) > 0`
 
 Together, this corresponds to the intuition that any battery---no matter
