@@ -41,7 +41,9 @@ paths:
                   - d
               start-loc:
                 type: string
-                description: the name of the start map waypoint
+                description: >-
+                  the name of the start map waypoint. start-loc must not be
+                  the same as the first item of `target-locs`.
               target-locs:
                 type: array
                 items:
@@ -49,7 +51,11 @@ paths:
                 description: >-
                   the names of the waypoints to visit, in the order in
                   which they must be visited. each name must be a valid
-                  name of a waypoint on the map
+                  name of a waypoint on the map. `target-locs` must not be
+                  the empty list. every adjacent pair of elements of
+                  `target-locs` must be disequal -- that is to say, it is
+                  not permitted to direct the robot to go travel to the
+                  waypoint where it is already located.
               discharge-function:
                 type: string
                 format: function-spec

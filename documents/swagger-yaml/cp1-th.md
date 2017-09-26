@@ -107,8 +107,8 @@ indicate to the TH that the TA is ready to recieve configuration data to continu
 |**discharge-function**  <br>*optional*|if in level d, a description of the function dictating the discharge of the battery, which is what we will learn.|string (function-spec)|
 |**level**  <br>*required*|the level at which the DAS should operate for this test.<br>as given in the CP definition,<br><br>  * a - no perturbations, no adaptation, no power model<br>  * b - perturbations, but no adaptation, no power model<br>  * c - perturbations and adaptation, but a static power<br>        model for discharge/charge, while planner uses a<br>        different static power model<br>  * d - perturbations and adaptation, with charge and<br>        discharge power models provided and learned|enum (a, b, c, d)|
 |**max-charge**  <br>*optional*|if in level d, the maximum charge the battery can hold, in mWh. implicitly, all batteries have a minimum possible charge of 0 mWh  <br>**Minimum value** : `0`|integer|
-|**start-loc**  <br>*required*|the name of the start map waypoint|string|
-|**target-locs**  <br>*required*|the names of the waypoints to visit, in the order in which they must be visited. each name must be a valid name of a waypoint on the map|< string > array|
+|**start-loc**  <br>*required*|the name of the start map waypoint. start-loc must not be the same as the first item of `target-locs`.|string|
+|**target-locs**  <br>*required*|the names of the waypoints to visit, in the order in which they must be visited. each name must be a valid name of a waypoint on the map. `target-locs` must not be the empty list. every adjacent pair of elements of `target-locs` must be disequal -- that is to say, it is not permitted to direct the robot to go travel to the waypoint where it is already located.|< string > array|
 
 
 <a name="status-post"></a>
