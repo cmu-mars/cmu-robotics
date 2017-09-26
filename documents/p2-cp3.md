@@ -2,13 +2,21 @@
 
 ## Overview
 
-This challenge problem is an evolution of Phase 1 Challenge Problem 1 that in Phase 2 will focus on applying adaptations to the software of the robot as it performs missions. Regardless of the source of changes that BRASS-enabled systems will encounter, in many systems these changes will have to be applied during system operation. Current self adaptive systems are typically limited to selecting from pre-determined plans for adapting to specific responses - in the context of BRASS and for long-lived software, these adaptations will need to be discovered when the system is in operation. Adaptation discovery will be based on relational and probabilistic multi-objective planning over the software / hardware configurations of the robot in response to changes to characteristics of the software (unreliable components, failing sensors) and environment (resource changes, characteristics in the environment).
+This challenge problem will demonstrate major advances in our capability to adapt to perturbations such as software component failure or environmental change.
+
+Today's self-adaptive systems are typically limited to selecting from pre-determined plans for adapting to specific responses.  In BRASS--and for long-lived software in general--these adaptations will need to be discovered when the system is in operation.  We use relational and probabilistic multi-objective planning to consider a wide range of adaptations including:
+ * software configuration
+ * software component parameters
+ * mission adaptations
+
+Changing software configuration on-line is difficult because components must be taken down and others restarted in an orderly way.  Most past work does not consider adaptations based on software configuration; the little work that does is based on pre-determined adaptation plans, not online discovery.  Prior work also has not considered combination of software configuration adaptations with parameter adaptation and mission adaptation; this creates both modeling and scalability challenges.
 
 ### Research Questions being Addressed
 
 - Can the optimal architectural structure of a system (with respect to the satisfaction of mission goals) be generated with multi-objective planning? Can we use this to manage change to the structure of the software on-line?
 - How can we manage the interplay between constraints on structure, behavior, and quality when adapting software?
 - Modern CPS are a combination of models; how can we represent global constraints over multiple models and use them to help guarantee correctness and quality of software change plans?
+- How accurate are the predicted effects of adaptations?
 - What proportion of techniques can be used on line vs. needs to be done off-line?
 
 ### Exploring the Research Questions through the Test
