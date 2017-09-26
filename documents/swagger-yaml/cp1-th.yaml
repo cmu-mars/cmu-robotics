@@ -54,7 +54,7 @@ paths:
                   name of a waypoint on the map. `target-locs` must not be
                   the empty list. every adjacent pair of elements of
                   `target-locs` must be disequal -- that is to say, it is
-                  not permitted to direct the robot to go travel to the
+                  not permitted to direct the robot to travel to the
                   waypoint where it is already located.
               discharge-function:
                 type: string
