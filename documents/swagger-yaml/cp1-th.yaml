@@ -152,10 +152,6 @@ paths:
                    * adapt-done - the SUT has finished adapting
                    * charging-started - the turtlebot is currently charging
                    * charging-done - the turtlebot has stopped charging
-                   * at-target-point - the turtlebot has reached one of
-                                       the waypoints required by the
-                                       mission definition.
-
                 type: string
                 enum:
                   - learning-started
@@ -164,7 +160,6 @@ paths:
                   - adapt-done
                   - charging-started
                   - charging-done
-                  - at-target-point
               x:
                 description: current x-coordinate of the turtlebot
                 type: number
@@ -255,6 +250,14 @@ paths:
                 description: 'final best prediction of arrival time, in simulation time'
                 type: integer
                 minimum: 0
+              target-times:
+                description: >-
+                  the simulation times when each of the waypoints listed in
+                  `target-locs` were reached.
+                type: array
+                items:
+                  type: integer
+                  minimum: 0
               outcome:
                 type: string
                 enum:
