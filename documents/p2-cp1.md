@@ -1,9 +1,42 @@
 # CMU MARS (Aldrich), CP1: Integrated power model discovery and adaptation
 
 ## Executive Summary
-Modern software-intensive systems are typically composed on components that are likely to change over time. For software to continue to operate under such changes, the assumptions about parts of the system made at design time may not hold at runtime after some point. Therefore, mechanisms must be put in place that can dynamically learn new models of these assumptions and use them to make decisions about missions, configurations, and in general, how to adapt the software systems at runtime for more optimal performance. The use of power in robotics systems is one of the characteristics of cyberphysical systems that (a) is rarely used to reason about mission completion, but is typically critical for a mission's success, (b) will change over time due to chemical and physical characteristics of batteries as they degrade and are replaced over time, and (c) will change as sensors/algorthms/workloads evolve over the lifetime of the system. Using power as an example model, the aim of this challenge problem is to (1) apply learning techniques to discover new power models for a robotics system, and (2) take advantage of these new models at run time to improve the quality of missions of the robot over the use of no or static models.
 
-In this phase, we will restrict the problem to one where we learn the power model off-line, but apply it on-line for planning the mission (i.e., we will not consider dynamically changing power models). Lincoln Labs will provide models for different energy consumption profiles of hardware and software components used by the robot (these models may not be faithful to existing profiles, but may reflect future hardware and software energy consumption characteristics). As a proxy for running physical experiments to determine the power model, the MARS DAS will learn the model by querying it with a fixed number of inputs (specified by Lincoln Labs). This learned off-line power model is then used during robotic missions to improve the the quality (and better satisfy the intents ) of the mission.
+Modern software-intensive systems are typically composed on components that
+are likely to change over time. For software to continue to operate under
+such changes, the assumptions about parts of the system made at design time
+may not hold at runtime after some point. Therefore, mechanisms must be put
+in place that can dynamically learn new models of these assumptions and use
+them to make decisions about missions, configurations, and in general, how
+to adapt the software systems at runtime for more optimal performance. The
+use of power in robotics systems is one of the characteristics of
+cyberphysical systems that
+
+  1. is rarely used to reason about mission completion, but is typically
+     critical for a mission's success,
+  2. will change over time due to chemical and physical characteristics of
+     batteries as they degrade and are replaced over time, and
+  3. will change as sensors/algorthms/workloads evolve over the lifetime of
+     the system.
+
+Using power as an example model, the aim of this challenge problem is to
+
+  1. apply learning techniques to discover new power models for a robotics
+     system, and
+  2. take advantage of these new models at run time to improve the quality
+     of missions of the robot over the use of no or static models.
+
+In this phase, we will restrict the problem to one where we learn the power
+model off-line, but apply it on-line for planning the mission (i.e., we
+will not consider dynamically changing power models). Lincoln Labs will
+provide models for different energy consumption profiles of hardware and
+software components used by the robot (these models may not be faithful to
+existing profiles, but may reflect future hardware and software energy
+consumption characteristics). As a proxy for running physical experiments
+to determine the power model, the MARS DAS will learn the model by querying
+it with a fixed number of inputs (specified by Lincoln Labs). This learned
+off-line power model is then used during robotic missions to improve the
+the quality (and better satisfy the intents ) of the mission.
 
 
 ## Technical Overview
@@ -354,7 +387,7 @@ factor ::= constant | variable | "(" polynomial ")"
 variable ::= letter | variable digitSequence
 constant ::= digitSequence | "-" digitSequence
 digitSequence ::= digit | digit digitSequence
-digit ::= "0" | "1" | "2" | ... | "9" 
+digit ::= "0" | "1" | "2" | ... | "9"
 letter ::= "s1" | "s2" | "k1" | ... | "k5" | "l1 ... "l5"
 ops1 ::= "-"
 ops2 ::= "*" | "/" | "^"
