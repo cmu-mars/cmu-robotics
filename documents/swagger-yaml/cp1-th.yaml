@@ -152,6 +152,9 @@ paths:
                    * adapt-done - the SUT has finished adapting
                    * charging-started - the turtlebot is currently charging
                    * charging-done - the turtlebot has stopped charging
+                   * at-target-point - the turtlebot has reached one of
+                                       the waypoints required by the
+                                       mission definition.
 
                 type: string
                 enum:
@@ -161,6 +164,7 @@ paths:
                   - adapt-done
                   - charging-started
                   - charging-done
+                  - at-target-point
               x:
                 description: current x-coordinate of the turtlebot
                 type: number
