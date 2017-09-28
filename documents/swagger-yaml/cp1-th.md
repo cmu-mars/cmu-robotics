@@ -22,7 +22,8 @@
 ### POST /done
 
 #### Description
-used by the TA to indicate to the TH that the turtlebot has reached the goal and that the mission has been completed. note that incomplete missions will result in an error and not use this end point.
+used by the TA to indicate to the TH that the test is over.
+turtlebot has reached the goal and that the mission has been completed. note that incomplete missions will result in an error and not use this end point.
 
 
 #### Parameters
@@ -37,6 +38,8 @@ used by the TA to indicate to the TH that the turtlebot has reached the goal and
 |Name|Description|Schema|
 |---|---|---|
 |**charge**  <br>*required*|final charge measure of the turtlebot. cannot be more than the maximum specified in the response from `/ready`.  <br>**Minimum value** : `0`|integer|
+|**message**  <br>*optional*|human-readable text with more information about the end of the test.|string|
+|**outcome**  <br>*required*|indicates the reason why the test is over<br>  * at_goal - the turtlebot has reached the goal and<br>              completed the mission objectives<br>  * out_of_battery - the battery on the turtlebot has run<br>                     out, and cannot be charged, so the<br>                     turtlebot cannot make progress<br>  * other_outcome - the test is over for any other<br>                    non-error reason|enum (at_goal, out_of_battery, other_outcome)|
 |**predicted_arrival**  <br>*required*|final best prediction of arrival time, in simulation time  <br>**Minimum value** : `0`|integer|
 |**sim_time**  <br>*required*|the final internal simulation time  <br>**Minimum value** : `0`|integer|
 |**v**  <br>*required*|final velocity of the turtlebot|number (float)|
@@ -57,7 +60,7 @@ used by the TA to indicate to the TH that the turtlebot has reached the goal and
 ### POST /error
 
 #### Description
-used by the TA to indicate to the TH that an error has occurred in the start up or learning process. the TH will terminate the test upon notification of an error
+used by the TA to indicate to the TH that a non-recoverable error has occurred and the test cannot proceed. the TH will terminate the test upon notification of an error.
 
 
 #### Parameters
@@ -132,7 +135,7 @@ used by the TA to periodically indicate its current state to the TH
 |**charge**  <br>*required*|current turtlebot battery charge in mWh. cannot be more than the maximum specified in the response from `/ready`.  <br>**Minimum value** : `0`|integer|
 |**predicted_arrival**  <br>*required*|current best prediction of arrival time, in simulation time  <br>**Minimum value** : `0`|integer|
 |**sim_time**  <br>*required*|the internal simulation time at the time that the status message was sent  <br>**Minimum value** : `0`|integer|
-|**status**  <br>*required*|one of the possible status codes<br> * learning-started - the learning phase has started<br> * learning-done - the learning phase has been<br> * adapt-started - the SUT has started adapting and<br>                   cannot be perturbed<br> * adapt-done - the SUT has finished adapting<br> * charging-started - the turtlebot is currently charging<br> * charging-done - the turtlebot has stopped charging|enum (learning-started, learning-done, adapt-started, adapt-done, charging-started, charging-done)|
+|**status**  <br>*required*|one of the possible status codes<br> * learning-started - the learning phase has started<br> * learning-done - the learning phase has been<br> * adapt-started - the SUT has started adapting and<br>                   cannot be perturbed<br> * adapt-done - the SUT has finished adapting<br> * charging-started - the turtlebot is currently charging<br> * charging-done - the turtlebot has stopped charging<br> * at-target-point - the turtlebot has reached one of<br>                     the waypoints required by the<br>                     mission definition.|enum (learning-started, learning-done, adapt-started, adapt-done, charging-started, charging-done, at-target-point)|
 |**v**  <br>*required*|current velocity of the turtlebot|number (float)|
 |**w**  <br>*required*|current yaw of the turtlebot|number (float)|
 |**x**  <br>*required*|current x-coordinate of the turtlebot|number (float)|

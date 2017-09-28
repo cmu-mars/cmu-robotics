@@ -270,7 +270,7 @@ paths:
                                        turtlebot cannot make progress
                     * other_outcome - the test is over for any other
                                       non-error reason
-               message:
+              message:
                  type: string
                  description: >-
                    human-readable text with more information about the end
