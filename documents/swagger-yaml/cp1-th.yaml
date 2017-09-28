@@ -92,9 +92,9 @@ paths:
   /error:
     post:
       description: >-
-        used by the TA to indicate to the TH that an error has occurred in the
-        start up or learning process. the TH will terminate the test upon
-        notification of an error
+        used by the TA to indicate to the TH that a non-recoverable error
+        has occurred and the test cannot proceed. the TH will terminate the
+        test upon notification of an error.
       parameters:
         - in: body
           name: Parameters
@@ -205,7 +205,9 @@ paths:
   /done:
     post:
       description: >-
-        used by the TA to indicate to the TH that the turtlebot has reached the
+        used by the TA to indicate to the TH that the test is over.
+
+        turtlebot has reached the
         goal and that the mission has been completed. note that incomplete
         missions will result in an error and not use this end point.
       parameters:
@@ -221,6 +223,7 @@ paths:
               - charge
               - sim_time
               - predicted_arrival
+              - outcome
             properties:
               x:
                 description: final x-coordinate of the turtlebot
@@ -252,6 +255,26 @@ paths:
                 description: 'final best prediction of arrival time, in simulation time'
                 type: integer
                 minimum: 0
+              outcome:
+                type: string
+                enum:
+                  - at_goal
+                  - out_of_battery
+                  - other_outcome
+                description: >-
+                  indicates the reason why the test is over
+                    * at_goal - the turtlebot has reached the goal and
+                                completed the mission objectives
+                    * out_of_battery - the battery on the turtlebot has run
+                                       out, and cannot be charged, so the
+                                       turtlebot cannot make progress
+                    * other_outcome - the test is over for any other
+                                      non-error reason
+               message:
+                 type: string
+                 description: >-
+                   human-readable text with more information about the end
+                   of the test.
       responses:
         '200':
           description: TH acknowledges the completion of the mission
