@@ -151,26 +151,35 @@ paths:
             required:
               - final_location
               - final_sim_time
-              - final_predicted_arrival
-              - initial_predicted_arrival
-              - num_predictions
+              - arrival_predictions
               - final_charge
             properties:
-              final_location:
-                type: string
-                description: the
+              final_x:
+                type: number
+                format: float
+                description: >-
+                  the x coordinate of the robot position when the test ended
+              final_y:
+                type: number
+                format: float
+                description: >-
+                  the y coordinate of the robot position when the test ended
               final_sim_time:
                 type: integer
                 minimum: 0
                 description: the simulation time when the mission finished
-              final_predicted_arrival:
+              arrival_predictions:
+                type: array
+                items:
+                  type: integer
+                  minimum: 0
+                description: >-
+                  all the predicted arrival times made by the SUT during
+                       the test, in the order they were made.
+              final_charge:
                 type: integer
-                minimum: 0
-                description: the last prediction the SUT made of its
-                       arrival at the target, in
-
-              initial_predicted_arrival
-
+                description: >-
+                  the charge left in the battery when the test ended
       responses:
         '200':
           description: >-
