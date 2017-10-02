@@ -6,6 +6,22 @@ schemes:
   - http
 host: brass-ta
 definitions:
+  SourceLine:
+    type: object
+    required:
+      - file
+      - number
+    properties:
+      file:
+        type: string
+        description: >-
+          The file to which this line belongs.
+      number:
+        type: integer
+        minimum: 1
+        description: >-
+          The one-indexed number of this line in the file.
+
   SourceLocation:
     type: object
     required:
@@ -159,6 +175,24 @@ paths:
                 description: >-
                   Human-readable information about the error, if any can be
                   provided
+
+  /lines:
+    get:
+      description: Returns a list of all the source lines at which
+        perturbations may be injected.
+      schema:
+        type: array
+        items:
+          $ref: '#/definitions/SourceLine'
+        description: >-
+            A list of the (mutable) source lines within the project.
+      responses:
+        '200':
+          description: Successfully computed and returned a list of source
+            lines within the project.
+        '400':
+          description: Failed to produce a list of source lines within the
+            project.
 
   /adapt:
     post:
