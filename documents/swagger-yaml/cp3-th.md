@@ -69,8 +69,7 @@ indicates that the SUT has encountered an error in configuration data, parameter
 
 |Name|Description|Schema|
 |---|---|---|
-|**error**  <br>*required*|one of a enumerated set of reasons that errors may arise|enum (??? todo ???)|
-|**message**  <br>*optional*|human readable text describing the error, if possible|string|
+|**message**  <br>*optional*|human readable text describing the error, if possible. (TODO: add error codes here as we discover them)|string|
 
 
 #### Responses

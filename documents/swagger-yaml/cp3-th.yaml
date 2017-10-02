@@ -48,13 +48,10 @@ paths:
             required:
               - error
             properties:
-              error:
-                description: one of a enumerated set of reasons that errors may arise
-                type: string
-                enum:
-                  - ??? todo ???
               message:
-                description: human readable text describing the error, if possible
+                description: >-
+                  human readable text describing the error, if
+                  possible. (TODO: add error codes here as we discover them)
                 type: string
       responses:
         '200':
