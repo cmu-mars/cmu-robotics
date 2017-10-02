@@ -50,7 +50,7 @@ The JSON format for these pieces of information are:
 }
 ```
 
-Where, 
+Where,
 - `node-id` is a string indicating the label for the waypoint (it will probably be of the form l1, l2, l3, but this should not be assumed).
 - `coord` is composed of floats, significant to one decimal, indicating the coordinate of the waypoint, in meters from some origin point
 - `connected-to` is the set of labels that a node is connected to, and should be drawn from the set of node-id's defined in the map
@@ -103,6 +103,14 @@ this sequence. This interaction is omitted for clarity.
 
 ### REST Interface to the TH
 
+This API is currently still a draft. Some, but not all, possible future
+changes include:
+ * adding more constants to the enumerated error codes in the TH `/error`
+   end point
+
+ * adding more constants to the enumerated status codes in the TH `/status`
+   end point
+
 The Swagger file describing this interface is
 [swagger-yaml/cp3-th.yaml](swagger-yaml/cp3-th.yaml) which should be
 considered the canonical definition of the
@@ -110,6 +118,11 @@ API. [swagger-yaml/cp3-th.md](swagger-yaml/cp3-th.md) is produced
 automatically from the Swagger definition for convenience.
 
 ### REST Interface to the TA
+
+This API is currently still a draft. Some, but not all, possible future
+changes include:
+ * adding more constants to the enumerated error codes in the `400` returns
+   from different end points
 
 The Swagger file describing this interface is
 [swagger-yaml/cp3-ta.yaml](swagger-yaml/cp3-ta.yaml) which should be
