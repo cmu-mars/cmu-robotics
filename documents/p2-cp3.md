@@ -34,15 +34,61 @@ The perturbations to the robot and environment that will trigger change are:
 
 ## Test Data
 
-No specific test data will be required for this challenge problem, other than that sent in response to the th/ready endpoint. The candidate map will be delivered to Lincoln Labs for inspection. The map will include (a) the graph of waypoints, indicating their location in meters from an origin, (b) properties associated with each edge and node (including whether it is a charging station, the lighting conditions along the path), (c) the locations and labels for lights that can be activated or deactivated.
+There are three pieces of information that will be defined pre-test for this challenge problem:
+
+1. The map, including waypoint locations and locations of lights.
+2. The set of sensors that the robot can use.
+3. The set of software components (nodes) that can be used and perturbed in the test. (Note: this is not the full robot configuration, just the parts that are neccessarily visible to perturb during test.)
+
+The JSON format for these pieces of information are:
+
+### Map
+
+```
+{"map" : [ {"node-id" : STRING, "coord" : { "x" : FLOAT, "y" : FLOAT}, "connected-to" : [ STRING, ...] }, ...],
+ "lights" : {"id" : STRING, "coord" : {"x" : FLOAT, "y" : FLOAT}]
+}
+```
+
+Where, 
+- `node-id` is a string indicating the label for the waypoint (it will probably be of the form l1, l2, l3, but this should not be assumed).
+- `coord` is composed of floats, significant to one decimal, indicating the coordinate of the waypoint, in meters from some origin point
+- `connected-to` is the set of labels that a node is connected to, and should be drawn from the set of node-id's defined in the map
+- `lights` are the ids and locations of each of the lights in the map (the coordinates being meters from the the same origin as the waypoints.
+
+The set of all "node-ids" will be referred to as WAYPOINT_SET; the set of all light "ids" will be referred to as LIGHT_SET.
+
+### Sensors
+
+The robot will have three sensors that can be referred to by the test harness:
+
+- KINECT_IR: Is the infra-red part of the kinect that gives Kinect images depth
+- LIDAR: Is the planar Hokuyo lidar sensor
+- KINECT_ALL: Is the infra-red and RGB image part of the KINECT sensor
+
+```
+SENSOR_SET = enum {KINECT_IR, KINECT_ALL, LIDAR}
+```
+
+### Nodes
+> TODO: This set needs to be finalized
+The robot will have a set of software nodes that can be referred to by the test harness, these will be e.g.,
+
+- MOVEBASE: The low-level robot navigation subsystem
+- AMCL: The adaptive Monte Carlo localization algorithm that uses depth information and odometry to estimate robot location in a map
+- MRPT: A particle based localization algorithm
+- CB_BASE: A constraint-based navigation subsystem
+
+```
+NODE_SET = enum {MOVEBASE, AMCL, MRPT, CB_BASE, ...}
+```
 
 ## Test Parameters
 
 The test will be able to be parameterized in a number of ways, and this will be done via the response to ready. The elements that may be specified for the test are:
 
 - the initial robot position, as well as the target location for the robot, which constitutes the mission
-- the initial robot configuration, in term of active sensors and navigation algorithm
-- the initial lighting conditions (indicating which lights are on or off in the map)
+- whether adaptation is enabled for this test
 
 ## Test Procedure
 > TODO
