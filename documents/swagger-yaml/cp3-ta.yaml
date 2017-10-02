@@ -6,45 +6,7 @@ schemes:
   - http
 host: brass-ta
 paths:
-  /query/initial:
-    get:
-      description: >-
-        after ready is reported, the TH will query this end point to get the
-        initial planned path. note that waypoint names are unique per map.
-      responses:
-        '200':
-          description: computed the initially planned path
-          schema:
-            type: object
-            required:
-              - path
-              - predicted_arrival_time
-            properties:
-              path:
-                type: array
-                items:
-                  type: string
-                  format: waypoint-names
-                description: >-
-                  the initially planned sequence of waypoints the turtlebot will
-                  traverse, in order of planned traversal
-              predicted_arrival_time:
-                type: integer
-                minimum: 0
-                description: >-
-                  a lower bound estimate of the number of simulation
-                  seconds needed for the robot to traverse the planned path
-        '400':
-          description: encountered an error computing the initially planned path
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-                description: >-
-                  human readable information about the error, if any can be
-                  provided
-  /action/start:
+  /start:
     post:
       description: start the turtlebot navigating through the selected map
       responses:
@@ -60,67 +22,9 @@ paths:
                 description: >-
                   human readable information about the error, if any can be
                   provided
-  /action/observe:
-    get:
-      description: the current state of the SUT
-      responses:
-        '200':
-          description: successfully determined the current state of the SUT
-          schema:
-            type: object
-            properties:
-              x:
-                type: number
-                format: float
-                description: current x-coordinate of the turtlebot position
-              'y':
-                type: number
-                format: float
-                description: current y-coordinate of the turtlebot position
-              w:
-                type: number
-                format: float
-                description: current yaw of the turtlebot
-              v:
-                type: number
-                format: float
-                description: current velocity of the turtlebot
-              charge:
-                type: integer
-                minimum: 16000
-                maximum: 32000
-                description: >-
-                  current charge of the battery, in mWh. TODO -- check the min
-                  and max values here
-              predicted_arrival:
-                type: integer
-                description: 'current predicted arrival time, in simulation seconds'
-              sim_time:
-                type: integer
-                minimum: 0
-                description: current simulation time
-              kinect_status:
-                type: string
-                enum:
-                  - 'on'
-                  - 'off'
-                description: >-
-                  the current status of the kinect sensor. "on" means that the
-                  sensor is on and being used to gather data about the
-                  environment; "off" means that the sensor is off.
-        '400':
-          description: encountered an error determining the current state of the SUT.
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-                description: >-
-                  human readable information about the error, if any can be
-                  provided
-  /perturb/battery:
+  /perturb/lights:  ## id : lightset, status: on, of
     post:
-      description: set the level of the battery. using this end point before getting a `live` status message is an error.
+      description:
       parameters:
         - in: body
           name: Parameters
@@ -128,17 +32,11 @@ paths:
           schema:
             type: object
             required:
-              - charge
+              - xx
             properties:
-              charge:
-                type: number
-                minimum: 16000
-                maximum: 32000
+              xx:
+                type: string
                 description: >-
-                  the level to which the battery should be set, in mWh. TODO --
-                  are those the right constants? does it matter if battery sets
-                  are monotonically decreasing throughout the test? can the TH
-                  ever make the battery have more charge all of a sudden?
       responses:
         '200':
           description: the battery has been set to the requested level
@@ -160,102 +58,9 @@ paths:
                 description: >-
                   human readable information about the error, if any can be
                   provided
-  /perturb/place_obstacle:
+  /perturb/sensor: ## id : sensorset, status: on, off
     post:
-      description: 'place an obstacle on the map.  using this end point before getting a `live` status message is an error.'
-      parameters:
-        - in: body
-          name: place obstacle parameters
-          required: true
-          schema:
-            type: object
-            required:
-              - x
-              - 'y'
-              - kind
-            properties:
-              x:
-                type: number
-                format: float
-                description: >-
-                  the x-coordinate of the center of the obstacle placement
-                  position
-              'y':
-                type: number
-                format: float
-                description: >-
-                  the y-coordinate of the center of the obstacle placement
-                  position
-              kind:
-                type: string
-                description: >-
-                  the name of the shape of object to be placed. TODO -- make
-                  this an enum not a string
-      responses:
-        '200':
-          description: the obstacle has been placed in the running test
-          schema:
-            type: object
-            required:
-              - obstacleid
-              - topleft_x
-              - topleft_y
-              - botright_x
-              - botright_y
-              - sim_time
-            properties:
-              obstacleid:
-                type: string
-                description: >-
-                  a unique identifier for this particular placed obstacle, so
-                  that it can be removed in the future
-              topleft_x:
-                type: number
-                format: float
-                description: >-
-                  the x-coordinate of the top left corner of the bounding box of
-                  the placed obstacle
-              topleft_y:
-                type: number
-                format: float
-                description: >-
-                  the y-coordinate of the top left corner of the bounding box of
-                  the placed obstacle
-              botright_x:
-                type: number
-                format: float
-                description: >-
-                  the x-coordinate of the bottom right corner of the bounding
-                  box of the placed obstacle
-              botright_y:
-                type: number
-                format: float
-                description: >-
-                  the y-coordinate of the bottom right corner of the bounding
-                  box of the placed obstacle
-              sim_time:
-                type: integer
-                description: the simulation time when the obstacle was placed
-        '400':
-          description: an error was encountered while placing the obstacle.
-          schema:
-            type: object
-            required:
-              - cause
-              - message
-            properties:
-              cause:
-                description: a reason for the error condition
-                type: string
-                enum:
-                  - bad_coordiantes
-                  - other_error
-              message:
-                type: string
-                description: human readable info about what went wrong
-  /perturb/remove_obstacle:
-    post:
-      description: 'remove a previously placed obstacle from the map. using this end point before getting a `live` status message is an error. sending any obstacle ID string that was not recived from a previous use of the `place_obstacle` end point is an error.'
+      description:
       parameters:
         - in: body
           name: Parameters
@@ -263,16 +68,14 @@ paths:
           schema:
             type: object
             required:
-              - obstacleid
+              - xx
             properties:
-              obstacleid:
+              xx:
                 type: string
                 description: >-
-                  the obstacle ID given by /perturb/place_obstacle of the
-                  obstacle to be removed
       responses:
         '200':
-          description: the obstacle has been removed from the running test
+          description: the battery has been set to the requested level
           schema:
             type: object
             required:
@@ -280,57 +83,35 @@ paths:
             properties:
               sim_time:
                 type: integer
-                description: the simulation time when the obstacle was placed
+                description: the simulation time when the battery was set
         '400':
-          description: an error was encountered while removing the obstacle.
+          description: an error was encountered while setting the battery level
           schema:
             type: object
-            required:
-              - cause
-              - message
             properties:
-              cause:
-                description: a reason for the error condition
-                type: string
-                enum:
-                  - bad_obstacleid
-                  - other_error
               message:
                 type: string
-                description: human readable info about what went wrong
-  /perturb/robot:
+                description: >-
+                  human readable information about the error, if any can be
+                  provided
+  /perturb/node: ## id: nodeset, status: failed (can only cause failures)
     post:
-      description: introduce an error in the robot software. using this end point before getting a `live` status message is an error.
+      description:
       parameters:
         - in: body
-          name: set a part of the robot to fail
+          name: Parameters
           required: true
           schema:
             type: object
             required:
-              - item
-              - state
+              - xx
             properties:
-              item:
+              xx:
                 type: string
-                enum:
-                  - kinect
-                  - ultrasound
-                  - node1
-                  - node2
-              state:
-                type: string
-                enum:
-                  - 'on'
-                  - 'off'
-                  - failing
                 description: >-
-                  the state the kinect should have after this request is
-                  processed -- "on" means the kinect is operational and can be
-                  used; "off" means it is not operational and cannot be used.
       responses:
         '200':
-          description: the error has been introduced into the robot software
+          description: the battery has been set to the requested level
           schema:
             type: object
             required:
@@ -338,14 +119,14 @@ paths:
             properties:
               sim_time:
                 type: integer
-                description: the simulation time when the error was introduced
+                description: the simulation time when the battery was set
         '400':
-          description: an error was encountered while introducing an error into the robot software
+          description: an error was encountered while setting the battery level
           schema:
             type: object
-            required:
-              - message
             properties:
               message:
                 type: string
-                description: human readable info about what went wrong
+                description: >-
+                  human readable information about the error, if any can be
+                  provided
