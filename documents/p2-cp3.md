@@ -21,30 +21,28 @@ Changing software configuration on-line is difficult because components must be 
 
 ### Exploring the Research Questions through the Test
 
-The perturbations available to the test are designed to trigger software configuration changes that can be handled on-line (changes to actual code are being addressed in CP2). These perturbations will be drawn from the following set of possible perturbations: (a) Changing lighting conditions dynamically in the environment, (b) causing failure or error of a sensor on the robot, (c) placing obstacles in the path of the robot, (d) killing (with random amounts of persistence) software nodes on the robot. The aim here is explore a variety of difficulties of software configuration changes on-line, from relatively simple changes affecting one node (e.g., its resilience or parameterization) to nodes with a large number of dependencies, causing system-wide changes to the architecture structure of the software.
+These research questions will be addressed on our robotics platform, where the robot must carry out a navigation mission while dealing with perturbations that will make it difficult to achieve the mission. The qualities of the mission will be related to battery charge, timeliness, and accuracy - the robot must get close to the location by a deadline (which the robot may may change based on predictive models) and with some charge. The perturbations available to the test are designed to trigger software configuration changes that can be handled on-line (changes to actual source code are being addressed in CP2), as compared to Phase I CP1 where perturbations predominately triggered mission changes. The robot configurations that will be considered are:
 
-### Notes:
-Changes available to the software:
-- use of different, redundant sensor(s) for localization
-- different localization techniques for different sensors and different parts of the map
-- different map characteristics:
-     - extensive glass corridors require ultrasound sensor and associated localization changes (rather than kinect)
-     - large open space configured for poster session requires switch to SLAM, or different local planner for extensive obstacle avoidance. Different planners may have different degrees of reliability in the presence of crowds (e.g., follow-the-carrot is time optimal because it follows a straight line but less reliable than elastic band, because it does not adjust the trajectory of the robot in the presence of obstacles).
-     - part of building with beacons requires reconfiguration to use them for localization, but the part of the software that makes use of them should not be running when not in that area.
+- The use of various sensors: kinect depth, kinect image, planar LIDAR
+- The availability of different navigation and localization subsystems: depth image based using either kinect (3d pointcloud) or lidar (planar depths), image marker based (using only RGB image with no depth)
+
+The perturbations to the robot and environment that will trigger change are:
+
+- Failure of sensors: kinect depth and LIDAR
+- Turning on and off lights in the world
+- Failing modules (ROS nodes) in the robot itself
 
 ## Test Data
 
-No specific test data will be required for this challenge problem, other than that sent in response to the th/ready endpoint. The candidate maps will be delivered for inspection by Lincoln Labs. The maps will include (a) the graph of waypoints, indicating their location in meters from an origin, (b) properties associated with each edge and node (including whether it is a charging station, the lighting conditions along the path, and the crowdedness of the corridors).
-
->TODO: Need to be clear about what is known by the DAS (definitely waypoints and locations) and what is not (e.g., do we know up front the properties of the map - if not, which ones are hidden from us?) Perhaps a possibility would be adding knowledge with some degree of uncertainty (e.g., the existence of a crowd will be known with certainty once the robot gets close to it, but before that, the likelihood of a crowd in some part of the map is abstracted as a probability distribution - same for current light conditions).
+No specific test data will be required for this challenge problem, other than that sent in response to the th/ready endpoint. The candidate map will be delivered to Lincoln Labs for inspection. The map will include (a) the graph of waypoints, indicating their location in meters from an origin, (b) properties associated with each edge and node (including whether it is a charging station, the lighting conditions along the path), (c) the locations and labels for lights that can be activated or deactivated.
 
 ## Test Parameters
 
 The test will be able to be parameterized in a number of ways, and this will be done via the response to ready. The elements that may be specified for the test are:
 
-- the map, chosen from a fixed set of generated maps. These maps will vary in their size (number of waypoints) and their environment (lighting conditions, area crowding in terms of obstacles)
 - the initial robot position, as well as the target location for the robot, which constitutes the mission
 - the initial robot configuration, in term of active sensors and navigation algorithm
+- the initial lighting conditions (indicating which lights are on or off in the map)
 
 ## Test Procedure
 > TODO
