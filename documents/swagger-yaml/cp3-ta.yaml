@@ -25,7 +25,7 @@ paths:
                   provided
   /perturb/light:
     post:
-      description:
+      description: change the state of a light in the environment
       parameters:
         - in: body
           name: Parameters
@@ -51,9 +51,9 @@ paths:
           schema:
             type: object
             required:
-              - sim_time
+              - sim-time
             properties:
-              sim_time:
+              sim-time:
                 type: integer
                 description: the simulation time when the light was set
         '400':
@@ -61,9 +61,9 @@ paths:
           schema:
             type: object
             required:
-              - sim_time
+              - sim-time
             properties:
-              sim_time:
+              sim-time:
                 type: integer
                 description: the simulation time when the error occurred
               message:
@@ -73,7 +73,7 @@ paths:
                   provided
   /perturb/sensor:
     post:
-      description:
+      description: change the state of one of the sensors on the robot
       parameters:
         - in: body
           name: Parameters
@@ -82,7 +82,7 @@ paths:
             type: object
             required:
               - id
-              - status
+              - state
             properties:
               id:
                 type: string
@@ -103,9 +103,9 @@ paths:
           schema:
             type: object
             required:
-              - sim_time
+              - sim-time
             properties:
-              sim_time:
+              sim-time:
                 type: integer
                 description: the simulation time when the sensor was set
         '400':
@@ -113,9 +113,9 @@ paths:
           schema:
             type: object
             required:
-              - sim_time
+              - sim-time
             properties:
-              sim_time:
+              sim-time:
                 type: integer
                 description: the simulation time when the error occurred
               message:
@@ -125,7 +125,7 @@ paths:
                   provided
   /perturb/nodefail:
     post:
-      description:
+      description: cause one of the software nodes to fail
       parameters:
         - in: body
           name: Parameters
@@ -150,23 +150,23 @@ paths:
           schema:
             type: object
             required:
-              - sim_time
+              - sim-time
             properties:
-              sim_time:
+              sim-time:
                 type: integer
                 description: the simulation time when the node failed
         '400':
           description: an error was encountered while causing the node to fail
           schema:
             type: object
+            required:
+              - sim-time
             properties:
-              required:
-                - sim_time
               message:
                 type: string
                 description: >-
                   human readable information about the error, if any can be
                   provided
-              sim_time:
+              sim-time:
                 type: integer
                 description: the simulation time when the error occurred
