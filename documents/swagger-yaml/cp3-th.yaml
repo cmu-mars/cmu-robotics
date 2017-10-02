@@ -9,8 +9,8 @@ paths:
   /ready:
     post:
       description: >-
-        indicate to the TH that the TA is ready to recieve configuration data
-        and continue starting up the DAS
+        indicates that the SUT is ready to recieve configuration data to
+        continue start up
       responses:
         '200':
           description: TH is ready to produce configuration data
@@ -21,10 +21,12 @@ paths:
                 type: string
                 description: >-
                   the name of the start map waypoint. must be a valid way point
-                  for the map given in `map_to_use`.
+                  name from the map data.
               target_loc:
                 type: string
-                description: the name of the goal map waypoint
+                description: >-
+                  the name of the goal map waypoint. must be a valid way
+                  point name from the map data.
               use_adaptation:
                 type: boolean
                 description: >-
@@ -81,14 +83,37 @@ paths:
               status:
                 description: >-
                   one of a enumerated set of reasons that errors may
-                  arise, described as follows
+                  arise, as follows:
+                    * `live`, the SUT has processed the configuration data
+                       and is ready for initial perturbations (if any) and the
+                       start of the test
+
+                    * `mission_running`, the SUT has processed the initial
+                       perturbations after receiving `/start`, possibly
+                       adapted, and the robot is now actually moving along
+                       its path. it is an error to send any perturbation to
+                       the SUT between sending a message to `/start` and
+                       receiving this status.
+
+                    * `adapting`, the SUT has detected a condition that
+                       requires adaptation and the SUT is adapting. it is
+                       an error to send any perturbation to the SUT after
+                       this message is sent to the TH until the TH gets a
+                       status message with `adapted`.
+
+                    * `adapted`, the SUT has finished adapting after
+                       observing a need to. this means that the robot is
+                       moving along its plan again and it is no longer an
+                       error to send perturbations. if this is the status
+                       code of the message, the fields `plan`, `config` and
+                       `sensors` will also be present, to describe the new
+                       state of the robot.
                 type: string
                 enum:
-                  - live ## up after config, ready for initial perturbs
-                  - mission_running ## after /start, the robot is actually moving
-                  - adapting ## not allowed to perturb
-                  - adapted  ## allowed to perturb again; updates plan
-                             ## config and sensors
+                  - live
+                  - mission_running
+                  - adapting
+                  - adapted
               message:
                 description: human readable text describing the status, if any
                 type: string
@@ -96,8 +121,7 @@ paths:
                 type: integer
                 minimum: 0
                 description: >-
-                  the time inside the simulation when the status message was
-                  produced
+                  the simulation time the status message was produced
               plan:
                 description: >-
                   list of waypoints the current plan tends to visit, in
@@ -127,14 +151,26 @@ paths:
             required:
               - final_location
               - final_sim_time
-              - predicted_arrival_time
-              - initial_predicted_arrival_time
+              - final_predicted_arrival
+              - initial_predicted_arrival
               - num_predictions
               - final_charge
             properties:
-              sim_time:
+              final_location:
+                type: string
+                description: the
+              final_sim_time:
                 type: integer
+                minimum: 0
                 description: the simulation time when the mission finished
+              final_predicted_arrival:
+                type: integer
+                minimum: 0
+                description: the last prediction the SUT made of its
+                       arrival at the target, in
+
+              initial_predicted_arrival
+
       responses:
         '200':
           description: >-

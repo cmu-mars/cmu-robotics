@@ -8,12 +8,13 @@ host: brass-ta
 paths:
   /start:
     post:
-      description: start the turtlebot navigating through the selected map
+      description: start the turtlebot navigating through the map
       responses:
         '200':
-          description: successfully started the experiment
+          description: SUT has begin starting the mission
         '400':
-          description: encountered an error trying to start the experiment.
+          description: >-
+            SUT encountered an error trying to start the mission
           schema:
             type: object
             properties:
@@ -22,7 +23,7 @@ paths:
                 description: >-
                   human readable information about the error, if any can be
                   provided
-  /perturb/lights:  ## id : lightset, status: on, of
+  /perturb/light:
     post:
       description:
       parameters:
@@ -32,14 +33,21 @@ paths:
           schema:
             type: object
             required:
-              - xx
+              - id
+              - state
             properties:
-              xx:
+              id:
                 type: string
                 description: >-
+                  the element of LIGHTSET whose state will be set
+              state:
+                type: boolean
+                description: >-
+                  upon response, the named light will be on if `true` and
+                  `off` otherwise
       responses:
         '200':
-          description: the battery has been set to the requested level
+          description: the named light has been set
           schema:
             type: object
             required:
@@ -47,18 +55,23 @@ paths:
             properties:
               sim_time:
                 type: integer
-                description: the simulation time when the battery was set
+                description: the simulation time when the light was set
         '400':
-          description: an error was encountered while setting the battery level
+          description: an error was encountered while setting the light
           schema:
             type: object
+            required:
+              - sim_time
             properties:
+              sim_time:
+                type: integer
+                description: the simulation time when the error occurred
               message:
                 type: string
                 description: >-
                   human readable information about the error, if any can be
                   provided
-  /perturb/sensor: ## id : sensorset, status: on, off
+  /perturb/sensor:
     post:
       description:
       parameters:
@@ -68,14 +81,25 @@ paths:
           schema:
             type: object
             required:
-              - xx
+              - id
+              - status
             properties:
-              xx:
+              id:
                 type: string
+                enum:
+                  - kinect-ir
+                  - lidar
+                  - kinect-all
                 description: >-
+                  which sensor of SENSORSET to set
+              state:
+                type: boolean
+                description: >-
+                  upon response, the named sensor will be on if `true` and
+                  `off` otherwise
       responses:
         '200':
-          description: the battery has been set to the requested level
+          description: the named sensor has been set
           schema:
             type: object
             required:
@@ -83,18 +107,23 @@ paths:
             properties:
               sim_time:
                 type: integer
-                description: the simulation time when the battery was set
+                description: the simulation time when the sensor was set
         '400':
-          description: an error was encountered while setting the battery level
+          description: an error was encountered while setting the sensor
           schema:
             type: object
+            required:
+              - sim_time
             properties:
+              sim_time:
+                type: integer
+                description: the simulation time when the error occurred
               message:
                 type: string
                 description: >-
                   human readable information about the error, if any can be
                   provided
-  /perturb/node: ## id: nodeset, status: failed (can only cause failures)
+  /perturb/nodefail:
     post:
       description:
       parameters:
@@ -104,14 +133,20 @@ paths:
           schema:
             type: object
             required:
-              - xx
+              - id
             properties:
-              xx:
+              id:
                 type: string
+                enum:
+                  - movebase
+                  - amcl
+                  - mrpt
+                  - cb-base
                 description: >-
+                  cause the named node to fail
       responses:
         '200':
-          description: the battery has been set to the requested level
+          description: the node has failed
           schema:
             type: object
             required:
@@ -119,14 +154,19 @@ paths:
             properties:
               sim_time:
                 type: integer
-                description: the simulation time when the battery was set
+                description: the simulation time when the node failed
         '400':
-          description: an error was encountered while setting the battery level
+          description: an error was encountered while causing the node to fail
           schema:
             type: object
             properties:
+              required:
+                - sim_time
               message:
                 type: string
                 description: >-
                   human readable information about the error, if any can be
                   provided
+              sim_time:
+                type: integer
+                description: the simulation time when the error occurred
