@@ -36,9 +36,11 @@ indicates that the test is completed
 
 |Name|Description|Schema|
 |---|---|---|
-|**REASON**  <br>*required*|TODO, make this an enum?|string|
-|**TARGET**  <br>*required*|TODO|string|
-|**sim_time**  <br>*required*|the simulation time when the mission finished|integer|
+|**arrival-predictions**  <br>*required*|all the predicted arrival times made by the SUT during<br>     the test, in the order they were made.|< integer > array|
+|**final-charge**  <br>*required*|the charge left in the battery when the test ended|integer|
+|**final-sim-time**  <br>*required*|the simulation time when the mission finished  <br>**Minimum value** : `0`|integer|
+|**final-x**  <br>*required*|the x coordinate of the robot position when the test ended|number (float)|
+|**final-y**  <br>*required*|the y coordinate of the robot position when the test ended|number (float)|
 
 
 #### Responses
@@ -67,8 +69,8 @@ indicates that the SUT has encountered an error in configuration data, parameter
 
 |Name|Description|Schema|
 |---|---|---|
-|**ERROR**  <br>*required*|one of a enumerated set of reasons that errors may arise|enum (TEST_CONFIG_ERROR, TEST_DATA_FORMAT_ERROR, DAS_LOG_FILE_ERROR, DAS_OTHER_ERROR)|
-|**MESSAGE**  <br>*required*|human readable text describing the error|string|
+|**error**  <br>*required*|one of a enumerated set of reasons that errors may arise|enum (??? todo ???)|
+|**message**  <br>*optional*|human readable text describing the error, if possible|string|
 
 
 #### Responses
@@ -83,7 +85,7 @@ indicates that the SUT has encountered an error in configuration data, parameter
 ### POST /ready
 
 #### Description
-indicate to the TH that the TA is ready to recieve configuration data and continue starting up the DAS
+indicates that the SUT is ready to recieve configuration data to continue start up
 
 
 #### Responses
@@ -98,20 +100,9 @@ indicate to the TH that the TA is ready to recieve configuration data and contin
 
 |Name|Description|Schema|
 |---|---|---|
-|**initial_config**  <br>*optional*|initial configuration of the robot internals (subject to change)|[initial_config](#ready-post-initial_config)|
-|**map_to_use**  <br>*optional*|the name of the map to use for this test, must be from the list of agreed upon map names|string (MapMnemonic)|
-|**start_loc**  <br>*optional*|the name of the start map waypoint. must be a valid way point for the map given in `map_to_use`.|string|
-|**target_loc**  <br>*optional*|the name of the goal map waypoint|string|
-|**use_adaptation**  <br>*optional*|if `true`, then the DAS will use adapative behaiviours; if `false` then the DAS will not use adaptive behaiviours|boolean|
-
-<a name="ready-post-initial_config"></a>
-**initial_config**
-
-|Name|Description|Schema|
-|---|---|---|
-|**localization**  <br>*optional*|which localization algorithm to use|enum (algo1, algo2, algo3)|
-|**navigation_config**  <br>*optional*||enum (algo1, algo2, algo3)|
-|**sensors**  <br>*optional*|the set of sensors TODO|< string > array|
+|**start-loc**  <br>*optional*|the name of the start map waypoint. must be a valid way point name from the map data.|string|
+|**target-loc**  <br>*optional*|the name of the goal map waypoint. must be a valid way point name from the map data.|string|
+|**use-adaptation**  <br>*optional*|if `true`, then the DAS will use adapative behaiviours; if `false` then the DAS will not use adaptive behaiviours|boolean|
 
 
 <a name="status-post"></a>
@@ -132,9 +123,9 @@ indicate important state changes in the SUT to the TH. posted periodically as th
 
 |Name|Description|Schema|
 |---|---|---|
-|**ERROR**  <br>*required*|one of a enumerated set of reasons that errors may arise, described as follows<br> * BOOTING - TODO<br> * BOOTED - TODO<br> * ONLINE - TODO<br> * PERTURBATION_DETECTED - TODO<br> * MISSION_SUSPENDED - TODO<br> * MISSION_RESUMED - TODO<br> * MISSION_HALTED - TODO<br> * MISSION_ABORTED - TODO<br> * ADAPTATION_INITIATED - TODO<br> * ADAPTATION_COMPLETED - TODO<br> * ADAPTATION_STOPPED - TODO<br> * TEST_ERROR - TODO|enum (BOOTING, BOOTED, ONLINE, PERTURBATION_DETECTED, MISSION_SUSPENDED, MISSION_RESUMED, MISSION_HALTED, MISSION_ABORTED, ADAPTATION_INITIATED, ADAPTATION_COMPLETED, ADAPTATION_STOPPED, TEST_ERROR)|
-|**MESSAGE**  <br>*required*|human readable text describing the status|string|
-|**sim_time**  <br>*required*|the time inside the simulation when the status message was produced|integer|
+|**message**  <br>*optional*|human readable text describing the status, if any|string|
+|**sim-time**  <br>*required*|the simulation time the status message was produced  <br>**Minimum value** : `0`|integer|
+|**status**  <br>*required*|one of a enumerated set of reasons that errors may arise, as follows:<br>  * `live`, the SUT has processed the configuration data<br>     and is ready for initial perturbations (if any) and the<br>     start of the test<br><br>  * `mission-running`, the SUT has processed the initial<br>     perturbations after receiving `/start`, possibly<br>     adapted, and the robot is now actually moving along<br>     its path. it is an error to send any perturbation to<br>     the SUT between sending a message to `/start` and<br>     receiving this status.<br><br>  * `adapting`, the SUT has detected a condition that<br>     requires adaptation and the SUT is adapting. it is<br>     an error to send any perturbation to the SUT after<br>     this message is sent to the TH until the TH gets a<br>     status message with `adapted`.<br><br>  * `adapted`, the SUT has finished adapting after<br>     observing a need to. this means that the robot is<br>     moving along its plan again and it is no longer an<br>     error to send perturbations. if this is the status<br>     code of the message, the fields `plan`, `config` and<br>     `sensors` will also be present, to describe the new<br>     state of the robot.|enum (live, mission-running, adapting, adapted)|
 
 
 #### Responses
