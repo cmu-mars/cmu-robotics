@@ -17,17 +17,17 @@ paths:
           schema:
             type: object
             properties:
-              start_loc:
+              start-loc:
                 type: string
                 description: >-
                   the name of the start map waypoint. must be a valid way point
                   name from the map data.
-              target_loc:
+              target-loc:
                 type: string
                 description: >-
                   the name of the goal map waypoint. must be a valid way
                   point name from the map data.
-              use_adaptation:
+              use-adaptation:
                 type: boolean
                 description: >-
                   if `true`, then the DAS will use adapative behaiviours; if
@@ -78,7 +78,7 @@ paths:
             type: object
             required:
               - status
-              - sim_time
+              - sim-time
             properties:
               status:
                 description: >-
@@ -88,7 +88,7 @@ paths:
                        and is ready for initial perturbations (if any) and the
                        start of the test
 
-                    * `mission_running`, the SUT has processed the initial
+                    * `mission-running`, the SUT has processed the initial
                        perturbations after receiving `/start`, possibly
                        adapted, and the robot is now actually moving along
                        its path. it is an error to send any perturbation to
@@ -111,13 +111,13 @@ paths:
                 type: string
                 enum:
                   - live
-                  - mission_running
+                  - mission-running
                   - adapting
                   - adapted
               message:
                 description: human readable text describing the status, if any
                 type: string
-              sim_time:
+              sim-time:
                 type: integer
                 minimum: 0
                 description: >-
@@ -149,26 +149,27 @@ paths:
           schema:
             type: object
             required:
-              - final_location
-              - final_sim_time
-              - arrival_predictions
-              - final_charge
+              - final-x
+              - final-y
+              - final-sim-time
+              - arrival-predictions
+              - final-charge
             properties:
-              final_x:
+              final-x:
                 type: number
                 format: float
                 description: >-
                   the x coordinate of the robot position when the test ended
-              final_y:
+              final-y:
                 type: number
                 format: float
                 description: >-
                   the y coordinate of the robot position when the test ended
-              final_sim_time:
+              final-sim-time:
                 type: integer
                 minimum: 0
                 description: the simulation time when the mission finished
-              arrival_predictions:
+              arrival-predictions:
                 type: array
                 items:
                   type: integer
@@ -176,7 +177,7 @@ paths:
                 description: >-
                   all the predicted arrival times made by the SUT during
                        the test, in the order they were made.
-              final_charge:
+              final-charge:
                 type: integer
                 description: >-
                   the charge left in the battery when the test ended
