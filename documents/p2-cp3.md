@@ -16,7 +16,7 @@ Changing software configuration on-line is difficult because components must be 
 - Can the optimal architectural structure of a system (with respect to the satisfaction of mission goals) be generated with multi-objective planning? Can we use this to manage change to the structure of the software on-line?
 - How can we manage the interplay between constraints on structure, behavior, and quality when adapting software?
 - Modern CPS are a combination of models; how can we represent global constraints over multiple models and use them to help guarantee correctness and quality of software change plans?
-- To what extent can we predict the outcomes of adaptions on mission qualities? 
+- To what extent can we predict the outcomes of adaptions and their impact on the satisfaction of mission goals and qualities?
 - What proportion of techniques can be used on line vs. needs to be done off-line?
 
 ### Exploring the Research Questions through the Test
