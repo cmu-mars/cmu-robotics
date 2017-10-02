@@ -21,6 +21,7 @@ definitions:
         minimum: 0
         description: >-
           The character offset between the start of the file and this location.
+
   SourceRange:
     type: object
     required:
@@ -96,14 +97,13 @@ definitions:
             description:
               The source code for the inserted statement.
 
-
 paths:
   /perturbations:
     get:
       description: >-
         Returns a list of possible perturbations of an (optionally) specified
-        shape and complexity that can be performed at a given (set of)
-        location(s) in the program.  This endpoint should be used to select a
+        shape and complexity that can be performed at a given line in the
+        program. This endpoint should be used to select a
         suitable (set of) perturbation(s) for a test scenario.
       parameters:
         - in: body
@@ -159,6 +159,7 @@ paths:
                 description: >-
                   Human-readable information about the error, if any can be
                   provided
+
   /adapt:
     post:
       description: Used to trigger the code adaptation process.
