@@ -22,7 +22,8 @@
 ### POST /done
 
 #### Description
-used by the TA to indicate to the TH that the turtlebot has reached the goal and that the mission has been completed. note that incomplete missions will result in an error and not use this end point.
+used by the TA to indicate to the TH that the test is over.
+turtlebot has reached the goal and that the mission has been completed. note that incomplete missions will result in an error and not use this end point.
 
 
 #### Parameters
@@ -37,8 +38,11 @@ used by the TA to indicate to the TH that the turtlebot has reached the goal and
 |Name|Description|Schema|
 |---|---|---|
 |**charge**  <br>*required*|final charge measure of the turtlebot. cannot be more than the maximum specified in the response from `/ready`.  <br>**Minimum value** : `0`|integer|
+|**message**  <br>*optional*|human-readable text with more information about the end of the test.|string|
+|**outcome**  <br>*required*|indicates the reason why the test is over<br>  * at_goal - the turtlebot has reached the goal and<br>              completed the mission objectives<br>  * out_of_battery - the battery on the turtlebot has run<br>                     out, and cannot be charged, so the<br>                     turtlebot cannot make progress<br>  * other_outcome - the test is over for any other<br>                    non-error reason|enum (at_goal, out_of_battery, other_outcome)|
 |**predicted_arrival**  <br>*required*|final best prediction of arrival time, in simulation time  <br>**Minimum value** : `0`|integer|
 |**sim_time**  <br>*required*|the final internal simulation time  <br>**Minimum value** : `0`|integer|
+|**target-times**  <br>*optional*|the simulation times when each of the waypoints listed in `target-locs` were reached.|< integer > array|
 |**v**  <br>*required*|final velocity of the turtlebot|number (float)|
 |**w**  <br>*required*|final yaw of the turtlebot|number (float)|
 |**x**  <br>*required*|final x-coordinate of the turtlebot|number (float)|
@@ -57,7 +61,7 @@ used by the TA to indicate to the TH that the turtlebot has reached the goal and
 ### POST /error
 
 #### Description
-used by the TA to indicate to the TH that an error has occurred in the start up or learning process. the TH will terminate the test upon notification of an error
+used by the TA to indicate to the TH that a non-recoverable error has occurred and the test cannot proceed. the TH will terminate the test upon notification of an error.
 
 
 #### Parameters
@@ -106,9 +110,9 @@ indicate to the TH that the TA is ready to recieve configuration data to continu
 |**discharge-budget**  <br>*optional*|if in level d, the maximum number of queries against the target function during learning|integer|
 |**discharge-function**  <br>*optional*|if in level d, a description of the function dictating the discharge of the battery, which is what we will learn.|string (function-spec)|
 |**level**  <br>*required*|the level at which the DAS should operate for this test.<br>as given in the CP definition,<br><br>  * a - no perturbations, no adaptation, no power model<br>  * b - perturbations, but no adaptation, no power model<br>  * c - perturbations and adaptation, but a static power<br>        model for discharge/charge, while planner uses a<br>        different static power model<br>  * d - perturbations and adaptation, with charge and<br>        discharge power models provided and learned|enum (a, b, c, d)|
-|**max-charge**  <br>*optional*|the maximum charge the battery can hold, in mWh. implicitly, all batteries have a minimum possible charge of 0 mWh  <br>**Minimum value** : `0`|integer|
-|**start-loc**  <br>*required*|the name of the start map waypoint|string|
-|**target-locs**  <br>*required*|the names of the waypoints to visit, in the order in which they must be visited. each name must be a valid name of a waypoint on the map|< string > array|
+|**max-charge**  <br>*optional*|if in level d, the maximum charge the battery can hold, in mWh. implicitly, all batteries have a minimum possible charge of 0 mWh  <br>**Minimum value** : `0`|integer|
+|**start-loc**  <br>*required*|the name of the start map waypoint. start-loc must not be the same as the first item of `target-locs`.|string|
+|**target-locs**  <br>*required*|the names of the waypoints to visit, in the order in which they must be visited. each name must be a valid name of a waypoint on the map. `target-locs` must not be the empty list. every adjacent pair of elements of `target-locs` must be disequal -- that is to say, it is not permitted to direct the robot to travel to the waypoint where it is already located.|< string > array|
 
 
 <a name="status-post"></a>

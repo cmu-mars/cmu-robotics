@@ -37,13 +37,13 @@ the current state of the SUT
 
 |Name|Description|Schema|
 |---|---|---|
-|**charge**  <br>*optional*|current charge of the battery, in mWh. cannot be more than the maximum given in the TH response to `/ready`.  <br>**Minimum value** : `0`|integer|
-|**predicted_arrival**  <br>*optional*|current predicted arrival time, in simulation seconds|integer|
-|**sim_time**  <br>*optional*|current simulation time  <br>**Minimum value** : `0`|integer|
-|**v**  <br>*optional*|current velocity of the turtlebot|number (float)|
-|**w**  <br>*optional*|current yaw of the turtlebot aspect|number (float)|
-|**x**  <br>*optional*|current x-coordinate of the turtlebot position|number (float)|
-|**y**  <br>*optional*|current y-coordinate of the turtlebot position|number (float)|
+|**charge**  <br>*required*|current charge of the battery, in mWh. cannot be more than the maximum given in the TH response to `/ready`.  <br>**Minimum value** : `0`|integer|
+|**predicted_arrival**  <br>*required*|current predicted arrival time, in simulation seconds|integer|
+|**sim_time**  <br>*required*|current simulation time  <br>**Minimum value** : `0`|integer|
+|**v**  <br>*required*|current velocity of the turtlebot|number (float)|
+|**w**  <br>*required*|current yaw of the turtlebot aspect|number (float)|
+|**x**  <br>*required*|current x-coordinate of the turtlebot position|number (float)|
+|**y**  <br>*required*|current y-coordinate of the turtlebot position|number (float)|
 
 <a name="action-observe-get-response-400"></a>
 **Response 400**

@@ -1,6 +1,45 @@
 # CMU MARS (Aldrich), CP1: Integrated power model discovery and adaptation
 
-## Overview
+## Executive Summary
+
+Modern software-intensive systems are typically composed on components that
+are likely to change over time. For software to continue to operate under
+such changes, the assumptions about parts of the system made at design time
+may not hold at runtime after some point. Therefore, mechanisms must be put
+in place that can dynamically learn new models of these assumptions and use
+them to make decisions about missions, configurations, and in general, how
+to adapt the software systems at runtime for more optimal performance. The
+use of power in robotics systems is one of the characteristics of
+cyberphysical systems that
+
+  1. is rarely used to reason about mission completion, but is typically
+     critical for a mission's success,
+  2. will change over time due to chemical and physical characteristics of
+     batteries as they degrade and are replaced over time, and
+  3. will change as sensors/algorthms/workloads evolve over the lifetime of
+     the system.
+
+Using power as an example model, the aim of this challenge problem is to
+
+  1. apply learning techniques to discover new power models for a robotics
+     system, and
+  2. take advantage of these new models at run time to improve the quality
+     of missions of the robot over the use of no or static models.
+
+In this phase, we will restrict the problem to one where we learn the power
+model off-line, but apply it on-line for planning the mission (i.e., we
+will not consider dynamically changing power models). Lincoln Labs will
+provide models for different energy consumption profiles of hardware and
+software components used by the robot (these models may not be faithful to
+existing profiles, but may reflect future hardware and software energy
+consumption characteristics). As a proxy for running physical experiments
+to determine the power model, the MARS DAS will learn the model by querying
+it with a fixed number of inputs (specified by Lincoln Labs). This learned
+off-line power model is then used during robotic missions to improve the
+the quality (and better satisfy the intents ) of the mission.
+
+
+## Technical Overview
 
 The goal of this challenge problem is to discover the power model of the
 mobile robotics platform and use the discovered model to adapt for optimal
@@ -50,12 +89,11 @@ effectively with fewer disruptions to the mission).
 + There might be some cases where using an accurate model might tell us that we can finish a mission without going to the charge station and therefore score better in the mission.
 + We would like to explore corner cases that an accurate model can provide us benefit by saving time, saving energy or both, and therefore hitting a better score in total.
 + Using an inaccurate model might tell us that we can go to the target but the discharge is quicker (t^2) than what the robot expects (t) and therefore fail the mission
-- There might be some cases where the inaccurate model tells us we need to go to the charging station, but we could finish the mission without going to the station.
++ There might be some cases where the inaccurate model tells us we need to go to the charging station, but we could finish the mission without going to the station.
++ We would also explore how the learning budget (number of queries we are alowed to do int he learning process) would affect the quality of the mission as well as the adaptation quality (cf. RQ2). For this we will do sensitivity analysis where we learn the power model under different budgets form exteremely low (e.g., 1) to a high budget (e.g., 1000).
 
 **RQ2**: Can the use of learning an accurate power model improve the quality of adaptations?
 + There might be some cases where an accurate model leads to the quality of the decisions made by the planner and analyzer. For example, an accurate model might trigger fewer adaptations, an accurate model might lead to better decision making by not going too much to the charging station or going only when it is needed.
-
-**RQ3**: Can the use of a model that is accurate for a short horizon (i.e., t=[t_min, t_max/\alpha]) be beneficial for accomplishing a mission compared with a model that is more accurate for the longer horizon?
 
 ## Test Data
 
@@ -349,17 +387,23 @@ factor ::= constant | variable | "(" polynomial ")"
 variable ::= letter | variable digitSequence
 constant ::= digitSequence | "-" digitSequence
 digitSequence ::= digit | digit digitSequence
-digit ::= "0" | "1" | "2" | ... | "9" | "e" | "PI"
+digit ::= "0" | "1" | "2" | ... | "9"
 letter ::= "s1" | "s2" | "k1" | ... | "k5" | "l1 ... "l5"
-ops1 ::= "sqrt" | "exp" | "log" | "abs" | "-"
+ops1 ::= "-"
 ops2 ::= "*" | "/" | "^"
 ```
 
 Additionally, we require two semantic properties of the polynomials `f`
-described with this syntax:
+described with this syntax.
 
- 1. _monotonicity_: For all times `t`, `df/dt(t) > 0`
+ 1. _monotonicity_: For all times `t`, `df/dt(t) > 0` for the function
+    describing charging and `df/dt(t) < 0` for the function describing
+    discharging.
  2. _positivity_: For all times `t`, `f(t) > 0`
+
+Together, this corresponds to the intuition that any battery---no matter
+its charge and discharge characteristics---only discharges over time and
+never spontaneously recharges, and cannot discharge past `0 mWh`.
 
 ### REST Interface to the TA
 

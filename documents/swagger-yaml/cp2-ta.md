@@ -55,6 +55,21 @@ Used to trigger the code adaptation process.
 |**message**  <br>*optional*|Human-readable information about the error, if any can be provided|string|
 
 
+<a name="observe-get"></a>
+### GET /observe
+
+#### Description
+Returns the current status of the SUT. Note / TODO: this will be either filled in or removed as we work on the verdict expression and determine what observations are relevant to this CP.
+
+
+#### Responses
+
+|HTTP Code|Description|Schema|
+|---|---|---|
+|**200**|Successfully computed the status of the SUT|No Content|
+|**400**|Encounted an error while computing the status of the SUT|No Content|
+
+
 <a name="perturb-post"></a>
 ### POST /perturb
 
@@ -134,21 +149,6 @@ Returns a list of possible perturbations of an (optionally) specified shape and 
 |Name|Description|Schema|
 |---|---|---|
 |**message**  <br>*optional*|Human-readable information about the error, if any can be provided|string|
-
-
-<a name="status-get"></a>
-### GET /status
-
-#### Description
-Returns the current status of the SUT
-
-
-#### Responses
-
-|HTTP Code|Description|Schema|
-|---|---|---|
-|**200**|Successfully computed the status of the SUT|No Content|
-|**400**|Encounted an error while computing the status of the SUT|No Content|
 
 
 

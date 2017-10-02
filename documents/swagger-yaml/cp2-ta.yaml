@@ -232,9 +232,12 @@ paths:
                 description: >-
                   Human-readable information about the error, if any can be
                   provided
-  /status:
+  /observe:
     get:
-      description: Returns the current status of the SUT
+      description: >-
+        Returns the current status of the SUT. Note / TODO: this will be
+        either filled in or removed as we work on the verdict expression
+        and determine what observations are relevant to this CP.
       responses:
         '200':
           description: Successfully computed the status of the SUT

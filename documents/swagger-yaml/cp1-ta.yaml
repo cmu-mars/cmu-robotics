@@ -19,7 +19,6 @@ paths:
             required:
               - x
               - 'y'
-              - kind
             properties:
               x:
                 type: number
@@ -208,6 +207,14 @@ paths:
           description: successfully determined the current state of the SUT
           schema:
             type: object
+            required:
+              - x
+              - 'y'
+              - w
+              - v
+              - charge
+              - predicted_arrival
+              - sim_time
             properties:
               x:
                 type: number

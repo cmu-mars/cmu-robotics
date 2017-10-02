@@ -41,7 +41,9 @@ paths:
                   - d
               start-loc:
                 type: string
-                description: the name of the start map waypoint
+                description: >-
+                  the name of the start map waypoint. start-loc must not be
+                  the same as the first item of `target-locs`.
               target-locs:
                 type: array
                 items:
@@ -49,7 +51,11 @@ paths:
                 description: >-
                   the names of the waypoints to visit, in the order in
                   which they must be visited. each name must be a valid
-                  name of a waypoint on the map
+                  name of a waypoint on the map. `target-locs` must not be
+                  the empty list. every adjacent pair of elements of
+                  `target-locs` must be disequal -- that is to say, it is
+                  not permitted to direct the robot to travel to the
+                  waypoint where it is already located.
               discharge-function:
                 type: string
                 format: function-spec
@@ -78,17 +84,17 @@ paths:
                 type: integer
                 minimum: 0
                 description: >-
-                  the maximum charge the battery can hold, in
-                  mWh. implicitly, all batteries have a minimum possible
+                  if in level d, the maximum charge the battery can hold,
+                  in mWh. implicitly, all batteries have a minimum possible
                   charge of 0 mWh
         '400':
           description: TH encountered an error producing configuration data
   /error:
     post:
       description: >-
-        used by the TA to indicate to the TH that an error has occurred in the
-        start up or learning process. the TH will terminate the test upon
-        notification of an error
+        used by the TA to indicate to the TH that a non-recoverable error
+        has occurred and the test cannot proceed. the TH will terminate the
+        test upon notification of an error.
       parameters:
         - in: body
           name: Parameters
@@ -146,7 +152,6 @@ paths:
                    * adapt-done - the SUT has finished adapting
                    * charging-started - the turtlebot is currently charging
                    * charging-done - the turtlebot has stopped charging
-
                 type: string
                 enum:
                   - learning-started
@@ -195,7 +200,9 @@ paths:
   /done:
     post:
       description: >-
-        used by the TA to indicate to the TH that the turtlebot has reached the
+        used by the TA to indicate to the TH that the test is over.
+
+        turtlebot has reached the
         goal and that the mission has been completed. note that incomplete
         missions will result in an error and not use this end point.
       parameters:
@@ -211,7 +218,7 @@ paths:
               - charge
               - sim_time
               - predicted_arrival
-              - message
+              - outcome
             properties:
               x:
                 description: final x-coordinate of the turtlebot
@@ -243,6 +250,34 @@ paths:
                 description: 'final best prediction of arrival time, in simulation time'
                 type: integer
                 minimum: 0
+              target-times:
+                description: >-
+                  the simulation times when each of the waypoints listed in
+                  `target-locs` were reached.
+                type: array
+                items:
+                  type: integer
+                  minimum: 0
+              outcome:
+                type: string
+                enum:
+                  - at_goal
+                  - out_of_battery
+                  - other_outcome
+                description: >-
+                  indicates the reason why the test is over
+                    * at_goal - the turtlebot has reached the goal and
+                                completed the mission objectives
+                    * out_of_battery - the battery on the turtlebot has run
+                                       out, and cannot be charged, so the
+                                       turtlebot cannot make progress
+                    * other_outcome - the test is over for any other
+                                      non-error reason
+              message:
+                 type: string
+                 description: >-
+                   human-readable text with more information about the end
+                   of the test.
       responses:
         '200':
           description: TH acknowledges the completion of the mission

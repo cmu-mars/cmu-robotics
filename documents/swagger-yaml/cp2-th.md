@@ -57,7 +57,7 @@ Used to indicate that evaluation of the test scenario has been completed. A summ
 #### Description
 Used to indicate that an error has occurred during the preparation
 or evaluation of a test scenario, or during the start-up of the
-system under test. 
+system under test.
 \
 **Error codes**:
   * *NeutralPerturbation:* One of the perturbations for the test scenario has no
@@ -101,8 +101,15 @@ Used to indicate that the SUT is ready and that testing may begin.
 
 |HTTP Code|Description|Schema|
 |---|---|---|
-|**200**|the TH acknowledges the ready message|No Content|
+|**200**|the TH acknowledges the ready message|[Response 200](#ready-post-response-200)|
 |**400**|the TH has itself encontered an error processing the ready message|No Content|
+
+<a name="ready-post-response-200"></a>
+**Response 200**
+
+|Name|Description|Schema|
+|---|---|---|
+|**docker-ip**  <br>*required*|the IP address to connect to in order to allocate new worker containers|string (ip-address)|
 
 
 <a name="status-post"></a>
