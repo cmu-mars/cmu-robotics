@@ -10,9 +10,9 @@ paths:
   /perturbations:
     get:
       description: "Returns a list of possible perturbations of an (optionally) specified\
-        \ shape and complexity that can be performed at a given (set of) location(s)\
-        \ in the program.  This endpoint should be used to select a suitable (set\
-        \ of) perturbation(s) for a test scenario."
+        \ shape and complexity that can be performed at a given line in the program.\
+        \ This endpoint should be used to select a suitable (set of) perturbation(s)\
+        \ for a test scenario."
       operationId: "perturbations_get"
       parameters:
       - in: "body"
@@ -30,6 +30,19 @@ paths:
             \ perturbations."
           schema:
             $ref: "#/definitions/inline_response_400"
+      x-swagger-router-controller: "swagger_server.controllers.default_controller"
+  /lines:
+    get:
+      description: "Returns a list of all the source lines at which perturbations\
+        \ may be injected."
+      operationId: "lines_get"
+      parameters: []
+      responses:
+        200:
+          description: "Successfully computed and returned a list of source lines\
+            \ within the project."
+        400:
+          description: "Failed to produce a list of source lines within the project."
       x-swagger-router-controller: "swagger_server.controllers.default_controller"
   /adapt:
     post:
@@ -84,6 +97,19 @@ paths:
           description: "Encounted an error while computing the status of the SUT"
       x-swagger-router-controller: "swagger_server.controllers.default_controller"
 definitions:
+  SourceLine:
+    type: "object"
+    required:
+    - "file"
+    - "number"
+    properties:
+      file:
+        type: "string"
+        description: "The file to which this line belongs."
+      number:
+        type: "integer"
+        description: "The one-indexed number of this line in the file."
+        minimum: 1
   SourceLocation:
     type: "object"
     required:

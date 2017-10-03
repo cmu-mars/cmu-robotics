@@ -14,13 +14,23 @@ def adapt_post(Parameters):
     """
     adapt_post
     Used to trigger the code adaptation process.
-    :param Parameters:
+    :param Parameters: 
     :type Parameters: dict | bytes
 
     :rtype: None
     """
     if connexion.request.is_json:
         Parameters = Parameters1.from_dict(connexion.request.get_json())
+    return 'do some magic!'
+
+
+def lines_get():
+    """
+    lines_get
+    Returns a list of all the source lines at which perturbations may be injected.
+
+    :rtype: None
+    """
     return 'do some magic!'
 
 
@@ -38,7 +48,7 @@ def perturb_post(Parameters):
     """
     perturb_post
     Applies a set of perturbations, given as a list of JSON objects, to the SUT. This endpoint should be used to prepare a test scenario for evaluation.
-    :param Parameters:
+    :param Parameters: 
     :type Parameters: dict | bytes
 
     :rtype: None
@@ -51,12 +61,12 @@ def perturb_post(Parameters):
 def perturbations_get(Parameters):
     """
     perturbations_get
-    Returns a list of possible perturbations of an (optionally) specified shape and complexity that can be performed at a given (set of) location(s) in the program.  This endpoint should be used to select a suitable (set of) perturbation(s) for a test scenario.
-    :param Parameters:
+    Returns a list of possible perturbations of an (optionally) specified shape and complexity that can be performed at a given line in the program. This endpoint should be used to select a suitable (set of) perturbation(s) for a test scenario.
+    :param Parameters: 
     :type Parameters: dict | bytes
 
     :rtype: InlineResponse200
     """
     if connexion.request.is_json:
         Parameters = Parameters.from_dict(connexion.request.get_json())
-    return 'test'
+    return 'do some magic!'

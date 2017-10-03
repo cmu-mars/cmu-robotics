@@ -1,0 +1,172 @@
+---
+swagger: "2.0"
+info:
+  version: "0.1"
+  title: "cmu mars brass ta: phase 2, cp3"
+host: "brass-ta"
+schemes:
+- "http"
+paths:
+  /start:
+    post:
+      description: "start the turtlebot navigating through the map"
+      operationId: "start_post"
+      parameters: []
+      responses:
+        200:
+          description: "SUT has begin starting the mission"
+        400:
+          description: "SUT encountered an error trying to start the mission"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+      x-swagger-router-controller: "swagger_server.controllers.default_controller"
+  /perturb/light:
+    post:
+      description: "change the state of a light in the environment"
+      operationId: "perturb_light_post"
+      parameters:
+      - in: "body"
+        name: "Parameters"
+        required: true
+        schema:
+          $ref: "#/definitions/Parameters"
+      responses:
+        200:
+          description: "the named light has been set"
+          schema:
+            $ref: "#/definitions/inline_response_200"
+        400:
+          description: "an error was encountered while setting the light"
+          schema:
+            $ref: "#/definitions/inline_response_400_1"
+      x-swagger-router-controller: "swagger_server.controllers.default_controller"
+  /perturb/sensor:
+    post:
+      description: "change the state of one of the sensors on the robot"
+      operationId: "perturb_sensor_post"
+      parameters:
+      - in: "body"
+        name: "Parameters"
+        required: true
+        schema:
+          $ref: "#/definitions/Parameters_1"
+      responses:
+        200:
+          description: "the named sensor has been set"
+          schema:
+            $ref: "#/definitions/inline_response_200_1"
+        400:
+          description: "an error was encountered while setting the sensor"
+          schema:
+            $ref: "#/definitions/inline_response_400_1"
+      x-swagger-router-controller: "swagger_server.controllers.default_controller"
+  /perturb/nodefail:
+    post:
+      description: "cause one of the software nodes to fail"
+      operationId: "perturb_nodefail_post"
+      parameters:
+      - in: "body"
+        name: "Parameters"
+        required: true
+        schema:
+          $ref: "#/definitions/Parameters_2"
+      responses:
+        200:
+          description: "the node has failed"
+          schema:
+            $ref: "#/definitions/inline_response_200_2"
+        400:
+          description: "an error was encountered while causing the node to fail"
+          schema:
+            $ref: "#/definitions/inline_response_400_2"
+      x-swagger-router-controller: "swagger_server.controllers.default_controller"
+definitions:
+  Parameters:
+    type: "object"
+    required:
+    - "id"
+    - "state"
+    properties:
+      id:
+        type: "string"
+        description: "the element of LIGHTSET whose state will be set"
+      state:
+        type: "boolean"
+        description: "upon response, the named light will be on if `true` and `off`\
+          \ otherwise"
+  Parameters_1:
+    type: "object"
+    required:
+    - "id"
+    - "state"
+    properties:
+      id:
+        type: "string"
+        description: "which sensor of SENSORSET to set"
+        enum:
+        - "kinect-ir"
+        - "lidar"
+        - "kinect-all"
+      state:
+        type: "boolean"
+        description: "upon response, the named sensor will be on if `true` and `off`\
+          \ otherwise"
+  Parameters_2:
+    type: "object"
+    required:
+    - "id"
+    properties:
+      id:
+        type: "string"
+        description: "cause the named node to fail"
+        enum:
+        - "movebase"
+        - "amcl"
+        - "mrpt"
+        - "cb-base"
+  inline_response_200_1:
+    required:
+    - "sim-time"
+    properties:
+      sim-time:
+        type: "integer"
+        description: "the simulation time when the sensor was set"
+  inline_response_200:
+    required:
+    - "sim-time"
+    properties:
+      sim-time:
+        type: "integer"
+        description: "the simulation time when the light was set"
+  inline_response_200_2:
+    required:
+    - "sim-time"
+    properties:
+      sim-time:
+        type: "integer"
+        description: "the simulation time when the node failed"
+  inline_response_400_2:
+    required:
+    - "sim-time"
+    properties:
+      message:
+        type: "string"
+        description: "human readable information about the error, if any can be provided"
+      sim-time:
+        type: "integer"
+        description: "the simulation time when the error occurred"
+  inline_response_400:
+    properties:
+      message:
+        type: "string"
+        description: "human readable information about the error, if any can be provided"
+  inline_response_400_1:
+    required:
+    - "sim-time"
+    properties:
+      sim-time:
+        type: "integer"
+        description: "the simulation time when the error occurred"
+      message:
+        type: "string"
+        description: "human readable information about the error, if any can be provided"

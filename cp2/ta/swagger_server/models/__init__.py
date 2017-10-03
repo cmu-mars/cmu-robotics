@@ -8,6 +8,7 @@ from .parameters import Parameters
 from .parameters1 import Parameters1
 from .parameters2 import Parameters2
 from .perturbation import Perturbation
+from .source_line import SourceLine
 from .source_location import SourceLocation
 from .source_range import SourceRange
 from .delete_statement_perturbation import DeleteStatementPerturbation
