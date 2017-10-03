@@ -8,11 +8,8 @@ sequenceDiagram
         TH -->>- TA: configuration data
 
         TA ->>+ TH: /status live
-        Note left of TH: system live, ready for perturbs
+        Note right of TA: system live, ready for initial perturbs
         TH -->>- TA: ack. status
-
-        TH ->>+ TA: /query/initial
-        TA -->>- TH: initial path info
 
         opt initial perturbs
             opt for any X
@@ -23,15 +20,14 @@ sequenceDiagram
 
         TH ->>+ TA: /start
         TA -->>- TH: ack. start
-        Note right of TA: robot is now moving along plan
+        Note right of TA: starting may take time, so this ack does not mean that the bot is moving
+
+        TA ->>+ TH: /status mission-running
+	Note right of TA: SUT has processes initial perturbs and started mission. after /start, no dynmaic perturbs are allowed until this message
+        TH -->>- TA: ack. status
 
         Note left of TH: may be interleaved with dynamic perturbs, but not inside an individual one
         loop as desired
-                opt periodically
-                    TH -x+ TA: /observe
-                    TA --x- TH: observation
-                end
-
                 opt dynamic perturbs
                             opt for any X
                                  TH ->>+ TA: /perturb/X
@@ -40,8 +36,13 @@ sequenceDiagram
                 end
 
                 opt as needed
-                    TA -x+ TH: /status
-                    TH --x- TA: ack. status
+                    TA ->>+ TH: /status adapting
+                    TH -->>- TA: ack. status
+
+		    Note right of TA: no dynamic perturbs allowed between these two statuses
+
+                    TA ->>+ TH: /status adapted
+                    TH -->>- TA: ack. status
                 end
         end
 

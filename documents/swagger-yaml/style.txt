@@ -1,0 +1,4 @@
+- dashes not underscores or camel case
+
+- lower case names for everything except things from metadata (like
+  NODESET)

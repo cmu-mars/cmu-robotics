@@ -19,7 +19,6 @@ paths:
             required:
               - x
               - 'y'
-              - kind
             properties:
               x:
                 type: number

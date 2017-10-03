@@ -2,41 +2,93 @@
 
 ## Overview
 
-This challenge problem is an evolution of Phase 1 Challenge Problem 1 that in Phase 2 will focus on applying adaptations to the software of the robot as it performs missions. Regardless of the source of changes that BRASS-enabled systems will encounter, in many systems these changes will have to be applied during system operation. Current self adaptive systems are typically limited to selecting from pre-determined plans for adapting to specific responses - in the context of BRASS and for long-lived software, these adaptations will need to be discovered when the system is in operation. Adaptation discovery will be based on relational and probabilistic multi-objective planning over the software / hardware configurations of the robot in response to changes to characteristics of the software (unreliable components, failing sensors) and environment (resource changes, characteristics in the environment).
+This challenge problem will demonstrate major advances in our capability to adapt to perturbations such as software component failure or environmental change.
+
+Today's self-adaptive systems are typically limited to selecting from pre-determined plans for adapting to specific responses.  In BRASS--and for long-lived software in general--these adaptations will need to be discovered when the system is in operation.  We use relational and probabilistic multi-objective planning to consider a wide range of adaptations including:
+ * software configuration
+ * software component parameters
+ * mission adaptations
+
+Changing software configuration on-line is difficult because components must be taken down and others restarted in an orderly way.  Most past work does not consider adaptations based on software configuration; the little work that does is based on pre-determined adaptation plans, not online discovery.  Prior work also has not considered combination of software configuration adaptations with parameter adaptation and mission adaptation; this creates both modeling and scalability challenges.
 
 ### Research Questions being Addressed
 
 - Can the optimal architectural structure of a system (with respect to the satisfaction of mission goals) be generated with multi-objective planning? Can we use this to manage change to the structure of the software on-line?
 - How can we manage the interplay between constraints on structure, behavior, and quality when adapting software?
 - Modern CPS are a combination of models; how can we represent global constraints over multiple models and use them to help guarantee correctness and quality of software change plans?
+- To what extent can we predict the outcomes of adaptions and their impact on the satisfaction of mission goals and qualities?
 - What proportion of techniques can be used on line vs. needs to be done off-line?
 
 ### Exploring the Research Questions through the Test
 
-The perturbations available to the test are designed to trigger software configuration changes that can be handled on-line (changes to actual code are being addressed in CP2). These perturbations will be drawn from the following set of possible perturbations: (a) Changing lighting conditions dynamically in the environment, (b) causing failure or error of a sensor on the robot, (c) placing obstacles in the path of the robot, (d) killing (with random amounts of persistence) software nodes on the robot. The aim here is explore a variety of difficulties of software configuration changes on-line, from relatively simple changes affecting one node (e.g., its resilience or parameterization) to nodes with a large number of dependencies, causing system-wide changes to the architecture structure of the software.
+These research questions will be addressed on our robotics platform, where the robot must carry out a navigation mission while dealing with perturbations that will make it difficult to achieve the mission. The qualities of the mission will be related to battery charge, timeliness, and accuracy - the robot must get close to the location by a deadline (which the robot may change based on predictive models) and with some charge. The perturbations available to the test are designed to trigger software configuration changes that can be handled on-line (changes to actual source code are being addressed in CP2), as compared to Phase I CP1 where perturbations predominately triggered mission changes. The robot configurations that will be considered are:
 
-### Notes:
-Changes available to the software:
-- use of different, redundant sensor(s) for localization
-- different localization techniques for different sensors and different parts of the map
-- different map characteristics:
-     - extensive glass corridors require ultrasound sensor and associated localization changes (rather than kinect)
-     - large open space configured for poster session requires switch to SLAM, or different local planner for extensive obstacle avoidance. Different planners may have different degrees of reliability in the presence of crowds (e.g., follow-the-carrot is time optimal because it follows a straight line but less reliable than elastic band, because it does not adjust the trajectory of the robot in the presence of obstacles).
-     - part of building with beacons requires reconfiguration to use them for localization, but the part of the software that makes use of them should not be running when not in that area.
+- The use of various sensors: kinect depth, kinect image, planar LIDAR
+- The availability of different navigation and localization subsystems: depth image based using either kinect (3d pointcloud) or lidar (planar depths), image marker based (using only RGB image with no depth)
+
+The perturbations to the robot and environment that will trigger change are:
+
+- Failure of sensors: kinect depth and LIDAR
+- Turning on and off lights in the world
+- Failing components (ROS nodes) in the robot itself
 
 ## Test Data
 
-No specific test data will be required for this challenge problem, other than that sent in response to the th/ready endpoint. The candidate maps will be delivered for inspection by Lincoln Labs. The maps will include (a) the graph of waypoints, indicating their location in meters from an origin, (b) properties associated with each edge and node (including whether it is a charging station, the lighting conditions along the path, and the crowdedness of the corridors).
+There are three pieces of information that will be defined pre-test for this challenge problem:
 
->TODO: Need to be clear about what is known by the DAS (definitely waypoints and locations) and what is not (e.g., do we know up front the properties of the map - if not, which ones are hidden from us?) Perhaps a possibility would be adding knowledge with some degree of uncertainty (e.g., the existence of a crowd will be known with certainty once the robot gets close to it, but before that, the likelihood of a crowd in some part of the map is abstracted as a probability distribution - same for current light conditions).
+1. The map, including waypoint locations and locations of lights.
+2. The set of sensors that the robot can use.
+3. The set of software components (nodes) that can be used and perturbed in the test. (Note: this is not the full robot configuration, just the parts that are neccessarily visible to perturb during test.)
+
+The JSON format for these pieces of information are:
+
+### Map
+
+```
+{"map" : [ {"node-id" : STRING, "coord" : { "x" : FLOAT, "y" : FLOAT}, "connected-to" : [ STRING, ...] }, ...],
+ "lights" : {"light-id" : STRING, "coord" : {"x" : FLOAT, "y" : FLOAT}]
+}
+```
+
+Where,
+- `node-id` is a string indicating the label for the waypoint (it will probably be of the form l1, l2, l3, but this should not be assumed).
+- `coord` is composed of floats, significant to one decimal, indicating the coordinate of the waypoint, in meters from some origin point
+- `connected-to` is the set of labels that a node is connected to, and should be drawn from the set of node-id's defined in the map
+- `lights` are the ids and locations of each of the lights in the map (the coordinates being meters from the the same origin as the waypoints.
+
+The set of all "node-ids" will be referred to as WAYPOINT_SET; the set of all light "light-ids" will be referred to as LIGHT_SET.
+
+### Sensors
+
+The robot will have three sensors that can be referred to by the test harness:
+
+- KINECT_IR: Is the infra-red part of the kinect that gives Kinect images depth
+- LIDAR: Is the planar Hokuyo lidar sensor
+- KINECT_ALL: Is the infra-red and RGB image part of the KINECT sensor
+
+```
+SENSOR_SET = enum {KINECT_IR, KINECT_ALL, LIDAR}
+```
+
+### Nodes
+> TODO: This set needs to be finalized
+The robot will have a set of software nodes that can be referred to by the test harness, these will be e.g.,
+
+- MOVEBASE: The low-level robot navigation subsystem
+- AMCL: The adaptive Monte Carlo localization algorithm that uses depth information and odometry to estimate robot location in a map
+- MRPT: A particle based localization algorithm
+- CB_BASE: A constraint-based navigation subsystem
+
+```
+NODE_SET = enum {MOVEBASE, AMCL, MRPT, CB_BASE, ...}
+```
 
 ## Test Parameters
 
 The test will be able to be parameterized in a number of ways, and this will be done via the response to ready. The elements that may be specified for the test are:
 
-- the map, chosen from a fixed set of generated maps. These maps will vary in their size (number of waypoints) and their environment (lighting conditions, area crowding in terms of obstacles)
 - the initial robot position, as well as the target location for the robot, which constitutes the mission
-- the initial robot configuration, in term of active sensors and navigation algorithm
+- whether adaptation is enabled for this test
 
 ## Test Procedure
 > TODO
@@ -51,6 +103,14 @@ this sequence. This interaction is omitted for clarity.
 
 ### REST Interface to the TH
 
+This API is currently still a draft. Some, but not all, possible future
+changes include:
+ * adding more constants to the enumerated error codes in the TH `/error`
+   end point
+
+ * adding more constants to the enumerated status codes in the TH `/status`
+   end point
+
 The Swagger file describing this interface is
 [swagger-yaml/cp3-th.yaml](swagger-yaml/cp3-th.yaml) which should be
 considered the canonical definition of the
@@ -58,6 +118,11 @@ API. [swagger-yaml/cp3-th.md](swagger-yaml/cp3-th.md) is produced
 automatically from the Swagger definition for convenience.
 
 ### REST Interface to the TA
+
+This API is currently still a draft. Some, but not all, possible future
+changes include:
+ * adding more constants to the enumerated error codes in the `400` returns
+   from different end points
 
 The Swagger file describing this interface is
 [swagger-yaml/cp3-ta.yaml](swagger-yaml/cp3-ta.yaml) which should be

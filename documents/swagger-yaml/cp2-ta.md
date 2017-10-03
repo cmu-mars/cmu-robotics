@@ -55,6 +55,21 @@ Used to trigger the code adaptation process.
 |**message**  <br>*optional*|Human-readable information about the error, if any can be provided|string|
 
 
+<a name="lines-get"></a>
+### GET /lines
+
+#### Description
+Returns a list of all the source lines at which perturbations may be injected.
+
+
+#### Responses
+
+|HTTP Code|Description|Schema|
+|---|---|---|
+|**200**|Successfully computed and returned a list of source lines within the project.|No Content|
+|**400**|Failed to produce a list of source lines within the project.|No Content|
+
+
 <a name="observe-get"></a>
 ### GET /observe
 
@@ -110,7 +125,7 @@ Applies a set of perturbations, given as a list of JSON objects, to the SUT. Thi
 ### GET /perturbations
 
 #### Description
-Returns a list of possible perturbations of an (optionally) specified shape and complexity that can be performed at a given (set of) location(s) in the program.  This endpoint should be used to select a suitable (set of) perturbation(s) for a test scenario.
+Returns a list of possible perturbations of an (optionally) specified shape and complexity that can be performed at a given line in the program. This endpoint should be used to select a suitable (set of) perturbation(s) for a test scenario.
 
 
 #### Parameters
@@ -200,6 +215,15 @@ Returns a list of possible perturbations of an (optionally) specified shape and 
 |**kind**  <br>*required*|Used to discriminate between different kinds of perturbation.|string|
 |**locationRange**  <br>*optional*|The range of code that is replaced by the perturbation.|[SourceRange](#sourcerange)|
 |**statement**  <br>*optional*|The source code for the replacement statement.|string|
+
+
+<a name="sourceline"></a>
+### SourceLine
+
+|Name|Description|Schema|
+|---|---|---|
+|**file**  <br>*required*|The file to which this line belongs.|string|
+|**number**  <br>*required*|The one-indexed number of this line in the file.  <br>**Minimum value** : `1`|integer|
 
 
 <a name="sourcelocation"></a>
