@@ -89,7 +89,7 @@ effectively with fewer disruptions to the mission).
 **RQ1**: Can the use of learning a power model improve the score of mission compared to using inaccurate model and no model?
 + There might be some cases where using an accurate model might tell us that we can finish a mission without going to the charge station and therefore score better in the mission.
 + We would like to explore corner cases that an accurate model can provide us benefit by saving time, saving energy or both, and therefore hitting a better score in total.
-+ Using an inaccurate model might tell us that we can go to the target but the discharge is quicker (t^2) than what the robot expects (t) and therefore fail the mission
++ Using an inaccurate model might tell us that we can go to the target but the discharge is quicker ($t^2$) than what the robot expects (t) and therefore fail the mission
 + There might be some cases where the inaccurate model tells us we need to go to the charging station, but we could finish the mission without going to the station.
 + We would also explore how the learning budget (number of queries we are allowed to do int he learning process) would affect the quality of the mission as well as the adaptation quality (cf. RQ2). For this we will do sensitivity analysis where we learn the power model under different budgets form extremely low (e.g., 1) to a high budget (e.g., 1000).
 
@@ -111,7 +111,7 @@ Possible perturbations that we consider in this challenge problem:
 
 ## Test Parameters
 
-The start location, target locations, initial battery, ..., are all defined in the test harness response to [ready](https://github.mit.edu/brass/cmu- robotics/blob/master/documents/swagger-yaml/cp1-th.md#post-ready).
+The start location, target locations, initial battery, ..., are all defined in the test harness response to [ready](https://github.mit.edu/brass/cmu-robotics/blob/master/documents/swagger-yaml/cp1-th.md#post-ready).
 
 ## Test Procedure
 
@@ -128,7 +128,7 @@ There are four test stages proposed for the evaluation of this challenge problem
    2. B (perturbation, no adaptation, no power model) so the robot does
    not have a clue to charge even when the battery goes below a threshold
 
-   3. C (perturbation, adaptation, static predefined power model) so the
+   3. B' (perturbation, adaptation, static predefined power model) so the
    planner uses an inaccurate model for planning an adaptation (We
    implicitly assume this is inaccurate.)
 
@@ -154,7 +154,7 @@ There are four test stages proposed for the evaluation of this challenge problem
 
 * For example, consider the following function as a discharge function:
   $f(s,k,l)=2+3*s+1.2*k+10*k*l$, this means that the battery of the robot
-  will be discharge according to $b'=b-(2+3*s+1.2*k +10*k*l)*t$, where $t$
+  will be discharge according to $b'=b-(2+3*s+1.2*k+10*k*l)*t$, where $t$
   is the time unit.
 
   In this discharge function, $s=1$ represent half speed and $s=2$
@@ -320,9 +320,9 @@ cases:
 
 - A (no perturbation, no adaptation, no PM)
 - B (perturbation, no adaptation, no PM)
-- C (perturbation, adaptation, a static PM for discharge/charge, while
+- B' (perturbation, adaptation, a static PM for discharge/charge, while
   planner uses a different static PM): the challenge with inaccurate model
-- D (perturbation, adaptation, a PM will be specified by LL and planner
+- C (perturbation, adaptation, a PM will be specified by LL and planner
   uses a learned PM): the challenge with a learned model
 
 
@@ -407,8 +407,8 @@ timing, and safety). In addition, we may evaluate the discovery mechanism with a
 |             |   (p:✕,a:✕) |   (p:✔,a:✕) | (p:✔,a:✔)   |
 |-------------|-------------|-------------|-------------|
 | No PM       | `✔` (A)     | `✔` (B)     |             |
-| Predefined  |             |             | `✔` (C)     |
-| Learned     |             |             | `✔` (D)     |
+| Predefined  |             |             | `✔` (B')     |
+| Learned     |             |             | `✔` (C)     |
 
 We implicitly mean predefined is an inaccurate model.
 
