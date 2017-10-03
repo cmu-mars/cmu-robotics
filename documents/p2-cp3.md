@@ -21,7 +21,7 @@ Changing software configuration on-line is difficult because components must be 
 
 ### Exploring the Research Questions through the Test
 
-These research questions will be addressed on our robotics platform, where the robot must carry out a navigation mission while dealing with perturbations that will make it difficult to achieve the mission. The qualities of the mission will be related to battery charge, timeliness, and accuracy - the robot must get close to the location by a deadline (which the robot may may change based on predictive models) and with some charge. The perturbations available to the test are designed to trigger software configuration changes that can be handled on-line (changes to actual source code are being addressed in CP2), as compared to Phase I CP1 where perturbations predominately triggered mission changes. The robot configurations that will be considered are:
+These research questions will be addressed on our robotics platform, where the robot must carry out a navigation mission while dealing with perturbations that will make it difficult to achieve the mission. The qualities of the mission will be related to battery charge, timeliness, and accuracy - the robot must get close to the location by a deadline (which the robot may change based on predictive models) and with some charge. The perturbations available to the test are designed to trigger software configuration changes that can be handled on-line (changes to actual source code are being addressed in CP2), as compared to Phase I CP1 where perturbations predominately triggered mission changes. The robot configurations that will be considered are:
 
 - The use of various sensors: kinect depth, kinect image, planar LIDAR
 - The availability of different navigation and localization subsystems: depth image based using either kinect (3d pointcloud) or lidar (planar depths), image marker based (using only RGB image with no depth)
@@ -30,7 +30,7 @@ The perturbations to the robot and environment that will trigger change are:
 
 - Failure of sensors: kinect depth and LIDAR
 - Turning on and off lights in the world
-- Failing modules (ROS nodes) in the robot itself
+- Failing components (ROS nodes) in the robot itself
 
 ## Test Data
 
@@ -46,7 +46,7 @@ The JSON format for these pieces of information are:
 
 ```
 {"map" : [ {"node-id" : STRING, "coord" : { "x" : FLOAT, "y" : FLOAT}, "connected-to" : [ STRING, ...] }, ...],
- "lights" : {"id" : STRING, "coord" : {"x" : FLOAT, "y" : FLOAT}]
+ "lights" : {"light-id" : STRING, "coord" : {"x" : FLOAT, "y" : FLOAT}]
 }
 ```
 
@@ -56,7 +56,7 @@ Where,
 - `connected-to` is the set of labels that a node is connected to, and should be drawn from the set of node-id's defined in the map
 - `lights` are the ids and locations of each of the lights in the map (the coordinates being meters from the the same origin as the waypoints.
 
-The set of all "node-ids" will be referred to as WAYPOINT_SET; the set of all light "ids" will be referred to as LIGHT_SET.
+The set of all "node-ids" will be referred to as WAYPOINT_SET; the set of all light "light-ids" will be referred to as LIGHT_SET.
 
 ### Sensors
 
