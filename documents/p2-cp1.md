@@ -12,13 +12,13 @@ in place that can dynamically learn new models of these assumptions and use
 them to make decisions about missions, configurations, and in general, how
 to adapt the software systems at runtime for more optimal performance. The
 use of power in robotics systems is one of the characteristics of
-cyberphysical systems that
+cyber-physical systems that
 
   1. is rarely used to reason about mission completion, but is typically
      critical for a mission's success,
   2. will change over time due to chemical and physical characteristics of
      batteries as they degrade and are replaced over time, and
-  3. will change as sensors/algorthms/workloads evolve over the lifetime of
+  3. will change as sensors/algorithms/workloads evolve over the lifetime of
      the system.
 
 Using power as an example model, the aim of this challenge problem is to
@@ -38,7 +38,7 @@ consumption characteristics). As a proxy for running physical experiments
 to determine the power model, the MARS DAS will learn the model by querying
 it with a fixed number of inputs (specified by Lincoln Labs). This learned
 off-line power model is then used during robotic missions to improve the
-the quality (and better satisfy the intents ) of the mission.
+the quality (and better satisfy the intents) of the mission.
 
 
 ### Technical Summary
@@ -86,15 +86,15 @@ effectively with fewer disruptions to the mission).
 
 ### Research Questions
 
-**RQ1**: Can the use of learning an accurate power model improve the score of mission compared with using inaccurate model and no model?
+**RQ1**: Can the use of learning a power model improve the score of mission compared to using inaccurate model and no model?
 + There might be some cases where using an accurate model might tell us that we can finish a mission without going to the charge station and therefore score better in the mission.
 + We would like to explore corner cases that an accurate model can provide us benefit by saving time, saving energy or both, and therefore hitting a better score in total.
 + Using an inaccurate model might tell us that we can go to the target but the discharge is quicker (t^2) than what the robot expects (t) and therefore fail the mission
 + There might be some cases where the inaccurate model tells us we need to go to the charging station, but we could finish the mission without going to the station.
-+ We would also explore how the learning budget (number of queries we are alowed to do int he learning process) would affect the quality of the mission as well as the adaptation quality (cf. RQ2). For this we will do sensitivity analysis where we learn the power model under different budgets form exteremely low (e.g., 1) to a high budget (e.g., 1000).
++ We would also explore how the learning budget (number of queries we are allowed to do int he learning process) would affect the quality of the mission as well as the adaptation quality (cf. RQ2). For this we will do sensitivity analysis where we learn the power model under different budgets form extremely low (e.g., 1) to a high budget (e.g., 1000).
 
-**RQ2**: Can the use of learning an accurate power model improve the quality of adaptations?
-+ There might be some cases where an accurate model leads to the quality of the decisions made by the planner and analyzer. For example, an accurate model might trigger fewer adaptations, an accurate model might lead to better decision making by not going too much to the charging station or going only when it is needed.
+**RQ2**: Can the use of learning a power model improve the quality of adaptations?
++ There might be some cases where an accurate model leads to the quality of the decisions made by the analyzer and planner. For example, an accurate model might trigger fewer adaptations, an accurate model might lead to better decision making by not going too much to the charging station or going only when it is needed.
 
 ## Test Data
 
@@ -120,8 +120,6 @@ training phase, Tr, where the model specified by Lincoln Labs is
 learned. This requires a budget (number of times the hidden function will
 be queried) that will be given by LL. We learn the function once at the
 beginning offline and then the online phase will be started.
-
-## Interface to the Test Harness (API)
 
 There are four test stages proposed for the evaluation of this challenge problem. They are defined as follows:
    1. A (no perturbation, no adaptation, no power model) so the robot does
@@ -289,11 +287,7 @@ increases the charge of the battery instead of discharging it.
 #### How to programatically evaluate whether a power model is invalid:
 
 We can differentiate the power model, for all 50 possible configurations
-separately, with respect to ``t'', if for all valid time
-``t=[t_min,t_max]'' the sign of the derivative is positive, then the power
-model is monotonically increasing. So, if for ``t=t_min'', and all
-combination of valid configurations of the robot, ``P(t_min,.) > 0'', then
-the power model is valid.
+separately, with respect to ``t``, if the sign of the derivatives is positive, then the power model is monotonically increasing. 
 
 #### How the battery will be discharged and charged:
 
@@ -309,12 +303,15 @@ by interesting test cases. The metrics are dependent on both specification
 (including the shape of discharge/charge function and mission parameters)
 of the mission as well as the perturbation during the mission.
 
-#### The metrics for evaluating the difficulty of test cases:
+#### Metrics for evaluating the difficulty of test cases:
 1. Sum of the degree of the exponents of `t` for all terms in the power
    model
 
-2. The number of obstacle placement + number of battery set. Any two test
-   cases would be different if the difficulty levels of them are different.
+2. The number of obstacle placement as well as number of battery set. 
+
+3. The number of tasks (determined by the number of way points) and the distance that the robot need to traverse to accomplish the tasks. 
+
+Any two test cases would be different if the difficulty levels of them are different. However, if two test cases are similar with respect to the difficulty of the test, we consider them identical.
 
 The ultimate goal of CP1 is to demonstrate that the adaptation (analysis +
 planning) with an accurate model that we learn is better than the case with
@@ -335,13 +332,7 @@ So, an ideal situation for us is:
 A: PASS, B: FAIL, C: FAIL/DEGRADED, D: PASS
 ```
 
-
-### Sequence Diagram for Interaction Pattern
-
-Implicitly, the TA can hit the `/error` endpoint on the TH at any time in
-this sequence. This interaction is omitted for clarity.
-
-<img src="sequences/cp1.mmd.png" alt="cp1 seq diagram" width="400">
+## Interface to the Test Harness (API)
 
 ### REST Interface to the TH
 
@@ -363,9 +354,9 @@ The format `function-spec`, used to in the `/ready` end point to
 describe the charge and discharge functions, is given by the following BNF:
 
 ```
-polynomial ::= term | term "+" polynomial
+powermodel ::= term | term "+" powermodel
 term ::= factor | factor ops2 term | ops1"(" term ")"
-factor ::= constant | variable | "(" polynomial ")"
+factor ::= constant | variable | "(" powermodel ")"
 variable ::= letter | variable digitSequence
 constant ::= digitSequence | "-" digitSequence
 digitSequence ::= digit | digit digitSequence
@@ -400,6 +391,12 @@ changes include:
  * adding more constants to the enumerated error codes in the `400` returns
    from different end points.
 
+### Sequence Diagram for Interaction Pattern
+
+Implicitly, the TA can hit the `/error` endpoint on the TH at any time in
+this sequence. This interaction is omitted for clarity.
+
+<img src="sequences/cp1.mmd.png" alt="cp1 seq diagram" width="400">
 
 
 ## Intent Specification and Evaluation Metrics
@@ -430,8 +427,9 @@ accurate navigation algorithm).
 Each test case is described by the following:
 
  * Mission schema: Navigation
- * Mission parameters: A->B
+ * Mission parameters: ``A->T1->T2->...->Tn`` (the way points or tasks that the robot need to accomplish)
+ * Charge and discharge functions according to the specification
  * Perturbations: Obstacles + Battery level change
- * Possible adaptations: Kinects we can swap, Algorithms we may downgrade, etc
+ * Possible adaptations: possible variations for ``Speed, Kinects, Localization algorithms``
  * Evaluation metric: Power consumed, Mission accomplish time, Distance to
-   target location, Number of times we hit obstacles
+   target location, Number of tasks accomplished
