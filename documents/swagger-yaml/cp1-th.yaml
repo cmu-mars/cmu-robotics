@@ -134,13 +134,13 @@ paths:
             type: object
             required:
               - status
-              - sim_time
+              - sim-time
               - x
               - 'y'
               - v
               - w
               - charge
-              - predicted_arrival
+              - predicted-arrival
             properties:
               status:
                 description: |-
@@ -192,11 +192,11 @@ paths:
                   than the maximum specified in the response from `/ready`.
                 type: integer
                 minimum: 0
-              predicted_arrival:
+              predicted-arrival:
                 description: 'current best prediction of arrival time, in simulation time'
                 type: integer
                 minimum: 0
-              sim_time:
+              sim-time:
                 description: >-
                   the internal simulation time at the time that the status
                   message was sent
@@ -226,8 +226,8 @@ paths:
               - w
               - v
               - charge
-              - sim_time
-              - predicted_arrival
+              - sim-time
+              - predicted-arrival
               - outcome
             properties:
               x:
@@ -252,11 +252,11 @@ paths:
                   than the maximum specified in the response from `/ready`.
                 type: integer
                 minimum: 0
-              sim_time:
+              sim-time:
                 description: the final internal simulation time
                 type: integer
                 minimum: 0
-              predicted_arrival:
+              predicted-arrival:
                 description: 'final best prediction of arrival time, in simulation time'
                 type: integer
                 minimum: 0
@@ -271,17 +271,17 @@ paths:
               outcome:
                 type: string
                 enum:
-                  - at_goal
-                  - out_of_battery
-                  - other_outcome
+                  - at-goal
+                  - out-of-battery
+                  - other-outcome
                 description: >-
                   indicates the reason why the test is over
-                    * at_goal - the turtlebot has reached the goal and
+                    * at-goal - the turtlebot has reached the goal and
                                 completed the mission objectives
-                    * out_of_battery - the battery on the turtlebot has run
+                    * out-of-battery - the battery on the turtlebot has run
                                        out, and cannot be charged, so the
                                        turtlebot cannot make progress
-                    * other_outcome - the test is over for any other
+                    * other-outcome - the test is over for any other
                                       non-error reason
               message:
                  type: string
