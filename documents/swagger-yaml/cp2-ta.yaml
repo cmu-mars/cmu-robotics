@@ -269,11 +269,25 @@ paths:
   /observe:
     get:
       description: >-
-        Returns the current status of the SUT. Note / TODO: this will be
-        either filled in or removed as we work on the verdict expression
-        and determine what observations are relevant to this CP.
+        Returns the current status of the SUT.
+
       responses:
         '200':
-          description: Successfully computed the status of the SUT
+          description: Successfully observed the state of the SUT.
+          schema:
+            type: object
+            properties:
+              stage:
+                type: string
+                description: >-
+                  A concise description of the current state of the system.
+                enum:
+                  - awaiting_perturbation
+                  - injecting_perturbation
+                  - localising_perturbation
+                  - searching_for_adaptation
+                  - finished_adapting
+
+
         '400':
-          description: Encounted an error while computing the status of the SUT
+          description: Encounted an error while observing the SUT.
