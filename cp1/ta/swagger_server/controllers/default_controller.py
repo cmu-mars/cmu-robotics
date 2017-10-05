@@ -2,7 +2,6 @@ import connexion
 from swagger_server.models.inline_response200 import InlineResponse200
 from swagger_server.models.inline_response2001 import InlineResponse2001
 from swagger_server.models.inline_response2002 import InlineResponse2002
-from swagger_server.models.inline_response2003 import InlineResponse2003
 from swagger_server.models.inline_response400 import InlineResponse400
 from swagger_server.models.inline_response4001 import InlineResponse4001
 from swagger_server.models.inline_response4002 import InlineResponse4002
@@ -14,16 +13,6 @@ from datetime import date, datetime
 from typing import List, Dict
 from six import iteritems
 from ..util import deserialize_date, deserialize_datetime
-
-
-def action_observe_get():
-    """
-    action_observe_get
-    the current state of the SUT
-
-    :rtype: InlineResponse2003
-    """
-    return 'do some magic!'
 
 
 def action_start_post():

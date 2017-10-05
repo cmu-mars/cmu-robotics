@@ -82,22 +82,6 @@ paths:
           schema:
             $ref: "#/definitions/inline_response_400_3"
       x-swagger-router-controller: "swagger_server.controllers.default_controller"
-  /action/observe:
-    get:
-      description: "the current state of the SUT"
-      operationId: "action_observe_get"
-      parameters: []
-      responses:
-        200:
-          description: "successfully determined the current state of the SUT"
-          schema:
-            $ref: "#/definitions/inline_response_200_3"
-        400:
-          description: "encountered an error determining the current state of the\
-            \ SUT."
-          schema:
-            $ref: "#/definitions/inline_response_400_3"
-      x-swagger-router-controller: "swagger_server.controllers.default_controller"
 definitions:
   inline_response_400_3:
     properties:
@@ -187,44 +171,6 @@ definitions:
       sim_time:
         type: "integer"
         description: "the simulation time when the battery was set"
-  inline_response_200_3:
-    required:
-    - "charge"
-    - "predicted_arrival"
-    - "sim_time"
-    - "v"
-    - "w"
-    - "x"
-    - "y"
-    properties:
-      x:
-        type: "number"
-        format: "float"
-        description: "current x-coordinate of the turtlebot position"
-      y:
-        type: "number"
-        format: "float"
-        description: "current y-coordinate of the turtlebot position"
-      w:
-        type: "number"
-        format: "float"
-        description: "current yaw of the turtlebot aspect"
-      v:
-        type: "number"
-        format: "float"
-        description: "current velocity of the turtlebot"
-      charge:
-        type: "integer"
-        description: "current charge of the battery, in mWh. cannot be more than the\
-          \ maximum given in the TH response to `/ready`."
-        minimum: 0
-      predicted_arrival:
-        type: "integer"
-        description: "current predicted arrival time, in simulation seconds"
-      sim_time:
-        type: "integer"
-        description: "current simulation time"
-        minimum: 0
   inline_response_400_2:
     required:
     - "message"
