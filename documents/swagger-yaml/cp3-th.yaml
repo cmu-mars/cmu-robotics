@@ -79,7 +79,7 @@ paths:
             properties:
               status:
                 description: >-
-                  one of a enumerated set of reasons that errors may
+                  one of a enumerated set of statuses to report,
                   arise, as follows:
                     * `live`, the SUT has processed the configuration data
                        and is ready for initial perturbations (if any) and the
