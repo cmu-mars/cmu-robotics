@@ -276,18 +276,44 @@ paths:
           description: Successfully observed the state of the SUT.
           schema:
             type: object
+            required:
+              - stage
             properties:
               stage:
                 type: string
                 description: >-
                   A concise description of the current state of the system.
                 enum:
-                  - awaiting_perturbation
-                  - injecting_perturbation
-                  - localising_perturbation
-                  - searching_for_adaptation
-                  - finished_adapting
-
+                  - awaiting-perturbation
+                  - injecting-perturbation
+                  - localising-perturbation
+                  - searching-for-adaptation
+                  - finished-adapting
+              resource-consumption:
+                type: object
+                description: >-
+                  A description of the resources that have been consumed in
+                  the process of searching for an adaptation.
+                required:
+                  - num-attempts
+                properties:
+                  num-attempts:
+                    type: integer
+                    minimum: 0
+                    description: Number of attempted adaptations.
+                  time-spent:
+                    type: number
+                    format: float
+                    minimum: 0.0
+                    description: Wall-clock time spent searching for an adaptation.
+              pareto-set:
+                type: array
+                items:
+                  $ref: '#/definitions/Adaptation'
+                description: >-
+                  A list containing details of the sub-set of adaptations that
+                  have been encountered that belong to the
+                  pareto set (i.e., the set of non-dominated adaptations).
 
         '400':
           description: Encounted an error while observing the SUT.
