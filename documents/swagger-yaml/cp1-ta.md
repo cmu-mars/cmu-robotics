@@ -22,35 +22,25 @@
 ### GET /action/observe
 
 #### Description
-the current state of the SUT
+observe some of the current state of the robot for visualization and invariant checking for perturbation end points. n.b. this information is to be used strictly in a passive way; it is not to be used for evaluation of the test at all.
 
 
 #### Responses
 
 |HTTP Code|Description|Schema|
 |---|---|---|
-|**200**|successfully determined the current state of the SUT|[Response 200](#action-observe-get-response-200)|
-|**400**|encountered an error determining the current state of the SUT.|[Response 400](#action-observe-get-response-400)|
+|**200**|successfully computed the observation|[Response 200](#action-observe-get-response-200)|
+|**400**|encountered an error while computing the observation|No Content|
 
 <a name="action-observe-get-response-200"></a>
 **Response 200**
 
 |Name|Description|Schema|
 |---|---|---|
-|**charge**  <br>*required*|current charge of the battery, in mWh. cannot be more than the maximum given in the TH response to `/ready`.  <br>**Minimum value** : `0`|integer|
-|**predicted_arrival**  <br>*required*|current predicted arrival time, in simulation seconds|integer|
-|**sim_time**  <br>*required*|current simulation time  <br>**Minimum value** : `0`|integer|
-|**v**  <br>*required*|current velocity of the turtlebot|number (float)|
-|**w**  <br>*required*|current yaw of the turtlebot aspect|number (float)|
-|**x**  <br>*required*|current x-coordinate of the turtlebot position|number (float)|
-|**y**  <br>*required*|current y-coordinate of the turtlebot position|number (float)|
-
-<a name="action-observe-get-response-400"></a>
-**Response 400**
-
-|Name|Description|Schema|
-|---|---|---|
-|**message**  <br>*optional*|human readable information about the error, if any can be provided|string|
+|**battery**  <br>*required*|the current charge of the battery, in mWh  <br>**Minimum value** : `0`|integer|
+|**sim-time**  <br>*required*|the time when this observation was computed, in simulation seconds  <br>**Minimum value** : `0`|integer|
+|**x**  <br>*required*|the current x coordinate of the bot. must be within the boundaries of the map.|number (float)|
+|**y**  <br>*required*|the current y coordinate of the bot. must be within the boundaries of the map.|number (float)|
 
 
 <a name="action-start-post"></a>
@@ -108,7 +98,7 @@ set the level of the battery in a currently running test
 
 |Name|Description|Schema|
 |---|---|---|
-|**sim_time**  <br>*required*|the simulation time when the battery was set|integer|
+|**sim-time**  <br>*required*|the simulation time when the battery was set|integer|
 
 <a name="perturb-battery-post-response-400"></a>
 **Response 400**
@@ -118,8 +108,8 @@ set the level of the battery in a currently running test
 |**message**  <br>*required*|human readable info about what went wrong|string|
 
 
-<a name="perturb-place_obstacle-post"></a>
-### POST /perturb/place_obstacle
+<a name="perturb-place-obstacle-post"></a>
+### POST /perturb/place-obstacle
 
 #### Description
 if the test is running, then place an instance of the obstacle on the map
@@ -129,9 +119,9 @@ if the test is running, then place an instance of the obstacle on the map
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**Parameters**  <br>*optional*|[Parameters](#perturb-place_obstacle-post-parameters)|
+|**Body**|**Parameters**  <br>*optional*|[Parameters](#perturb-place-obstacle-post-parameters)|
 
-<a name="perturb-place_obstacle-post-parameters"></a>
+<a name="perturb-place-obstacle-post-parameters"></a>
 **Parameters**
 
 |Name|Description|Schema|
@@ -144,32 +134,32 @@ if the test is running, then place an instance of the obstacle on the map
 
 |HTTP Code|Description|Schema|
 |---|---|---|
-|**200**|the obstacle has been placed in the running test|[Response 200](#perturb-place_obstacle-post-response-200)|
-|**400**|an error was encountered while placing the obstacle.|[Response 400](#perturb-place_obstacle-post-response-400)|
+|**200**|the obstacle has been placed in the running test|[Response 200](#perturb-place-obstacle-post-response-200)|
+|**400**|an error was encountered while placing the obstacle.|[Response 400](#perturb-place-obstacle-post-response-400)|
 
-<a name="perturb-place_obstacle-post-response-200"></a>
+<a name="perturb-place-obstacle-post-response-200"></a>
 **Response 200**
 
 |Name|Description|Schema|
 |---|---|---|
-|**botright_x**  <br>*required*|the x-coordinate of the bottom right corner of the bounding box of the placed obstacle|number (float)|
-|**botright_y**  <br>*required*|the y-coordinate of the bottom right corner of the bounding box of the placed obstacle|number (float)|
+|**botright-x**  <br>*required*|the x-coordinate of the bottom right corner of the bounding box of the placed obstacle|number (float)|
+|**botright-y**  <br>*required*|the y-coordinate of the bottom right corner of the bounding box of the placed obstacle|number (float)|
 |**obstacleid**  <br>*required*|a unique identifier for this particular placed obstacle, so that it can be removed in the future|string|
-|**sim_time**  <br>*required*|the simulation time when the obstacle was placed|integer|
-|**topleft_x**  <br>*required*|the x-coordinate of the top left corner of the bounding box of the placed obstacle|number (float)|
-|**topleft_y**  <br>*required*|the y-coordinate of the top left corner of the bounding box of the placed obstacle|number (float)|
+|**sim-time**  <br>*required*|the simulation time when the obstacle was placed|integer|
+|**topleft-x**  <br>*required*|the x-coordinate of the top left corner of the bounding box of the placed obstacle|number (float)|
+|**topleft-y**  <br>*required*|the y-coordinate of the top left corner of the bounding box of the placed obstacle|number (float)|
 
-<a name="perturb-place_obstacle-post-response-400"></a>
+<a name="perturb-place-obstacle-post-response-400"></a>
 **Response 400**
 
 |Name|Description|Schema|
 |---|---|---|
-|**cause**  <br>*required*|a reason for the error condition|enum (bad_coordiantes, other_error)|
+|**cause**  <br>*required*|a reason for the error condition|enum (bad-coordiantes, other-error)|
 |**message**  <br>*required*|human readable info about what went wrong|string|
 
 
-<a name="perturb-remove_obstacle-post"></a>
-### POST /perturb/remove_obstacle
+<a name="perturb-remove-obstacle-post"></a>
+### POST /perturb/remove-obstacle
 
 #### Description
 if the test is running, remove a previously placed obstacle from the map
@@ -179,36 +169,36 @@ if the test is running, remove a previously placed obstacle from the map
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**Parameters**  <br>*optional*|[Parameters](#perturb-remove_obstacle-post-parameters)|
+|**Body**|**Parameters**  <br>*optional*|[Parameters](#perturb-remove-obstacle-post-parameters)|
 
-<a name="perturb-remove_obstacle-post-parameters"></a>
+<a name="perturb-remove-obstacle-post-parameters"></a>
 **Parameters**
 
 |Name|Description|Schema|
 |---|---|---|
-|**obstacleid**  <br>*required*|the obstacle ID given by /perturb/place_obstacle of the obstacle to be removed.|string|
+|**obstacleid**  <br>*required*|the obstacle ID given by /perturb/place-obstacle of the obstacle to be removed.|string|
 
 
 #### Responses
 
 |HTTP Code|Description|Schema|
 |---|---|---|
-|**200**|the obstacle has been removed from the running test|[Response 200](#perturb-remove_obstacle-post-response-200)|
-|**400**|an error was encountered while removing the obstacle.|[Response 400](#perturb-remove_obstacle-post-response-400)|
+|**200**|the obstacle has been removed from the running test|[Response 200](#perturb-remove-obstacle-post-response-200)|
+|**400**|an error was encountered while removing the obstacle.|[Response 400](#perturb-remove-obstacle-post-response-400)|
 
-<a name="perturb-remove_obstacle-post-response-200"></a>
+<a name="perturb-remove-obstacle-post-response-200"></a>
 **Response 200**
 
 |Name|Description|Schema|
 |---|---|---|
-|**sim_time**  <br>*required*|the simulation time when the obstacle was placed|integer|
+|**sim-time**  <br>*required*|the simulation time when the obstacle was placed|integer|
 
-<a name="perturb-remove_obstacle-post-response-400"></a>
+<a name="perturb-remove-obstacle-post-response-400"></a>
 **Response 400**
 
 |Name|Description|Schema|
 |---|---|---|
-|**cause**  <br>*required*|a reason for the error condition. `bad_obstacleid` is used if this endpoint is given a obstacleid in its parameters that was not given out by place_obstacle; `other_error` is used in all other instances.|enum (bad_obstacleid, other_error)|
+|**cause**  <br>*required*|a reason for the error condition. `bad-obstacleid` is used if this endpoint is given a obstacleid in its parameters that was not given out by place-obstacle; `other-error` is used in all other instances.|enum (bad-obstacleid, other-error)|
 |**message**  <br>*required*|human readable info about what went wrong|string|
 
 

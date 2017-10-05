@@ -18,6 +18,32 @@
 <a name="paths"></a>
 ## Paths
 
+<a name="action-observe-get"></a>
+### GET /action/observe
+
+#### Description
+observe some of the current state of the robot for visualization and invariant checking for perturbation end points. n.b. this information is to be used strictly in a passive way; it is not to be used for evaluation of the test at all.
+
+
+#### Responses
+
+|HTTP Code|Description|Schema|
+|---|---|---|
+|**200**|successfully computed the observation|[Response 200](#action-observe-get-response-200)|
+|**400**|encountered an error while computing the observation|No Content|
+
+<a name="action-observe-get-response-200"></a>
+**Response 200**
+
+|Name|Description|Schema|
+|---|---|---|
+|**battery**  <br>*required*|the current charge of the battery, in mWh  <br>**Minimum value** : `0`|integer|
+|**lights**  <br>*required*|the list of names from LIGHTSET of those lights which are currently turned on. all other lights are currently turned off.|< string > array|
+|**sim-time**  <br>*required*|the time when this observation was computed, in simulation seconds  <br>**Minimum value** : `0`|integer|
+|**x**  <br>*required*|the current x coordinate of the bot. must be within the boundaries of the map.|number (float)|
+|**y**  <br>*required*|the current y coordinate of the bot. must be within the boundaries of the map.|number (float)|
+
+
 <a name="perturb-light-post"></a>
 ### POST /perturb/light
 
