@@ -27,18 +27,21 @@ paths:
                   as given in the CP definition,
 
                     * a - no perturbations, no adaptation, no power model
+
                     * b - perturbations, but no adaptation, no power model
-                    * c - perturbations and adaptation, but a static power
-                          model for discharge/charge, while planner uses a
-                          different static power model
-                    * d - perturbations and adaptation, with charge and
+
+                    * bprime - perturbations and adaptation, but a static
+                          power model for discharge/charge, while planner
+                          uses a different static power model
+
+                    * c - perturbations and adaptation, with charge and
                           discharge power models provided and learned
                 type: string
                 enum:
                   - a
                   - b
+                  - bprime
                   - c
-                  - d
               start-loc:
                 type: string
                 description: >-
