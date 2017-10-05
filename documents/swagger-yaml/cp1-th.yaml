@@ -145,13 +145,22 @@ paths:
               status:
                 description: |-
                   one of the possible status codes
+
                    * learning-started - the learning phase has started
+
                    * learning-done - the learning phase has been
+
                    * adapt-started - the SUT has started adapting and
                                      cannot be perturbed
+
                    * adapt-done - the SUT has finished adapting
+
                    * charging-started - the turtlebot is currently charging
+
                    * charging-done - the turtlebot has stopped charging
+
+                   * at-waypoint - the turtlebot has arrived at one of the
+                     waypoints in the list received from /ready
                 type: string
                 enum:
                   - learning-started
@@ -160,6 +169,7 @@ paths:
                   - adapt-done
                   - charging-started
                   - charging-done
+                  - at-waypoint
               x:
                 description: current x-coordinate of the turtlebot
                 type: number
