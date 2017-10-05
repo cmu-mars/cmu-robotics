@@ -27,11 +27,6 @@ sequenceDiagram
         Note right of TA: robot is now moving along waypoints
 
         loop as desired
-                opt periodically
-                    TH -x+ TA: /observe
-                    TA --x- TH: observation
-                end
-
 		Note right of TA: perturbations are not allowed while adapting
                 opt dynamic perturbs
                             opt for any X

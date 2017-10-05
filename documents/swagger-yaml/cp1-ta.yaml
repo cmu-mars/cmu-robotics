@@ -6,7 +6,7 @@ schemes:
   - http
 host: brass-ta
 paths:
-  /perturb/place_obstacle:
+  /perturb/place-obstacle:
     post:
       description: >-
         if the test is running, then place an instance of the obstacle on
@@ -39,42 +39,42 @@ paths:
             type: object
             required:
               - obstacleid
-              - topleft_x
-              - topleft_y
-              - botright_x
-              - botright_y
-              - sim_time
+              - topleft-x
+              - topleft-y
+              - botright-x
+              - botright-y
+              - sim-time
             properties:
               obstacleid:
                 type: string
                 description: >-
                   a unique identifier for this particular placed obstacle, so
                   that it can be removed in the future
-              topleft_x:
+              topleft-x:
                 type: number
                 format: float
                 description: >-
                   the x-coordinate of the top left corner of the bounding box of
                   the placed obstacle
-              topleft_y:
+              topleft-y:
                 type: number
                 format: float
                 description: >-
                   the y-coordinate of the top left corner of the bounding box of
                   the placed obstacle
-              botright_x:
+              botright-x:
                 type: number
                 format: float
                 description: >-
                   the x-coordinate of the bottom right corner of the bounding
                   box of the placed obstacle
-              botright_y:
+              botright-y:
                 type: number
                 format: float
                 description: >-
                   the y-coordinate of the bottom right corner of the bounding
                   box of the placed obstacle
-              sim_time:
+              sim-time:
                 type: integer
                 description: the simulation time when the obstacle was placed
         '400':
@@ -89,12 +89,12 @@ paths:
                 description: a reason for the error condition
                 type: string
                 enum:
-                  - bad_coordiantes
-                  - other_error
+                  - bad-coordiantes
+                  - other-error
               message:
                 type: string
                 description: human readable info about what went wrong
-  /perturb/remove_obstacle:
+  /perturb/remove-obstacle:
     post:
       description: >-
         if the test is running, remove a previously placed obstacle from
@@ -110,7 +110,7 @@ paths:
               obstacleid:
                 type: string
                 description: >-
-                  the obstacle ID given by /perturb/place_obstacle of the
+                  the obstacle ID given by /perturb/place-obstacle of the
                   obstacle to be removed.
       responses:
         '200':
@@ -118,9 +118,9 @@ paths:
           schema:
             type: object
             required:
-              - sim_time
+              - sim-time
             properties:
-              sim_time:
+              sim-time:
                 type: integer
                 description: the simulation time when the obstacle was placed
         '400':
@@ -133,14 +133,14 @@ paths:
             properties:
               cause:
                 description: >-
-                  a reason for the error condition. `bad_obstacleid` is
+                  a reason for the error condition. `bad-obstacleid` is
                   used if this endpoint is given a obstacleid in its
-                  parameters that was not given out by place_obstacle;
-                  `other_error` is used in all other instances.
+                  parameters that was not given out by place-obstacle;
+                  `other-error` is used in all other instances.
                 type: string
                 enum:
-                  - bad_obstacleid
-                  - other_error
+                  - bad-obstacleid
+                  - other-error
               message:
                 type: string
                 description: human readable info about what went wrong
@@ -168,9 +168,9 @@ paths:
           schema:
             type: object
             required:
-              - sim_time
+              - sim-time
             properties:
-              sim_time:
+              sim-time:
                 type: integer
                 description: the simulation time when the battery was set
         '400':
@@ -201,57 +201,46 @@ paths:
                   provided
   /action/observe:
     get:
-      description: the current state of the SUT
+      description: >-
+        observe some of the current state of the robot for visualization
+        and invariant checking for perturbation end points. n.b. this
+        information is to be used strictly in a passive way; it is not to
+        be used for evaluation of the test at all.
       responses:
         '200':
-          description: successfully determined the current state of the SUT
+          description: >-
+            successfully computed the observation
           schema:
             type: object
             required:
               - x
               - 'y'
-              - w
-              - v
-              - charge
-              - predicted_arrival
-              - sim_time
+              - battery
+              - sim-time
             properties:
               x:
                 type: number
                 format: float
-                description: current x-coordinate of the turtlebot position
-              'y':
+                description: >-
+                  the current x coordinate of the bot. must be within the
+                  boundaries of the map.
+              y:
                 type: number
                 format: float
-                description: current y-coordinate of the turtlebot position
-              w:
-                type: number
-                format: float
-                description: current yaw of the turtlebot aspect
-              v:
-                type: number
-                format: float
-                description: current velocity of the turtlebot
-              charge:
+                description: >-
+                  the current y coordinate of the bot. must be within the
+                  boundaries of the map.
+              battery:
                 type: integer
                 minimum: 0
                 description: >-
-                  current charge of the battery, in mWh. cannot be more
-                  than the maximum given in the TH response to `/ready`.
-              predicted_arrival:
-                type: integer
-                description: 'current predicted arrival time, in simulation seconds'
-              sim_time:
+                  the current charge of the battery, in mWh
+              sim-time:
                 type: integer
                 minimum: 0
-                description: current simulation time
+                description: >-
+                  the time when this observation was computed, in
+                  simulation seconds
         '400':
-          description: encountered an error determining the current state of the SUT.
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-                description: >-
-                  human readable information about the error, if any can be
-                  provided
+          description: >-
+            encountered an error while computing the observation
