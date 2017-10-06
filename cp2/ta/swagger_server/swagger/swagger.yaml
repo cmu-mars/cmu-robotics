@@ -85,16 +85,16 @@ paths:
       x-swagger-router-controller: "swagger_server.controllers.default_controller"
   /observe:
     get:
-      description: "Returns the current status of the SUT. Note / TODO: this will\
-        \ be either filled in or removed as we work on the verdict expression and\
-        \ determine what observations are relevant to this CP."
+      description: "Returns the current status of the SUT."
       operationId: "observe_get"
       parameters: []
       responses:
         200:
-          description: "Successfully computed the status of the SUT"
+          description: "Successfully observed the state of the SUT."
+          schema:
+            $ref: "#/definitions/inline_response_200_1"
         400:
-          description: "Encounted an error while computing the status of the SUT"
+          description: "Encounted an error while observing the SUT."
       x-swagger-router-controller: "swagger_server.controllers.default_controller"
 definitions:
   SourceLine:
@@ -231,3 +231,40 @@ definitions:
         description: "A non-empty list of perturbations to apply to the codebase"
         items:
           $ref: "#/definitions/Perturbation"
+  inline_response_200_1_resourceconsumption:
+    required:
+    - "num-attempts"
+    properties:
+      num-attempts:
+        type: "integer"
+        description: "Number of attempted adaptations."
+        minimum: 0
+      time-spent:
+        type: "number"
+        format: "float"
+        description: "Wall-clock time spent searching for an adaptation."
+        minimum: 0.0
+    description: "A description of the resources that have been consumed in the process\
+      \ of searching for an adaptation."
+  inline_response_200_1:
+    required:
+    - "stage"
+    properties:
+      stage:
+        type: "string"
+        description: "A concise description of the current state of the system."
+        enum:
+        - "awaiting-perturbation"
+        - "injecting-perturbation"
+        - "localising-perturbation"
+        - "searching-for-adaptation"
+        - "finished-adapting"
+      resource-consumption:
+        $ref: "#/definitions/inline_response_200_1_resourceconsumption"
+      pareto-set:
+        type: "array"
+        description: "A list containing details of the sub-set of adaptations that\
+          \ have been encountered that belong to the pareto set (i.e., the set of\
+          \ non-dominated adaptations)."
+        items:
+          $ref: "#/definitions/Adaptation"

@@ -1,5 +1,6 @@
 import connexion
 from swagger_server.models.inline_response200 import InlineResponse200
+from swagger_server.models.inline_response2001 import InlineResponse2001
 from swagger_server.models.inline_response400 import InlineResponse400
 from swagger_server.models.parameters import Parameters
 from swagger_server.models.parameters1 import Parameters1
@@ -37,9 +38,9 @@ def lines_get():
 def observe_get():
     """
     observe_get
-    Returns the current status of the SUT. Note / TODO: this will be either filled in or removed as we work on the verdict expression and determine what observations are relevant to this CP.
+    Returns the current status of the SUT.
 
-    :rtype: None
+    :rtype: InlineResponse2001
     """
     return 'do some magic!'
 
