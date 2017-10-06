@@ -40,11 +40,11 @@ class InlineResponse200(Model):
 
         self.attribute_map = {
             'obstacleid': 'obstacleid',
-            'topleft_x': 'topleft_x',
-            'topleft_y': 'topleft_y',
-            'botright_x': 'botright_x',
-            'botright_y': 'botright_y',
-            'sim_time': 'sim_time'
+            'topleft_x': 'topleft-x',
+            'topleft_y': 'topleft-y',
+            'botright_x': 'botright-x',
+            'botright_y': 'botright-y',
+            'sim_time': 'sim-time'
         }
 
         self._obstacleid = obstacleid

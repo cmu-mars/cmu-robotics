@@ -45,7 +45,7 @@ class Parameters1(Model):
     def obstacleid(self) -> str:
         """
         Gets the obstacleid of this Parameters1.
-        the obstacle ID given by /perturb/place_obstacle of the obstacle to be removed.
+        the obstacle ID given by /perturb/place-obstacle of the obstacle to be removed.
 
         :return: The obstacleid of this Parameters1.
         :rtype: str
@@ -56,7 +56,7 @@ class Parameters1(Model):
     def obstacleid(self, obstacleid: str):
         """
         Sets the obstacleid of this Parameters1.
-        the obstacle ID given by /perturb/place_obstacle of the obstacle to be removed.
+        the obstacle ID given by /perturb/place-obstacle of the obstacle to be removed.
 
         :param obstacleid: The obstacleid of this Parameters1.
         :type obstacleid: str

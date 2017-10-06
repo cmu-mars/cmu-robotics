@@ -50,7 +50,7 @@ class InlineResponse4001(Model):
     def cause(self) -> str:
         """
         Gets the cause of this InlineResponse4001.
-        a reason for the error condition. `bad_obstacleid` is used if this endpoint is given a obstacleid in its parameters that was not given out by place_obstacle; `other_error` is used in all other instances.
+        a reason for the error condition. `bad-obstacleid` is used if this endpoint is given a obstacleid in its parameters that was not given out by place-obstacle; `other-error` is used in all other instances.
 
         :return: The cause of this InlineResponse4001.
         :rtype: str
@@ -61,12 +61,12 @@ class InlineResponse4001(Model):
     def cause(self, cause: str):
         """
         Sets the cause of this InlineResponse4001.
-        a reason for the error condition. `bad_obstacleid` is used if this endpoint is given a obstacleid in its parameters that was not given out by place_obstacle; `other_error` is used in all other instances.
+        a reason for the error condition. `bad-obstacleid` is used if this endpoint is given a obstacleid in its parameters that was not given out by place-obstacle; `other-error` is used in all other instances.
 
         :param cause: The cause of this InlineResponse4001.
         :type cause: str
         """
-        allowed_values = ["bad_obstacleid", "other_error"]
+        allowed_values = ["bad-obstacleid", "other-error"]
         if cause not in allowed_values:
             raise ValueError(
                 "Invalid value for `cause` ({0}), must be one of {1}"

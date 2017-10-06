@@ -74,15 +74,32 @@ Returns a list of all the source lines at which perturbations may be injected.
 ### GET /observe
 
 #### Description
-Returns the current status of the SUT. Note / TODO: this will be either filled in or removed as we work on the verdict expression and determine what observations are relevant to this CP.
+Returns the current status of the SUT.
 
 
 #### Responses
 
 |HTTP Code|Description|Schema|
 |---|---|---|
-|**200**|Successfully computed the status of the SUT|No Content|
-|**400**|Encounted an error while computing the status of the SUT|No Content|
+|**200**|Successfully observed the state of the SUT.|[Response 200](#observe-get-response-200)|
+|**400**|Encounted an error while observing the SUT.|No Content|
+
+<a name="observe-get-response-200"></a>
+**Response 200**
+
+|Name|Description|Schema|
+|---|---|---|
+|**pareto-set**  <br>*optional*|A list containing details of the sub-set of adaptations that have been encountered that belong to the pareto set (i.e., the set of non-dominated adaptations).|< [Adaptation](#adaptation) > array|
+|**resource-consumption**  <br>*optional*|A description of the resources that have been consumed in the process of searching for an adaptation.|[resource-consumption](#observe-get-resource-consumption)|
+|**stage**  <br>*required*|A concise description of the current state of the system.|enum (awaiting-perturbation, injecting-perturbation, localising-perturbation, searching-for-adaptation, finished-adapting)|
+
+<a name="observe-get-resource-consumption"></a>
+**resource-consumption**
+
+|Name|Description|Schema|
+|---|---|---|
+|**num-attempts**  <br>*required*|Number of attempted adaptations.  <br>**Minimum value** : `0`|integer|
+|**time-spent**  <br>*optional*|Wall-clock time spent searching for an adaptation.  <br>**Minimum value** : `0`|number (float)|
 
 
 <a name="perturb-post"></a>

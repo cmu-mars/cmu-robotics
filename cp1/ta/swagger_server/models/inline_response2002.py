@@ -24,7 +24,7 @@ class InlineResponse2002(Model):
         }
 
         self.attribute_map = {
-            'sim_time': 'sim_time'
+            'sim_time': 'sim-time'
         }
 
         self._sim_time = sim_time

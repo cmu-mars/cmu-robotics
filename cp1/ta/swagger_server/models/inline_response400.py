@@ -66,7 +66,7 @@ class InlineResponse400(Model):
         :param cause: The cause of this InlineResponse400.
         :type cause: str
         """
-        allowed_values = ["bad_coordiantes", "other_error"]
+        allowed_values = ["bad-coordiantes", "other-error"]
         if cause not in allowed_values:
             raise ValueError(
                 "Invalid value for `cause` ({0}), must be one of {1}"
