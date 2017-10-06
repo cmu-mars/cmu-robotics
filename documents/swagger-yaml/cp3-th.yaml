@@ -20,13 +20,15 @@ paths:
               start-loc:
                 type: string
                 description: >-
-                  the name of the start map waypoint. must be a valid way point
-                  name from the map data.
+                  the name of the start map waypoint. must be a valid way
+                  point name from the map data. must not be equal to
+                  `target-loc`.
               target-loc:
                 type: string
                 description: >-
                   the name of the goal map waypoint. must be a valid way
-                  point name from the map data.
+                  point name from the map data. must not be equal to
+                  `start-loc`.
               use-adaptation:
                 type: boolean
                 description: >-

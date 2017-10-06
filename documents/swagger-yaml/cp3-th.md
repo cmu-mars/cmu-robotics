@@ -99,8 +99,8 @@ indicates that the SUT is ready to recieve configuration data to continue start 
 
 |Name|Description|Schema|
 |---|---|---|
-|**start-loc**  <br>*optional*|the name of the start map waypoint. must be a valid way point name from the map data.|string|
-|**target-loc**  <br>*optional*|the name of the goal map waypoint. must be a valid way point name from the map data.|string|
+|**start-loc**  <br>*optional*|the name of the start map waypoint. must be a valid way point name from the map data. must not be equal to `target-loc`.|string|
+|**target-loc**  <br>*optional*|the name of the goal map waypoint. must be a valid way point name from the map data. must not be equal to `start-loc`.|string|
 |**use-adaptation**  <br>*optional*|if `true`, then the DAS will use adapative behaiviours; if `false` then the DAS will not use adaptive behaiviours|boolean|
 
 
