@@ -51,7 +51,9 @@ paths:
       x-swagger-router-controller: "swagger_server.controllers.default_controller"
   /perturb/battery:
     post:
-      description: "set the level of the battery in a currently running test"
+      description: "set the level of the battery in a currently running test. consistent\
+        \ with the monotonicity requirement for the power model, this cannot be more\
+        \ than the current amount of charge in the battery."
       operationId: "perturb_battery_post"
       parameters:
       - in: "body"

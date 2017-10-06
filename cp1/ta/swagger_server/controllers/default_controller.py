@@ -39,7 +39,7 @@ def action_start_post():
 def perturb_battery_post(Parameters=None):
     """
     perturb_battery_post
-    set the level of the battery in a currently running test
+    set the level of the battery in a currently running test. consistent with the monotonicity requirement for the power model, this cannot be more than the current amount of charge in the battery.
     :param Parameters: 
     :type Parameters: dict | bytes
 

@@ -69,7 +69,7 @@ start the turtlebot on the mission
 ### POST /perturb/battery
 
 #### Description
-set the level of the battery in a currently running test
+set the level of the battery in a currently running test. consistent with the monotonicity requirement for the power model, this cannot be more than the current amount of charge in the battery.
 
 
 #### Parameters
