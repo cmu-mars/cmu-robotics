@@ -146,7 +146,11 @@ paths:
                 description: human readable info about what went wrong
   /perturb/battery:
     post:
-      description: set the level of the battery in a currently running test
+      description: >-
+        set the level of the battery in a currently running
+        test. consistent with the monotonicity requirement for the power
+        model, this cannot be more than the current amount of charge in the
+        battery.
       parameters:
         - in: body
           name: Parameters
