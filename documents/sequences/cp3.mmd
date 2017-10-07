@@ -22,6 +22,12 @@ sequenceDiagram
         TA -->>- TH: ack. start
         Note right of TA: starting may take time, so this ack does not mean that the bot is moving
 
+	loop as desired
+	     Note left of TH: interleave below, upto /done
+	     TH ->>+ TA: /observe
+	     TA -->>- TH: observation
+	end
+
         TA ->>+ TH: /status mission-running
 	Note right of TA: SUT has processes initial perturbs and started mission. after /start, no dynmaic perturbs are allowed until this message
         TH -->>- TA: ack. status

@@ -170,7 +170,7 @@ paths:
               sim-time:
                 type: integer
                 description: the simulation time when the error occurred
-  /action/observe:
+  /observe:
     get:
       description: >-
         observe some of the current state of the robot for visualization
