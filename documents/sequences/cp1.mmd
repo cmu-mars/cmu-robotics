@@ -7,11 +7,11 @@ sequenceDiagram
         TA ->>+ TH: /ready
         TH -->>- TA: configuration data
 
-	opt level d
-	        TA ->>+ TH: /status learning_started
+	opt level == c
+	        TA ->>+ TH: /status learning-started
         	TH -->>- TA: ack. status
 
-        	TA ->>+ TH: /status learning_done
+        	TA ->>+ TH: /status learning-done
 		TH -->>- TA: ack. status
 	end
 
@@ -25,6 +25,11 @@ sequenceDiagram
         TH ->>+ TA: /start
         TA -->>- TH: ack. start
         Note right of TA: robot is now moving along waypoints
+	loop as desired
+	     Note left of TH: observe calls may be interleaved until /done, but not before /start
+	     TH ->>+ TA: /observe
+	     TA -->>- TH: observation
+	end
 
         loop as desired
 		Note right of TA: perturbations are not allowed while adapting
