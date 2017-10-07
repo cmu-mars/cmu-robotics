@@ -26,7 +26,7 @@ sequenceDiagram
         TA -->>- TH: ack. start
         Note right of TA: robot is now moving along waypoints
 	loop as desired
-	     Note left of TH: observe calls may be interleaved until /done, but not before /start
+	     Note left of TH: interleave below, upto /done
 	     TH ->>+ TA: /observe
 	     TA -->>- TH: observation
 	end
