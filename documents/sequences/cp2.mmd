@@ -6,6 +6,13 @@ sequenceDiagram
 
 	TA ->>+ TH: /ready
 	TH -->>- TA: configuration data
+
+	loop as desired
+	     Note left of TH: interleave below, upto /done
+	     TH ->>+ TA: /observe
+	     TA -->>- TH: observation
+	end
+
 	TH ->>+ TA: /perturbations
 	TA -->>- TH: all possible perturbations
 	TH ->>+ TA: /perturb
