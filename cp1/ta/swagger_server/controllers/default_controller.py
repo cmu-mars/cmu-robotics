@@ -16,22 +16,12 @@ from six import iteritems
 from ..util import deserialize_date, deserialize_datetime
 
 
-def action_observe_get():
+def observe_get():
     """
-    action_observe_get
+    observe_get
     observe some of the current state of the robot for visualization and invariant checking for perturbation end points. n.b. this information is to be used strictly in a passive way; it is not to be used for evaluation of the test at all.
 
     :rtype: InlineResponse2003
-    """
-    return 'do some magic!'
-
-
-def action_start_post():
-    """
-    action_start_post
-    start the turtlebot on the mission
-
-    :rtype: None
     """
     return 'do some magic!'
 
@@ -75,4 +65,14 @@ def perturb_remove_obstacle_post(Parameters=None):
     """
     if connexion.request.is_json:
         Parameters = Parameters1.from_dict(connexion.request.get_json())
+    return 'do some magic!'
+
+
+def start_post():
+    """
+    start_post
+    start the turtlebot on the mission
+
+    :rtype: None
+    """
     return 'do some magic!'

@@ -71,10 +71,10 @@ paths:
           schema:
             $ref: "#/definitions/inline_response_400_2"
       x-swagger-router-controller: "swagger_server.controllers.default_controller"
-  /action/start:
+  /start:
     post:
       description: "start the turtlebot on the mission"
-      operationId: "action_start_post"
+      operationId: "start_post"
       parameters: []
       responses:
         200:
@@ -84,13 +84,13 @@ paths:
           schema:
             $ref: "#/definitions/inline_response_400_3"
       x-swagger-router-controller: "swagger_server.controllers.default_controller"
-  /action/observe:
+  /observe:
     get:
       description: "observe some of the current state of the robot for visualization\
         \ and invariant checking for perturbation end points. n.b. this information\
         \ is to be used strictly in a passive way; it is not to be used for evaluation\
         \ of the test at all."
-      operationId: "action_observe_get"
+      operationId: "observe_get"
       parameters: []
       responses:
         200:

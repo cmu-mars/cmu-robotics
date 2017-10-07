@@ -18,8 +18,8 @@
 <a name="paths"></a>
 ## Paths
 
-<a name="action-observe-get"></a>
-### GET /action/observe
+<a name="observe-get"></a>
+### GET /observe
 
 #### Description
 observe some of the current state of the robot for visualization and invariant checking for perturbation end points. n.b. this information is to be used strictly in a passive way; it is not to be used for evaluation of the test at all.
@@ -29,10 +29,10 @@ observe some of the current state of the robot for visualization and invariant c
 
 |HTTP Code|Description|Schema|
 |---|---|---|
-|**200**|successfully computed the observation|[Response 200](#action-observe-get-response-200)|
+|**200**|successfully computed the observation|[Response 200](#observe-get-response-200)|
 |**400**|encountered an error while computing the observation|No Content|
 
-<a name="action-observe-get-response-200"></a>
+<a name="observe-get-response-200"></a>
 **Response 200**
 
 |Name|Description|Schema|

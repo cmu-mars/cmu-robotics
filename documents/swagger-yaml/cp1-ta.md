@@ -18,8 +18,8 @@
 <a name="paths"></a>
 ## Paths
 
-<a name="action-observe-get"></a>
-### GET /action/observe
+<a name="observe-get"></a>
+### GET /observe
 
 #### Description
 observe some of the current state of the robot for visualization and invariant checking for perturbation end points. n.b. this information is to be used strictly in a passive way; it is not to be used for evaluation of the test at all.
@@ -29,10 +29,10 @@ observe some of the current state of the robot for visualization and invariant c
 
 |HTTP Code|Description|Schema|
 |---|---|---|
-|**200**|successfully computed the observation|[Response 200](#action-observe-get-response-200)|
+|**200**|successfully computed the observation|[Response 200](#observe-get-response-200)|
 |**400**|encountered an error while computing the observation|No Content|
 
-<a name="action-observe-get-response-200"></a>
+<a name="observe-get-response-200"></a>
 **Response 200**
 
 |Name|Description|Schema|
@@ -41,28 +41,6 @@ observe some of the current state of the robot for visualization and invariant c
 |**sim-time**  <br>*required*|the time when this observation was computed, in simulation seconds  <br>**Minimum value** : `0`|integer|
 |**x**  <br>*required*|the current x coordinate of the bot. must be within the boundaries of the map.|number (float)|
 |**y**  <br>*required*|the current y coordinate of the bot. must be within the boundaries of the map.|number (float)|
-
-
-<a name="action-start-post"></a>
-### POST /action/start
-
-#### Description
-start the turtlebot on the mission
-
-
-#### Responses
-
-|HTTP Code|Description|Schema|
-|---|---|---|
-|**200**|successfully started the mission|No Content|
-|**400**|encountered an error in starting the mission|[Response 400](#action-start-post-response-400)|
-
-<a name="action-start-post-response-400"></a>
-**Response 400**
-
-|Name|Description|Schema|
-|---|---|---|
-|**message**  <br>*optional*|human readable information about the error, if any can be provided|string|
 
 
 <a name="perturb-battery-post"></a>
@@ -200,6 +178,28 @@ if the test is running, remove a previously placed obstacle from the map
 |---|---|---|
 |**cause**  <br>*required*|a reason for the error condition. `bad-obstacleid` is used if this endpoint is given a obstacleid in its parameters that was not given out by place-obstacle; `other-error` is used in all other instances.|enum (bad-obstacleid, other-error)|
 |**message**  <br>*required*|human readable info about what went wrong|string|
+
+
+<a name="start-post"></a>
+### POST /start
+
+#### Description
+start the turtlebot on the mission
+
+
+#### Responses
+
+|HTTP Code|Description|Schema|
+|---|---|---|
+|**200**|successfully started the mission|No Content|
+|**400**|encountered an error in starting the mission|[Response 400](#start-post-response-400)|
+
+<a name="start-post-response-400"></a>
+**Response 400**
+
+|Name|Description|Schema|
+|---|---|---|
+|**message**  <br>*optional*|human readable information about the error, if any can be provided|string|
 
 
 
