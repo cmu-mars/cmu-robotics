@@ -185,16 +185,16 @@ paths:
     get:
       description: Returns a list of all the source lines at which
         perturbations may be injected.
-      schema:
-        type: array
-        items:
-          $ref: '#/definitions/SourceLine'
-        description: >-
-            A list of the (mutable) source lines within the project.
       responses:
         '200':
           description: Successfully computed and returned a list of source
             lines within the project.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/SourceLine'
+            description: >-
+              A list of the (mutable) source lines within the project.
         '400':
           description: Failed to produce a list of source lines within the
             project.
