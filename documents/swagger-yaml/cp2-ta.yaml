@@ -148,8 +148,7 @@ paths:
                 type: integer
                 description: >-
                   The number of the line at which the perturbation should be
-                  injected. N.b. if this parameter is used, then the file
-                  parameter must also be specified.
+                  injected.
       responses:
         '200':
           description: Successfully computed the list of possible perturbations
