@@ -75,7 +75,7 @@ def perturb_post(Parameters):
     """
     if connexion.request.is_json:
         Parameters = Parameters2.from_dict(connexion.request.get_json())
-    return 'do some magic!'
+    return {} , 200
 
 
 def perturbations_get(Parameters):
@@ -87,7 +87,7 @@ def perturbations_get(Parameters):
 
     :rtype: InlineResponse200
     """
-    ## TODO
+    ## TODO -- #32
     # if connexion.request.is_json:
     #     Parameters = Parameters.from_dict(connexion.request.get_json())
 
