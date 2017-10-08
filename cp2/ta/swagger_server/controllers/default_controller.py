@@ -2,6 +2,7 @@ import connexion
 from swagger_server.models.inline_response200 import InlineResponse200
 from swagger_server.models.inline_response2001 import InlineResponse2001
 from swagger_server.models.inline_response400 import InlineResponse400
+from swagger_server.models.inline_response2001_resourceconsumption import InlineResponse2001Resourceconsumption
 from swagger_server.models.parameters import Parameters
 from swagger_server.models.parameters1 import Parameters1
 from swagger_server.models.parameters2 import Parameters2
@@ -49,7 +50,17 @@ def observe_get():
 
     :rtype: InlineResponse2001
     """
-    return 'do some magic!'
+
+    inner = InlineResponse2001Resourceconsumption()
+    inner.num_attempts = 5
+    inner.time_spent = 43.2
+
+    ret = InlineResponse2001()
+    ret.stage = "awaiting-perturbation"
+    ret.resource_consumption = inner
+    ret.pareto_set = [ "fix it!" ]
+
+    return ret
 
 
 def perturb_post(Parameters):
