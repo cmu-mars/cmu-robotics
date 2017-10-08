@@ -41,6 +41,11 @@ paths:
         200:
           description: "Successfully computed and returned a list of source lines\
             \ within the project."
+          schema:
+            type: "array"
+            description: "A list of the (mutable) source lines within the project."
+            items:
+              $ref: "#/definitions/SourceLine"
         400:
           description: "Failed to produce a list of source lines within the project."
       x-swagger-router-controller: "swagger_server.controllers.default_controller"

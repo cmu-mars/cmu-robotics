@@ -5,6 +5,7 @@ from swagger_server.models.inline_response400 import InlineResponse400
 from swagger_server.models.parameters import Parameters
 from swagger_server.models.parameters1 import Parameters1
 from swagger_server.models.parameters2 import Parameters2
+from swagger_server.models.source_line import SourceLine
 from datetime import date, datetime
 from typing import List, Dict
 from six import iteritems
@@ -30,7 +31,7 @@ def lines_get():
     lines_get
     Returns a list of all the source lines at which perturbations may be injected.
 
-    :rtype: None
+    :rtype: List[SourceLine]
     """
     return 'do some magic!'
 
