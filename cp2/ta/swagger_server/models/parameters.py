@@ -109,7 +109,7 @@ class Parameters(Model):
     def line(self) -> int:
         """
         Gets the line of this Parameters.
-        The number of the line at which the perturbation should be injected. N.b. if this parameter is used, then the file parameter must also be specified.
+        The number of the line at which the perturbation should be injected.
 
         :return: The line of this Parameters.
         :rtype: int
@@ -120,7 +120,7 @@ class Parameters(Model):
     def line(self, line: int):
         """
         Sets the line of this Parameters.
-        The number of the line at which the perturbation should be injected. N.b. if this parameter is used, then the file parameter must also be specified.
+        The number of the line at which the perturbation should be injected.
 
         :param line: The line of this Parameters.
         :type line: int

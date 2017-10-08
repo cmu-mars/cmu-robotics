@@ -181,6 +181,93 @@ definitions:
         statement:
           type: "string"
           description: "The source code for the inserted statement."
+  CandidateAdaptation:
+    type: "object"
+    required:
+    - "compilation-outcome"
+    - "degradation"
+    - "diff"
+    - "test-outcomes"
+    properties:
+      diff:
+        type: "string"
+        description: "A description of the change to the code, given in the form of\
+          \ a diff."
+      compilation-outcome:
+        description: "A description of the outcome of attempting to compile this adaptation."
+        $ref: "#/definitions/CompilationOutcome"
+      degradation:
+        description: "A description of the level of degradation that was observed\
+          \ when this adaptation was applied."
+        $ref: "#/definitions/Degradation"
+      test-outcomes:
+        type: "array"
+        description: "A summary of the outcomes for each of the test cases that this\
+          \ adaptation was evaluated against."
+        items:
+          $ref: "#/definitions/TestOutcome"
+  CompilationOutcome:
+    type: "object"
+    required:
+    - "successful"
+    - "time-taken"
+    properties:
+      time-taken:
+        type: "number"
+        format: "float"
+        description: "The number of seconds taken to compile this adaptation."
+      successful:
+        type: "boolean"
+        description: "A flag indicating whether the compilation of this adaptation\
+          \ was successful or not."
+  Degradation:
+    type: "object"
+  TestOutcome:
+    type: "object"
+    required:
+    - "test-id"
+    - "time-taken"
+    - "timed-out"
+    properties:
+      test-id:
+        type: "string"
+        description: "A unique identifier for the test to which this outcome belongs."
+      time-taken:
+        type: "number"
+        format: "float"
+        description: "The number of seconds taken to complete the test."
+      timed-out:
+        type: "boolean"
+        description: "A flag indicating whether or not the test timed out during execution."
+      crashed:
+        type: "boolean"
+        description: "A flag indicating whether or not the system crashed during execution\
+          \ of the test."
+      qos:
+        description: "A summary of the quality of service that was observed during\
+          \ the execution of the test."
+        $ref: "#/definitions/TestQoS"
+  TestQoS:
+    type: "object"
+    required:
+    - "collisions"
+    - "duration"
+    - "proximity"
+    properties:
+      duration:
+        type: "object"
+        description: "A measure of service quality with respect to time taken to complete\
+          \ the test."
+        properties: {}
+      proximity:
+        type: "object"
+        description: "A measure of service quality with respect to proximity to the\
+          \ goal."
+        properties: {}
+      collisions:
+        type: "object"
+        description: "A measure of service quality with respect to the number of collisions."
+        properties: {}
   Parameters:
     type: "object"
     required:
@@ -200,8 +287,7 @@ definitions:
         - "InsertStatement"
       line:
         type: "integer"
-        description: "The number of the line at which the perturbation should be injected.\
-          \ N.b. if this parameter is used, then the file parameter must also be specified."
+        description: "The number of the line at which the perturbation should be injected."
   inline_response_200:
     properties:
       perturbations:
@@ -275,4 +361,4 @@ definitions:
           \ have been encountered that belong to the pareto set (i.e., the set of\
           \ non-dominated adaptations)."
         items:
-          $ref: "#/definitions/Adaptation"
+          $ref: "#/definitions/CandidateAdaptation"
