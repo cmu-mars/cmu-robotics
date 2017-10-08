@@ -97,6 +97,9 @@ paths:
           description: "Encounted an error while observing the SUT."
       x-swagger-router-controller: "swagger_server.controllers.default_controller"
 definitions:
+  Adaptation:
+    type: "string"
+    description: "placeholder for actual definition of adaptations"
   SourceLine:
     type: "object"
     required:

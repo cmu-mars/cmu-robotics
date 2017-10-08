@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import
 # import models into model package
+from .adaptation import Adaptation
 from .inline_response200 import InlineResponse200
 from .inline_response2001 import InlineResponse2001
 from .inline_response2001_resourceconsumption import InlineResponse2001Resourceconsumption
