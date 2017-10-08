@@ -8,6 +8,11 @@ from swagger_server.models.parameters1 import Parameters1
 from swagger_server.models.parameters2 import Parameters2
 from swagger_server.models.source_line import SourceLine
 from swagger_server.models.perturbation import Perturbation
+from swagger_server.models.compilation_outcome import CompilationOutcome
+from swagger_server.models.degradation import Degradation
+from swagger_server.models.test_qo_s import TestQoS
+from swagger_server.models.test_outcome import TestOutcome
+from swagger_server.models.candidate_adaptation import CandidateAdaptation
 from datetime import date, datetime
 from typing import List, Dict
 from six import iteritems
@@ -52,14 +57,38 @@ def observe_get():
     :rtype: InlineResponse2001
     """
 
-    inner = InlineResponse2001Resourceconsumption()
-    inner.num_attempts = 5
-    inner.time_spent = 43.2
+    rc = InlineResponse2001Resourceconsumption()
+    rc.num_attempts = 5
+    rc.time_spent = 43.2
+
+    co = CompilationOutcome()
+    co.time_taken = 500.0
+    co.successful = True
+
+    d = Degradation()
+
+    q = TestQoS()
+    q.duration = {}
+    q.proximity = {}
+    q.collisions = {}
+
+    to = TestOutcome()
+    to.test_id = "a"
+    to.time_taken = "509"
+    to.timed_out = False
+    to.crashed = False
+    to.qos = q
+
+    ca = CandidateAdaptation()
+    ca.diff = "1c1\n< a\n---\n> b\n"
+    ca.complilation_outcome = co
+    ca.degradation = d
+    ca.test_outcomes = [ to ]
 
     ret = InlineResponse2001()
     ret.stage = "awaiting-perturbation"
-    ret.resource_consumption = inner
-    ret.pareto_set = [ "fix it!" ]
+    ret.resource_consumption = rc
+    ret.pareto_set = [ ca ]
 
     return ret
 
