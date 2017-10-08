@@ -23,49 +23,70 @@ def observe_get():
 
     :rtype: InlineResponse2003
     """
-    return 'do some magic!'
+
+    ret = InlineResponse2003()
+    ret.x = 0.0
+    ret.y = 0.0
+    ret.battery = 5
+    ret.sim_time = 5
+
+    return ret
 
 
 def perturb_battery_post(Parameters=None):
     """
     perturb_battery_post
     set the level of the battery in a currently running test. consistent with the monotonicity requirement for the power model, this cannot be more than the current amount of charge in the battery.
-    :param Parameters: 
+    :param Parameters:
     :type Parameters: dict | bytes
 
     :rtype: InlineResponse2002
     """
     if connexion.request.is_json:
         Parameters = Parameters2.from_dict(connexion.request.get_json())
-    return 'do some magic!'
+
+    ret = InlineResponse2002()
+    ret.sim_time = 0
+    return ret
 
 
 def perturb_place_obstacle_post(Parameters=None):
     """
     perturb_place_obstacle_post
     if the test is running, then place an instance of the obstacle on the map
-    :param Parameters: 
+    :param Parameters:
     :type Parameters: dict | bytes
 
     :rtype: InlineResponse200
     """
     if connexion.request.is_json:
         Parameters = Parameters.from_dict(connexion.request.get_json())
-    return 'do some magic!'
+
+    ret = InlineResponse200()
+    ret.obstacleid = "x"
+    ret.topleft_x = 0.0
+    ret.topleft_y = 0.0
+    ret.botright_x = 0.0
+    ret.botright_y = 0.0
+    ret.sim_time = 0
+    return ret
 
 
 def perturb_remove_obstacle_post(Parameters=None):
     """
     perturb_remove_obstacle_post
     if the test is running, remove a previously placed obstacle from the map
-    :param Parameters: 
+    :param Parameters:
     :type Parameters: dict | bytes
 
     :rtype: InlineResponse2001
     """
     if connexion.request.is_json:
         Parameters = Parameters1.from_dict(connexion.request.get_json())
-    return 'do some magic!'
+
+    ret = InlineResponse2001()
+    ret.sim_time = 0
+    return ret
 
 
 def start_post():
@@ -75,4 +96,4 @@ def start_post():
 
     :rtype: None
     """
-    return 'do some magic!'
+    return {}
