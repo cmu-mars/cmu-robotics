@@ -16,14 +16,15 @@ def adapt_post(Parameters):
     """
     adapt_post
     Used to trigger the code adaptation process.
-    :param Parameters: 
+    :param Parameters:
     :type Parameters: dict | bytes
 
     :rtype: None
     """
     if connexion.request.is_json:
         Parameters = Parameters1.from_dict(connexion.request.get_json())
-    return 'do some magic!'
+
+    return {} , 200
 
 
 def lines_get():
@@ -33,7 +34,12 @@ def lines_get():
 
     :rtype: List[SourceLine]
     """
-    return 'do some magic!'
+
+    dummy_line = SourceLine()
+    dummy_line.file = "main.cpp"
+    dummy_line.number = 500
+
+    return [ dummy_line ]
 
 
 def observe_get():
@@ -50,7 +56,7 @@ def perturb_post(Parameters):
     """
     perturb_post
     Applies a set of perturbations, given as a list of JSON objects, to the SUT. This endpoint should be used to prepare a test scenario for evaluation.
-    :param Parameters: 
+    :param Parameters:
     :type Parameters: dict | bytes
 
     :rtype: None
@@ -64,7 +70,7 @@ def perturbations_get(Parameters):
     """
     perturbations_get
     Returns a list of possible perturbations of an (optionally) specified shape and complexity that can be performed at a given line in the program. This endpoint should be used to select a suitable (set of) perturbation(s) for a test scenario.
-    :param Parameters: 
+    :param Parameters:
     :type Parameters: dict | bytes
 
     :rtype: InlineResponse200
