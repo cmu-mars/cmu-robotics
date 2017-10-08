@@ -59,8 +59,11 @@ def perturb_place_obstacle_post(Parameters=None):
 
     :rtype: InlineResponse200
     """
-    if connexion.request.is_json:
-        Parameters = Parameters.from_dict(connexion.request.get_json())
+    ## TODO -- this shows up in CP2 as well; i think it's because it should
+    ## be Parameters0, and that this is just an error in swagger codegen
+
+    # if connexion.request.is_json:
+    #     Parameters = Parameters.from_dict(connexion.request.get_json())
 
     ret = InlineResponse200()
     ret.obstacleid = "obs1"
