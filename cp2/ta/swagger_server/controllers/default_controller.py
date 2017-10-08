@@ -7,6 +7,7 @@ from swagger_server.models.parameters import Parameters
 from swagger_server.models.parameters1 import Parameters1
 from swagger_server.models.parameters2 import Parameters2
 from swagger_server.models.source_line import SourceLine
+from swagger_server.models.perturbation import Perturbation
 from datetime import date, datetime
 from typing import List, Dict
 from six import iteritems
@@ -86,6 +87,13 @@ def perturbations_get(Parameters):
 
     :rtype: InlineResponse200
     """
-    if connexion.request.is_json:
-        Parameters = Parameters.from_dict(connexion.request.get_json())
-    return 'do some magic!'
+    ## TODO
+    # if connexion.request.is_json:
+    #     Parameters = Parameters.from_dict(connexion.request.get_json())
+
+    inner = Perturbation()
+    inner.kind = "swap arguments"
+
+    ret = InlineResponse200()
+    ret.perturbations = [ inner ]
+    return ret
