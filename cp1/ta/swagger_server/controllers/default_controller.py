@@ -63,7 +63,7 @@ def perturb_place_obstacle_post(Parameters=None):
         Parameters = Parameters.from_dict(connexion.request.get_json())
 
     ret = InlineResponse200()
-    ret.obstacleid = "x"
+    ret.obstacleid = "obs1"
     ret.topleft_x = 0.0
     ret.topleft_y = 0.0
     ret.botright_x = 0.0
