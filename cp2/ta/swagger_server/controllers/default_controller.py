@@ -3,7 +3,7 @@ from swagger_server.models.inline_response200 import InlineResponse200
 from swagger_server.models.inline_response2001 import InlineResponse2001
 from swagger_server.models.inline_response400 import InlineResponse400
 from swagger_server.models.inline_response2001_resourceconsumption import InlineResponse2001Resourceconsumption
-from swagger_server.models.parameters import Parameters
+from swagger_server.models.parameters0 import Parameters0
 from swagger_server.models.parameters1 import Parameters1
 from swagger_server.models.parameters2 import Parameters2
 from swagger_server.models.source_line import SourceLine
@@ -116,9 +116,8 @@ def perturbations_get(Parameters):
 
     :rtype: InlineResponse200
     """
-    ## TODO -- #32
-    # if connexion.request.is_json:
-    #     Parameters = Parameters.from_dict(connexion.request.get_json())
+    if connexion.request.is_json:
+        Parameters = Parameters0.from_dict(connexion.request.get_json())
 
     inner = Perturbation()
     inner.kind = "swap arguments"
