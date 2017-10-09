@@ -6,7 +6,7 @@ from swagger_server.models.inline_response2003 import InlineResponse2003
 from swagger_server.models.inline_response400 import InlineResponse400
 from swagger_server.models.inline_response4001 import InlineResponse4001
 from swagger_server.models.inline_response4002 import InlineResponse4002
-from swagger_server.models.parameters import Parameters
+from swagger_server.models.parameters0 import Parameters0
 from swagger_server.models.parameters1 import Parameters1
 from swagger_server.models.parameters2 import Parameters2
 from datetime import date, datetime
@@ -22,49 +22,66 @@ def observe_get():
 
     :rtype: InlineResponse2003
     """
-    return 'do some magic!'
+    ret = InlineResponse2003()
+    ret.x = 0.0
+    ret.y = 0.0
+    ret.battery = 5000
+    ret.sim_time = 30
+    ret.lights = [ "l1" , "l2" ]
+    return ret
 
 
 def perturb_light_post(Parameters):
     """
     perturb_light_post
     change the state of a light in the environment
-    :param Parameters: 
+    :param Parameters:
     :type Parameters: dict | bytes
 
     :rtype: InlineResponse200
     """
     if connexion.request.is_json:
-        Parameters = Parameters.from_dict(connexion.request.get_json())
-    return 'do some magic!'
+        Parameters = Parameters0.from_dict(connexion.request.get_json())
+
+    ret = InlineResponse200()
+    ret.sim_time = 50
+
+    return ret
 
 
 def perturb_nodefail_post(Parameters):
     """
     perturb_nodefail_post
     cause one of the software nodes to fail
-    :param Parameters: 
+    :param Parameters:
     :type Parameters: dict | bytes
 
     :rtype: InlineResponse2002
     """
     if connexion.request.is_json:
         Parameters = Parameters2.from_dict(connexion.request.get_json())
-    return 'do some magic!'
+
+    ret = InlineResponse2002()
+    ret.sim_time = 55
+    return ret
 
 
 def perturb_sensor_post(Parameters):
     """
     perturb_sensor_post
     change the state of one of the sensors on the robot
-    :param Parameters: 
+    :param Parameters:
     :type Parameters: dict | bytes
 
     :rtype: InlineResponse2001
     """
     if connexion.request.is_json:
         Parameters = Parameters1.from_dict(connexion.request.get_json())
-    return 'do some magic!'
+
+    ret = InlineResponse2001()
+    ret.sim_time = 89
+
+    return ret
 
 
 def start_post():
@@ -74,4 +91,4 @@ def start_post():
 
     :rtype: None
     """
-    return 'do some magic!'
+    return {} , 200

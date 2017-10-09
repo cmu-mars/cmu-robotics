@@ -9,6 +9,6 @@ from .inline_response2003 import InlineResponse2003
 from .inline_response400 import InlineResponse400
 from .inline_response4001 import InlineResponse4001
 from .inline_response4002 import InlineResponse4002
-from .parameters import Parameters
+from .parameters0 import Parameters0
 from .parameters1 import Parameters1
 from .parameters2 import Parameters2
