@@ -7,7 +7,7 @@ from swagger_server.models.inline_response400 import InlineResponse400
 from swagger_server.models.inline_response4001 import InlineResponse4001
 from swagger_server.models.inline_response4002 import InlineResponse4002
 from swagger_server.models.inline_response4003 import InlineResponse4003
-from swagger_server.models.parameters import Parameters
+from swagger_server.models.parameters0 import Parameters0
 from swagger_server.models.parameters1 import Parameters1
 from swagger_server.models.parameters2 import Parameters2
 from datetime import date, datetime
@@ -59,11 +59,8 @@ def perturb_place_obstacle_post(Parameters=None):
 
     :rtype: InlineResponse200
     """
-    ## TODO -- this shows up in CP2 as well; i think it's because it should
-    ## be Parameters0, and that this is just an error in swagger codegen
-
-    # if connexion.request.is_json:
-    #     Parameters = Parameters.from_dict(connexion.request.get_json())
+    if connexion.request.is_json:
+        Parameters = Parameters0.from_dict(connexion.request.get_json())
 
     ret = InlineResponse200()
     ret.obstacleid = "obs1"
