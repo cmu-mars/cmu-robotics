@@ -49,10 +49,12 @@ definitions:
     properties:
       test-id:
         type: string
-        description: A unique identifier for the test to which this outcome belongs.
+        description: >-
+          A unique identifier for the test to which this outcome belongs.
       time-taken:
         type: number
         format: float
+        minimum: 0
         description: >-
           The number of seconds taken to complete the test.
       timed-out:
@@ -80,6 +82,7 @@ definitions:
       time-taken:
         type: number
         format: float
+        minimum: 0
         description: The number of seconds taken to compile this adaptation.
       successful:
         type: boolean
@@ -238,10 +241,12 @@ paths:
               running-time:
                 type: number
                 format: float
+                minimum: 0
                 description: >-
                   The number of minutes taken to complete the repair process.
               num-attempts:
                 type: integer
+                minimum: 0
                 description: >-
                   The number of code adaptations attempted.
               pareto-set:
