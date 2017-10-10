@@ -64,7 +64,6 @@ Step 9/9 : CMD -m swagger_server
  ---> adeb961108e1
 Successfully built adeb961108e1
 Successfully tagged swagger_server:latest
- * Running on http://0.0.0.0:8080/ (Press CTRL+C to quit)
 ```
 
 In another terminal, run the relevant smoke script:
@@ -151,3 +150,7 @@ Date: Sun, 08 Oct 2017 23:14:28 GMT
 iev@bruce cp2 %
 
 ```
+
+Nothing will be printed to standard out in the terminal running
+Docker. Rather, a file `access.log` is created inside the Docker image that
+contains the details of each request made to the TA.
