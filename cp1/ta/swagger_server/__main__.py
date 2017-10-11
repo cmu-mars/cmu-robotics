@@ -20,7 +20,6 @@ if __name__ == '__main__':
         print("malformed connfig file:\n" % str(e))
         sys.exit(1)
 
-
     app = connexion.App(__name__, specification_dir='./swagger/')
     app.app.json_encoder = JSONEncoder
     app.add_api('swagger.yaml', arguments={'title': 'CP1'}, strict_validation=True)
