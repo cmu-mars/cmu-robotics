@@ -9,6 +9,8 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 
 COPY . /usr/src/app
 
+ENV PYTHONUNBUFFERED 0
+
 EXPOSE 8080
 
 ENTRYPOINT ["python3"]
