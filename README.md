@@ -154,3 +154,20 @@ iev@bruce cp2 %
 Nothing will be printed to standard out in the terminal running
 Docker. Rather, a file `access.log` is created inside the Docker image that
 contains the details of each request made to the TA.
+
+
+The network topology can be specified in the file `network.conf` in each
+`ta/` directory -- which is then copied into the Docker container and read
+by the Python script. Currently we check to make sure that it looks roughly
+like this:
+
+```
+[TH]
+host: localhost
+port: 8000
+
+[TA]
+host: localhost
+port: 8080
+
+```
