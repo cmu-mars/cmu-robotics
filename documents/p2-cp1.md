@@ -202,21 +202,23 @@ measurement frequency of the Kinect sensor or spatial and depth resolution
 of the base Kinect. Also, for the localization, we will implement different
 components with different accuracy for localizing the robot.
 
-Therefore, the configuration of the robot is encoded by 12 boolean
+Therefore, the configuration of the robot is encoded by 12 Boolean
 variables
 
 ```
 C = [<s1,s2>,<k1,k2,k3,k4,k5>,<l1,l2,l3,l4,l5>]
 ```
 
-At each time step in the simulation, one of the variables in the vector is
-enabled and the rest are disabled. For example,
+At each time step in the simulation, ``at most`` one of the variables (e.g., s2, k4, l1) corresponding to the three components (e.g., speed, Kinect, localization) is enabled and the rest are disabled. For example,
 
 ```
 C_t = [<0,1>,<0,0,0,1,0>,<1,0,0,0,0>]
 ```
-
-The total number of possible configuration for the robot is: `2*5*5 = 50`.
+Also, there might be some cases where the robot decide to disable the component completely (e.g., when it is in the charging station to charge faster):
+```
+C_t = [<0,0>,<0,0,0,0,0>,<0,0,0,0,0>]
+```
+The total number of possible configuration for the robot is: `3*6*6 = 108`.
 
 The power consumption model is then specified as:
 
@@ -287,41 +289,6 @@ separately, with respect to ``t``, if the sign of the derivatives is positive, t
 * *Discharge*: $updated_charge = current_charge - P_discharge(dt,s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5)$
 * *Charge*: $updated_charge = current_charge + P_charge(dt,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5)$
 
-We also intend to specify some metrics based on which we evaluate how
-``difficult`` and how ``similar`` two test cases are. Therefore, LL could
-generate ``challenging`` and yet ``different`` test cases, this is what we mean
-by interesting test cases. The metrics are dependent on both specification
-(including the shape of discharge/charge function and mission parameters)
-of the mission as well as the perturbation during the mission.
-
-#### Metrics for evaluating the difficulty of test cases:
-1. Sum of the degree of the exponents of `t` for all terms in the power
-   model
-
-2. The number of obstacle placement as well as number of battery set. 
-
-3. The number of tasks (determined by the number of way points) and the distance that the robot need to traverse to accomplish the tasks. 
-
-Any two test cases would be different if the difficulty levels of them are different. However, if two test cases are similar with respect to the difficulty of the test, we consider them identical.
-
-The ultimate goal of CP1 is to demonstrate that the adaptation (analysis +
-planning) with an accurate model that we learn is better than the case with
-no learning, i.e, using an inaccurate model. So we assume the following
-cases:
-
-- A (no perturbation, no adaptation, no PM)
-- B (perturbation, no adaptation, no PM)
-- B' (perturbation, adaptation, a static PM for discharge/charge, while
-  planner uses a different static PM): the challenge with inaccurate model
-- C (perturbation, adaptation, a PM will be specified by LL and planner
-  uses a learned PM): the challenge with a learned model
-
-
-So, an ideal situation for us is:
-
-```
-A: PASS, B: FAIL, C: FAIL/DEGRADED, D: PASS
-```
 
 ## Interface to the Test Harness (API)
 
@@ -332,6 +299,13 @@ The Swagger file describing this interface is
 considered the canonical definition of the
 API. [swagger-yaml/cp1-th.md](swagger-yaml/cp1-th.md) is produced
 automatically from the Swagger definition for convenience.
+
+This API is currently still a draft. Some, but not all, possible future
+changes include:
+ * adding more constants to the enumerated error codes in the TH `/error`
+   end point
+ * adding more constants to the enumerated status codes in the TH `/status`
+   end point
 
 The format `function-spec`, used to in the `/ready` end point to
 describe the charge and discharge functions, is given by the following BNF:
@@ -383,9 +357,21 @@ this sequence. This interaction is omitted for clarity.
 
 
 ## Intent Specification and Evaluation Metrics
+In this challenge problem we evaluate how adaptations made by planner that uses a learned model partially restore intent (e.g., switching to an alternative Kinect, less accurate navigation algorithm). We measure quality as an approximate measure of how closely the behavior of a system meets its intent. 
 
-The intents described on the Wiki for CP1 in phase 1 still apply (Accuracy,
-timing, and safety). In addition, we may evaluate the discovery mechanism with a cost function based on the number of queries used. Alternatively, Lincoln Labs can set a tunable query budget which will be used by the DAS.
+### Intent Specification
+
+The ultimate goal of CP1 is to demonstrate that the adaptation (analysis +
+planning) with an accurate model that we learn is better than the case with
+no learning, i.e, using an inaccurate model. In CP1, we consider two types of intents: (i) Timeliness (time to completion), and (ii) Success rate (number of targets reached). 
+
+We assume the following test stages for evaluation:
+- A (no perturbation, no adaptation, no PM)
+- B (perturbation, no adaptation, no PM)
+- B' (perturbation, adaptation, a static PM for discharge/charge, while
+  planner uses a different static PM): the challenge with inaccurate model
+- C (perturbation, adaptation, a PM will be specified by LL and planner
+  uses a learned PM): the challenge with a learned model
 
 |             |   (p:✕,a:✕) |   (p:✔,a:✕) | (p:✔,a:✔)   |
 |-------------|-------------|-------------|-------------|
@@ -395,18 +381,12 @@ timing, and safety). In addition, we may evaluate the discovery mechanism with a
 
 We implicitly mean predefined is an inaccurate model.
 
+
+### Test Cases
 To evaluate intent discovery, we propose that a set of test cases, each
 describing a mission as well as perturbations for the robot (e.g.,
 navigating a simulated corridor, placing 1 obstacle and changing the
-battery level once). We should classify the test cases as `easy, medium,
-difficult, very difficult, impossible`. We use metrics such as distance
-from the target, power consumption, etc to evaluate the success of failure
-of the mission. We measure quality as an approximate measure of how closely
-the behavior of a system meets its intent. In this challenge problem we
-evaluate how adaptations made by planner that uses a learned model
-partially restore intent (e.g., switching to an alternative Kinect, less
-accurate navigation algorithm).
-
+battery level once). 
 Each test case is described by the following:
 
  * Mission schema: Navigation
@@ -416,3 +396,26 @@ Each test case is described by the following:
  * Possible adaptations: possible variations for ``Speed, Kinects, Localization algorithms``
  * Evaluation metric: Power consumed, Mission accomplish time, Distance to
    target location, Number of tasks accomplished
+
+After evaluation of all of the test stages, an ideal situation for the test outcome for this challenge problem is:
+
+```
+A: PASS, B: FAIL, C: FAIL/DEGRADED, D: PASS
+```
+
+We also intend to specify some metrics based on which we evaluate how
+``difficult`` and how ``similar`` two test cases are. Therefore, LL could
+generate ``challenging`` and yet ``different`` test cases, this is what we mean
+by interesting test cases. The metrics are dependent on both specification
+(including the shape of discharge/charge function and mission parameters)
+of the mission as well as the perturbation during the mission.
+
+Here are a list of metrics for determining a representative collection of test cases:
+1. Sum of the degree of the exponents of `t` for all terms in the power
+   model
+
+2. The number of obstacle placement as well as number of battery set. 
+
+3. The number of tasks (determined by the number of way points) and the distance that the robot need to traverse to accomplish the tasks. 
+
+Any two test cases would be different if the difficulty levels of them are different. However, if two test cases are similar with respect to the difficulty of the test, we consider them identical.
