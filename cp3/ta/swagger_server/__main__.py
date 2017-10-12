@@ -5,6 +5,13 @@ import sys
 import connexion
 from .encoder import JSONEncoder
 import logging
+import requests
+
+import rospy
+from gazebo_interface import GazeboInterface
+import swagger_client
+from swagger_client.rest import ApiException
+
 
 if __name__ == '__main__':
     config = configparser.ConfigParser()
@@ -28,11 +35,40 @@ if __name__ == '__main__':
     logger.setLevel(logging.DEBUG)
     handler = logging.FileHandler('access.log')
     logger.addHandler(handler)
+    thApi = DefaultApi()
+    thApi.api_client.host = 'http://' + config.get('TH', 'host') + ":" + config.get('TH', 'port')
+    
+    thApi.error_post(Parameters("Gazebo Error", "Fatal: failed to connect to gazebo: %s" %e);  
 
     def log_request_info():
         logger.debug('Headers: %s', connexion.request.headers)
         logger.debug('Body: %s', connexion.request.get_data())
 
+    rospy.init_node ("cp3_ta")
+    
+    print ("Starting up Gazebo interface")
+    try:
+      gazebo = GazeboInterface()
+    except Exception as e:
+      logger.error('Fatal: gazebo did not start up: %s' %e)
+      thApi.error_post(Parameters("Gazebo Error", "Fatal: failed to connect to gazebo: %s" %e);  
+      raise
+    print ("Started Gazebo Interface")
+    
     app.app.before_request(log_request_info)
-
+   
+    try:
+      logger.debug("Sending ready");
+      response = thApi.ready_post()
+      logger.debug('Received response from th/ready:')
+      logger.debug ('%s' %response)
+      
+      logger.debug("Sending status")
+      response = thApi.status_post(Parameters1("Adapted", "Test for status", 55, ["l1", "l2", "l3"], ["MOVEBASE", "AMCL"], ["KINECT_ALL"]))
+     
+      logger.debug("Sending done")
+      response = thApi.status_post(Parameters2(14.5, 25.9, 72, [72], 2500))
+    except Exception as e:
+      logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
+    
     app.run(port=8080)
