@@ -4,8 +4,8 @@
 
 ### Executive Summary
 
-Modern software-intensive systems are typically composed on components that
-are likely to change over time. For software to continue to operate under
+Modern software-intensive systems are typically composed of components that
+are likely to change their behavior over time. For software to continue to operate under
 such changes, the assumptions about parts of the system made at design time
 may not hold at runtime after some point. Therefore, mechanisms must be put
 in place that can dynamically learn new models of these assumptions and use
@@ -71,8 +71,7 @@ number of inputs until a query budget (specified by Lincoln Labs) is reached.
 The DAS will use the information gleaned to learn an approximation of the
 secret power model.
 
-In the second phase, the robot will be asked to complete `n` missions
-within a map without running out of energy. There are charging stations on
+In the second phase, the robot will be asked to complete `n` tasks (part of a mission) within a map without running out of energy. There are charging stations on
 the map. The learned approximation of the power model is used by the
 adaptation logic, but the actual battery levels during the evaluation are
 computed with the secret power model provided by Lincoln Labs. In the
@@ -91,7 +90,7 @@ effectively with fewer disruptions to the mission).
 + We would like to explore corner cases that an accurate model can provide us benefit by saving time, saving energy or both, and therefore hitting a better score in total.
 + Using an inaccurate model might tell us that we can go to the target but the discharge is quicker ($t^2$) than what the robot expects (t) and therefore fail the mission
 + There might be some cases where the inaccurate model tells us we need to go to the charging station, but we could finish the mission without going to the station.
-+ We would also explore how the learning budget (number of queries we are allowed to do int he learning process) would affect the quality of the mission as well as the adaptation quality (cf. RQ2). For this we will do sensitivity analysis where we learn the power model under different budgets form extremely low (e.g., 1) to a high budget (e.g., 1000).
++ We would also explore how the learning budget (number of queries we are allowed to do in the learning process) would affect the quality of the mission as well as the adaptation quality (cf. RQ2). For this we will do sensitivity analysis where we learn the power model under different budgets form extremely low (e.g., 1) to a high budget (e.g., 1000).
 
 **RQ2**: Can the use of learning a power model improve the quality of adaptations?
 + There might be some cases where an accurate model leads to the quality of the decisions made by the analyzer and planner. For example, an accurate model might trigger fewer adaptations, an accurate model might lead to better decision making by not going too much to the charging station or going only when it is needed.
@@ -104,10 +103,8 @@ a linear model over the inputs (including interactions).
 
 Possible perturbations that we consider in this challenge problem:
 * Placement of 1 obstacle once or multiple times
-* Placement of multiple obstacle once or multiple times
 * Placement and removal of obstacle
 * Set charge (to a higher or lower degree)
-* Sequence of target endpoints (multiple missions)
 
 ## Test Parameters
 
@@ -141,15 +138,12 @@ There are four test stages proposed for the evaluation of this challenge problem
   variables and interactions between them.
 
   More specifically, a power model is specified by the following general
-   definition (formula): $f(o_1,\cdots,o_d) = \beta_0 + \sum_{o_i \in
-   \mathcal{O}} \phi_i (o_i)
-                        + \sum_{o_{i..j} \in \mathcal{O}} \Phi_i
-  (o_{i..j})$, where $\beta_0$ represents a constant term, $\phi_i (o_i)$
+   definition (formula): $f(o_1,\cdots,o_d) = \beta_0 + \sum_{o_i \in \mathcal{O}} \phi_i (o_i) + \sum_{o_{i..j} \in \mathcal{O}} \Phi_i(o_{i..j})$, where $\beta_0$ represents a constant term, $\phi_i (o_i)$
   represents terms containing individual options, $\Phi_i (o_{i..j})$
   represents terms containing multiple options.
 
   Here, the parameters of the model (variables) are speed of the robot
-  ($s$), kinect components ($k$) and localization algorithms ($l$),
+  ($s$), Kinect components ($k$) and localization algorithms ($l$),
   therefore, $d=3$.
 
 * For example, consider the following function as a discharge function:
@@ -158,9 +152,9 @@ There are four test stages proposed for the evaluation of this challenge problem
   is the time unit.
 
   In this discharge function, $s=1$ represent half speed and $s=2$
-  represents full speed, $k=1$ is the least accurate kinect and less energy
+  represents full speed, $k=1$ is the least accurate Kinect and less energy
   consuming battery while $k=5$ is the most energy consuming one (note we
-  will implement 5 different kinects that have different resolutions, etc),
+  will implement 5 different Kinects that have different resolutions, etc),
   also 5 different localization where $l=1$ is the less energy consuming
   while $l=5$ is the most energy consuming one.
 
@@ -227,19 +221,18 @@ The total number of possible configuration for the robot is: `2*5*5 = 50`.
 The power consumption model is then specified as:
 
 ```
-P(t,s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5) = \beta_0 + \beta_s1*s1*f_s1(t) +
-\beta_s2*s2*f_s2(t) + \beta_k1*k1*f_k1(t) + ... + \beta_k5*k5*f_k5(t) +
+$P(t,s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5) = \beta_0 + \beta_s1*s1*f_s1(t) + \beta_s2*s2*f_s2(t) + \beta_k1*k1*f_k1(t) + ... + \beta_k5*k5*f_k5(t) +
 \beta_l1*l1*f_l1(t) + ... + \beta_l5*l5*f_l5(t) +
 \beta_i1*s1*k1*l1*f_i1(t) + \beta_i2*s1*k1*l2*f_i2(t) + ... +
-\beta_i_m*s2*k5*l5*f_i_m(t)
+\beta_i_m*s2*k5*l5*f_i_m(t)$
 ```
 
 where t is in seconds, `s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5` are boolean
-variables, the coefficients for the variables (\beta i) are any positive
-real numbers and the coefficients for the interaction terms (\beta i j) are
-any real numbers including negative or zero, (f i(t)) are non-negative
-integer exponents of t. f i (t) - > [t,t^2,...,t^n], and the output of the
-model after evaluation is in mWh.  Note that if we want to omit the effect
+variables, the coefficients for the variables ($\beta_i$) are any positive
+real numbers and the coefficients for the interaction terms ($\beta_{ij}$) are
+any real numbers including negative or zero, ($f_i(t)$) are non-negative
+integer exponents of t. $f_i (t) - > [t,t^2,...,t^n]$, and the output of the
+model after evaluation is in mWh. Note that if we want to omit the effect
 of any interactions, we simply put the corresponding coefficient to zero.
 
 The interaction terms in the power consumption model are important. Let us
@@ -273,11 +266,11 @@ Here we define some constraints for the power consumption model. The
 constraints will be used by LL and CMU team to evaluate whether an
 specified power model is a valid power model:
 
-1. P(t,s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5) > 0, if the power model is
+1. $P(t,s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5) > 0$, if the power model is
    evaluated to be negative for a combination of input variables, then the
    power model is invalid.
 
-2. P(t,s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5) should be monotonically
+2. $P(t,s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5)$ should be monotonically
    increasing with respect to t.
 
 Both of these constraints are intuitive for power models, because we do not
@@ -291,14 +284,12 @@ separately, with respect to ``t``, if the sign of the derivatives is positive, t
 
 #### How the battery will be discharged and charged:
 
-* *Discharge*: updated_charge = current_charge -
-  P_discharge(dt,s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5)
-* *Charge*: updated_charge = current_charge +
-  P_charge(dt,s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5)
+* *Discharge*: $updated_charge = current_charge - P_discharge(dt,s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5)$
+* *Charge*: $updated_charge = current_charge + P_charge(dt,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5)$
 
 We also intend to specify some metrics based on which we evaluate how
-"difficult" and how "similar" two test cases are. Therefore, LL could
-generate "challenging" and yet "different" test cases, this is what we mean
+``difficult`` and how ``similar`` two test cases are. Therefore, LL could
+generate ``challenging`` and yet ``different`` test cases, this is what we mean
 by interesting test cases. The metrics are dependent on both specification
 (including the shape of discharge/charge function and mission parameters)
 of the mission as well as the perturbation during the mission.
@@ -342,14 +333,6 @@ considered the canonical definition of the
 API. [swagger-yaml/cp1-th.md](swagger-yaml/cp1-th.md) is produced
 automatically from the Swagger definition for convenience.
 
-This API is currently still a draft. Some, but not all, possible future
-changes include:
- * adding more constants to the enumerated error codes in the TH `/error`
-   end point
-
- * adding more constants to the enumerated status codes in the TH `/status`
-   end point
-
 The format `function-spec`, used to in the `/ready` end point to
 describe the charge and discharge functions, is given by the following BNF:
 
@@ -369,8 +352,8 @@ ops2 ::= "*" | "/" | "^"
 Additionally, we require two semantic properties of the polynomials `f`
 described with this syntax.
 
- 1. _monotonicity_: For all times `t`, `df/dt(t) > 0` for the function
-    describing charging and `df/dt(t) < 0` for the function describing
+ 1. _monotonicity_: For all times `t`, `df/dt > 0` for the function
+    describing charging and `df/dt < 0` for the function describing
     discharging.
  2. _positivity_: For all times `t`, `f(t) > 0`
 
@@ -407,7 +390,7 @@ timing, and safety). In addition, we may evaluate the discovery mechanism with a
 |             |   (p:✕,a:✕) |   (p:✔,a:✕) | (p:✔,a:✔)   |
 |-------------|-------------|-------------|-------------|
 | No PM       | `✔` (A)     | `✔` (B)     |             |
-| Predefined  |             |             | `✔` (B')     |
+| Predefined  |             |             | `✔` (B')    |
 | Learned     |             |             | `✔` (C)     |
 
 We implicitly mean predefined is an inaccurate model.
@@ -421,7 +404,7 @@ from the target, power consumption, etc to evaluate the success of failure
 of the mission. We measure quality as an approximate measure of how closely
 the behavior of a system meets its intent. In this challenge problem we
 evaluate how adaptations made by planner that uses a learned model
-partially restore intent (e.g., switching to an alternative kinect, less
+partially restore intent (e.g., switching to an alternative Kinect, less
 accurate navigation algorithm).
 
 Each test case is described by the following:
