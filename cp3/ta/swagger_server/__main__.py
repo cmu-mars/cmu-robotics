@@ -48,6 +48,11 @@ if __name__ == '__main__':
     logger.setLevel(logging.DEBUG)
     handler = logging.FileHandler('access.log')
     logger.addHandler(handler)
+    def log_request_info():
+       logger.debug('Headers: %s', connexion.request.headers)
+       logger.debug('Body: %s', connexion.request.get_data())
+
+    app.app.before_request(log_request_info)
     
     config = Configuration()
     config.host = th_uri
@@ -58,9 +63,7 @@ if __name__ == '__main__':
     except Exception as e:
       logger.debug("Failed to connect with th")
       
-    def log_request_info():
-        logger.debug('Headers: %s', connexion.request.headers)
-        logger.debug('Body: %s', connexion.request.get_data())
+   
 
     rospy.init_node ("cp3_ta")
     
@@ -73,7 +76,6 @@ if __name__ == '__main__':
       raise
     print ("Started Gazebo Interface")
     
-    app.app.before_request(log_request_info)
    
     try:
       logger.debug("Sending ready");
@@ -91,4 +93,4 @@ if __name__ == '__main__':
     
     logger.debug("Starting TA")
     print("Starting TA to listen on 8080")
-    app.run(port=8080)
+    app.run(port=8080, host='0.0.0.0')
