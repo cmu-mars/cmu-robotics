@@ -5,6 +5,7 @@ import sys
 import connexion
 from .encoder import JSONEncoder
 import logging
+import traceback
 
 import rospy
 
@@ -61,7 +62,7 @@ if __name__ == '__main__':
     # Hack: Try sending stuff to TH
     try:
       logger.debug("Sending test parsing-error to th")
-      thApi.error_post(Parameters("parsing-error", "This is a test error post to th"))  
+      thApi.error_post(parameters=Parameters("parsing-error", "This is a test error post to th"))  
     except Exception as e:
       logger.debug("Failed to connect with th")
       logger.debug(traceback.format_exc())
@@ -72,12 +73,19 @@ if __name__ == '__main__':
       response = thApi.ready_post()
       logger.debug('Received response from th/ready:')
       logger.debug ('%s' %response)
-      
+    except Exception as e:
+      logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
+      logger.debug(traceback.format_exc())
+
+    try:      
       logger.debug("Sending status")
-      response = thApi.status_post(Parameters1("Adapted", 14.5, 30.5, 0.54, 0.35, 42000, 72, 50))
-     
+      response = thApi.status_post(parameters=Parameters1("learning-started", 14.5, 30.5, 0.54, 0.35, 42000, 72, 50))
+    except Exception as e:
+      logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
+      logger.debug(traceback.format_exc())
+    try:      
       logger.debug("Sending done")
-      response = thApi.status_post(Parameters2(14.5, 25.9, 0.54, 0.35, 4000, 72, 72, [45,72], "made it", "test finished successfully"))
+      response = thApi.done_post(parameters=Parameters2(14.5, 25.9, 0.54, 0.35, 4000, 72, 72, [45,72], "at-goal", "test finished successfully"))
     except Exception as e:
       logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
       logger.debug(traceback.format_exc())

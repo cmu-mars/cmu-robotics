@@ -77,21 +77,29 @@ if __name__ == '__main__':
       response = thApi.ready_post()
       logger.debug('Received response from th/ready:')
       logger.debug ('%s' %response)
-      
+    except Exception as e:
+      logger.error(traceback.format_exc())
+      logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
+
+    try:      
       logger.debug("Sending status")
-      response = thApi.status_post(Parameters1(CandidateAdaptation("diff", CompilationOutcome(20.1,True), Degradation(), [TestOutcome("test1", "50.0", False, False, TestQoS(20,30,40))])))
-     
+      response = thApi.status_post(Parameters1(CandidateAdaptation("diff", CompilationOutcome(20.1,True), Degradation(), [TestOutcome("test1", 50.0, False, False, TestQoS(20,30,40))]), [CandidateAdaptation("diff", CompilationOutcome(20.1,True), Degradation(), [TestOutcome("test1", 50.0, False, False, TestQoS(20,30,40))])]))
+    except Exception as e:
+      logger.error(traceback.format_exc())
+      logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
+
+    try:      
       logger.debug("Sending done")
       response = thApi.done_post(
         Parameters2("CompleteRepair",50.0,2, 
           [CandidateAdaptation("diff", 
             CompilationOutcome(20.1,True), 
             Degradation(), 
-            [TestOutcome("test1", "50.0", False, False, TestQoS(20,30,40))])], 
+            [TestOutcome("test1", 50.0, False, False, TestQoS(20,30,40))])], 
           [CandidateAdaptation("diff", 
             CompilationOutcome(20.1,True), 
             Degradation(), 
-            [TestOutcome("test1", "50.0", False, False, TestQoS(20,30,40))])]))
+            [TestOutcome("test1", 50.0, False, False, TestQoS(20,30,40))])]))
     except Exception as e:
       logger.error(traceback.format_exc())
       logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')

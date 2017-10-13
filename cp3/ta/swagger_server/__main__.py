@@ -5,10 +5,11 @@ import sys
 import connexion
 from .encoder import JSONEncoder
 import logging
-import requests
-
+import traceback
 import rospy
+
 from gazebo_interface import GazeboInterface
+
 import swagger_client
 from swagger_client import DefaultApi
 from swagger_client.models.inline_response_200 import InlineResponse200
@@ -80,12 +81,18 @@ if __name__ == '__main__':
       response = thApi.ready_post()
       logger.debug('Received response from th/ready:')
       logger.debug ('%s' %response)
-      
+    except Exception as e:
+      logger.error(traceback.format_exc())
+      logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
+    try:      
       logger.debug("Sending status")
-      response = thApi.status_post(Parameters1("Adapted", "Test for status", 55, ["l1", "l2", "l3"], ["MOVEBASE", "AMCL"], ["KINECT_ALL"]))
-     
+      response = thApi.status_post(Parameters1("adapted", "Test for status", 55, ["l1", "l2", "l3"], ["MOVEBASE", "AMCL"], ["KINECT_ALL"]))
+    except Exception as e:
+      logger.error(traceback.format_exc())
+      logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
+    try: 
       logger.debug("Sending done")
-      response = thApi.status_post(Parameters2(14.5, 25.9, 72, [72], 2500))
+      response = thApi.done_post(Parameters2(14.5, 25.9, 72, [72], 2500))
     except Exception as e:
       logger.error(traceback.format_exc())
       logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
