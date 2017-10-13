@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 
-import configparser
-import sys
 import connexion
-from .encoder import JSONEncoder
+import sys
+
 import logging
 import rospy
 import traceback
 
-import swagger_client
+sys.path.append('/usr/src/app')
+from swagger_server.encoder import JSONEncoder
 from swagger_client.rest import ApiException
 from swagger_client import DefaultApi
 from swagger_client.models.parameters import Parameters
@@ -57,7 +57,7 @@ if __name__ == '__main__':
 
     app.app.before_request(log_request_info)
     
-        # Connect to th
+    # Connect to th
    
     thApi = DefaultApi()   
     thApi.api_client.host = th_uri
@@ -104,8 +104,8 @@ if __name__ == '__main__':
       logger.error(traceback.format_exc())
       logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
     
-    # Init me as a node
-    rospy.init_node("cp2_ta")
+    Init me as a node
+   rospy.init_node("cp2_ta")
     
     # Start the TA listening
-    app.run(port=8080)
+    app.run(port=8080, host='0.0.0.0', debug=True)

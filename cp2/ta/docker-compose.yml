@@ -23,14 +23,14 @@ services:
   cp2_ta:
     image: cmu-mars/cp2
     container_name: cp2_ta
-    hostname: cp2_ta
+    # hostname: cp2_ta
     environment:
       - "ROS_HOSTNAME=cp2_ta"
       - "ROS_MASTER_URI=http://roscore:11311"
       - "TH_URI=${TH_URI}"
       - "TA_URI=${TA_URI}"
     ports:
-      - 5000:5000
+      - 8080:8080
     depends_on:
       - roscore
      

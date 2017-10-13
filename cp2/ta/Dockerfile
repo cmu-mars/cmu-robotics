@@ -22,11 +22,11 @@ WORKDIR /usr/src/app
 COPY requirements.txt /usr/src/app/
 
 RUN sudo pip3 install --no-cache-dir -r requirements.txt
-
 RUN sudo pip3 install catkin_pkg rospkg
 
 
 COPY . /usr/src/app
+
 
 RUN sudo chown -R mars /usr/src/app
 
