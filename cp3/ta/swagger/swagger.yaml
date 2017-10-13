@@ -1,0 +1,225 @@
+---
+swagger: "2.0"
+info:
+  version: "0.1"
+  title: "cmu mars brass ta: phase 2, cp3"
+host: "brass-ta"
+schemes:
+- "http"
+paths:
+  /observe:
+    get:
+      tags:
+      - "default_controller"
+      description: "observe some of the current state of the robot for visualization\
+        \ and invariant checking for perturbation end points. n.b. this information\
+        \ is to be used strictly in a passive way; it is not to be used for evaluation\
+        \ of the test at all."
+      operationId: "controllers.default_controller.observe_get"
+      parameters: []
+      responses:
+        200:
+          description: "successfully computed the observation"
+          schema:
+            $ref: "#/definitions/inline_response_200"
+        400:
+          description: "encountered an error while computing the observation"
+  /perturb/light:
+    post:
+      tags:
+      - "default_controller"
+      description: "change the state of a light in the environment"
+      operationId: "controllers.default_controller.perturb_light_post"
+      parameters:
+      - in: "body"
+        name: "Parameters"
+        required: true
+        schema:
+          $ref: "#/definitions/Parameters"
+      responses:
+        200:
+          description: "the named light has been set"
+          schema:
+            $ref: "#/definitions/inline_response_200_1"
+        400:
+          description: "an error was encountered while setting the light"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+  /perturb/nodefail:
+    post:
+      tags:
+      - "default_controller"
+      description: "cause one of the software nodes to fail"
+      operationId: "controllers.default_controller.perturb_nodefail_post"
+      parameters:
+      - in: "body"
+        name: "Parameters"
+        required: true
+        schema:
+          $ref: "#/definitions/Parameters_1"
+      responses:
+        200:
+          description: "the node has failed"
+          schema:
+            $ref: "#/definitions/inline_response_200_2"
+        400:
+          description: "an error was encountered while causing the node to fail"
+          schema:
+            $ref: "#/definitions/inline_response_400_1"
+  /perturb/sensor:
+    post:
+      tags:
+      - "default_controller"
+      description: "change the state of one of the sensors on the robot"
+      operationId: "controllers.default_controller.perturb_sensor_post"
+      parameters:
+      - in: "body"
+        name: "Parameters"
+        required: true
+        schema:
+          $ref: "#/definitions/Parameters_2"
+      responses:
+        200:
+          description: "the named sensor has been set"
+          schema:
+            $ref: "#/definitions/inline_response_200_3"
+        400:
+          description: "an error was encountered while setting the sensor"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+  /start:
+    post:
+      tags:
+      - "default_controller"
+      description: "start the turtlebot navigating through the map"
+      operationId: "controllers.default_controller.start_post"
+      parameters: []
+      responses:
+        200:
+          description: "SUT has begin starting the mission"
+        400:
+          description: "SUT encountered an error trying to start the mission"
+          schema:
+            $ref: "#/definitions/inline_response_400_2"
+definitions:
+  Parameters:
+    type: "object"
+    required:
+    - "id"
+    - "state"
+    properties:
+      id:
+        type: "string"
+        description: "the element of LIGHTSET whose state will be set"
+      state:
+        type: "boolean"
+        description: "upon response, the named light will be on if `true` and `off`\
+          \ otherwise"
+  Parameters_1:
+    type: "object"
+    required:
+    - "id"
+    properties:
+      id:
+        type: "string"
+        description: "cause the named node to fail"
+        enum:
+        - "movebase"
+        - "amcl"
+        - "mrpt"
+        - "cb-base"
+  Parameters_2:
+    type: "object"
+    required:
+    - "id"
+    - "state"
+    properties:
+      id:
+        type: "string"
+        description: "which sensor of SENSORSET to set"
+        enum:
+        - "kinect-ir"
+        - "lidar"
+        - "kinect-all"
+      state:
+        type: "boolean"
+        description: "upon response, the named sensor will be on if `true` and `off`\
+          \ otherwise"
+  inline_response_200_1:
+    required:
+    - "sim-time"
+    properties:
+      sim-time:
+        type: "integer"
+        description: "the simulation time when the light was set"
+  inline_response_200:
+    required:
+    - "battery"
+    - "lights"
+    - "sim-time"
+    - "x"
+    - "y"
+    properties:
+      x:
+        type: "number"
+        format: "float"
+        description: "the current x coordinate of the bot. must be within the boundaries\
+          \ of the map."
+      y:
+        type: "number"
+        format: "float"
+        description: "the current y coordinate of the bot. must be within the boundaries\
+          \ of the map."
+      battery:
+        type: "integer"
+        description: "the current charge of the battery, in mWh"
+        minimum: 0.0
+      sim-time:
+        type: "integer"
+        description: "the time when this observation was computed, in simulation seconds"
+        minimum: 0.0
+      lights:
+        type: "array"
+        description: "the list of names from LIGHTSET of those lights which are currently\
+          \ turned on. all other lights are currently turned off."
+        items:
+          type: "string"
+  inline_response_200_2:
+    required:
+    - "sim-time"
+    properties:
+      sim-time:
+        type: "integer"
+        description: "the simulation time when the node failed"
+  inline_response_200_3:
+    required:
+    - "sim-time"
+    properties:
+      sim-time:
+        type: "integer"
+        description: "the simulation time when the sensor was set"
+  inline_response_400_2:
+    properties:
+      message:
+        type: "string"
+        description: "human readable information about the error, if any can be provided"
+  inline_response_400:
+    required:
+    - "sim-time"
+    properties:
+      sim-time:
+        type: "integer"
+        description: "the simulation time when the error occurred"
+      message:
+        type: "string"
+        description: "human readable information about the error, if any can be provided"
+  inline_response_400_1:
+    required:
+    - "sim-time"
+    properties:
+      message:
+        type: "string"
+        description: "human readable information about the error, if any can be provided"
+      sim-time:
+        type: "integer"
+        description: "the simulation time when the error occurred"

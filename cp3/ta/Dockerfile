@@ -10,10 +10,10 @@ RUN sudo apt-get update
 # install Gazebo
 
 # Do we need all this below?
-RUN sudo apt-get install -y ros-kinetic-gazebo-ros-pkgs \
-                            ros-kinetic-gazebo-ros-control \
-                            ros-kinetic-kobuki-gazebo \
-                            apt-utils
+#RUN sudo apt-get install -y ros-kinetic-gazebo-ros-pkgs \
+#                            ros-kinetic-gazebo-ros-control \
+#                            ros-kinetic-kobuki-gazebo \
+#                            apt-utils
 
 RUN sudo apt-get install ros-kinetic-gazebo-msgs
                             

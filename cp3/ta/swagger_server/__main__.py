@@ -11,7 +11,8 @@ import rospy
 from gazebo_interface import GazeboInterface
 import swagger_client
 from swagger_client.rest import ApiException
-from swagger_client.apis.default_api import DefaultApi
+from swagger_client import Configuration
+from swagger_client import DefaultApi
 from swagger_client.models.inline_response_200 import InlineResponse200
 from swagger_client.models.parameters import Parameters
 from swagger_client.models.parameters_1 import Parameters1
@@ -47,8 +48,11 @@ if __name__ == '__main__':
     logger.setLevel(logging.DEBUG)
     handler = logging.FileHandler('access.log')
     logger.addHandler(handler)
-    thApi = DefaultApi();
-    thApi.api_client.host = th_uri
+    
+    config = Configuration()
+    config.host = th_uri
+    
+    thApi = DefaultApi(config);
     try:
       thApi.error_post(Parameters("Test Error", "This is a test error post to th"))  
     except Exception as e:
@@ -85,5 +89,6 @@ if __name__ == '__main__':
     except Exception as e:
       logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
     
+    logger.debug("Starting TA")
     print("Starting TA to listen on 8080")
     app.run(port=8080)
