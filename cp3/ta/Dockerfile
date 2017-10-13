@@ -9,6 +9,7 @@ RUN sudo apt-get update
 #    sudo apt-get install -y $runDeps  && \
 # install Gazebo
 
+# Do we need all this below?
 RUN sudo apt-get install -y ros-kinetic-gazebo-ros-pkgs \
                             ros-kinetic-gazebo-ros-control \
                             ros-kinetic-kobuki-gazebo \
@@ -47,4 +48,4 @@ ENV PYTHONUNBUFFERED 0
 
 EXPOSE 8080
 
-CMD ["python3", "-m", "/home/swagger_server"]
+CMD ["python3", "-m", "swagger_server"]

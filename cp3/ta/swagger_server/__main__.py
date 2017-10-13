@@ -11,21 +11,33 @@ import rospy
 from gazebo_interface import GazeboInterface
 import swagger_client
 from swagger_client.rest import ApiException
-
+from swagger_client.apis.default_api import DefaultApi
+from swagger_client.models.inline_response_200 import InlineResponse200
+from swagger_client.models.parameters import Parameters
+from swagger_client.models.parameters_1 import Parameters1
+from swagger_client.models.parameters_2 import Parameters2
 
 if __name__ == '__main__':
-    config = configparser.ConfigParser()
-    config.read('network.conf')
+#    config = configparser.ConfigParser()
+#    config.read('network.conf')
+    print ("The TA and TH should come now")
+    print(sys.argv[1:])
+#    try:
+#        print("brass TH at %s:%s" % (config.get('TH', 'host'), config.getint('TH', 'port')))
+#        print("brass TA at %s:%s" % (config.get('TA', 'host'), config.getint('TA', 'port')))
+#    except configparser.NoSectionError:
+#        print("malformed config file:\n" % str(e))
+#        sys.exit(1)
+#    except configparser.NoOptionError:
+#        print("malformed connfig file:\n" % str(e))
+#        sys.exit(1)
 
-    try:
-        print("brass TH at %s:%s" % (config.get('TH', 'host'), config.getint('TH', 'port')))
-        print("brass TA at %s:%s" % (config.get('TA', 'host'), config.getint('TA', 'port')))
-    except configparser.NoSectionError:
-        print("malformed config file:\n" % str(e))
-        sys.exit(1)
-    except configparser.NoOptionError:
-        print("malformed connfig file:\n" % str(e))
-        sys.exit(1)
+    if len(sys.argv) != 3:
+      print ("No URI for TA or TH passed in!")
+      sys.exit(1)
+      
+    th_uri = sys.argv[1]
+    ta_uri = sys.argv[2]
 
     app = connexion.App(__name__, specification_dir='./swagger/')
     app.app.json_encoder = JSONEncoder
@@ -35,11 +47,13 @@ if __name__ == '__main__':
     logger.setLevel(logging.DEBUG)
     handler = logging.FileHandler('access.log')
     logger.addHandler(handler)
-    thApi = DefaultApi()
-    thApi.api_client.host = 'http://' + config.get('TH', 'host') + ":" + config.get('TH', 'port')
-    
-    thApi.error_post(Parameters("Gazebo Error", "Fatal: failed to connect to gazebo: %s" %e);  
-
+    thApi = DefaultApi();
+    thApi.api_client.host = th_uri
+    try:
+      thApi.error_post(Parameters("Test Error", "This is a test error post to th"))  
+    except Exception as e:
+      logger.debug("Failed to connect with th")
+      
     def log_request_info():
         logger.debug('Headers: %s', connexion.request.headers)
         logger.debug('Body: %s', connexion.request.get_data())
@@ -51,7 +65,7 @@ if __name__ == '__main__':
       gazebo = GazeboInterface()
     except Exception as e:
       logger.error('Fatal: gazebo did not start up: %s' %e)
-      thApi.error_post(Parameters("Gazebo Error", "Fatal: failed to connect to gazebo: %s" %e);  
+      thApi.error_post(Parameters("Gazebo Error", "Fatal: failed to connect to gazebo: %s" %e))
       raise
     print ("Started Gazebo Interface")
     
@@ -71,4 +85,5 @@ if __name__ == '__main__':
     except Exception as e:
       logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
     
+    print("Starting TA to listen on 8080")
     app.run(port=8080)
