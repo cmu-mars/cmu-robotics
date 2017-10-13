@@ -16,8 +16,27 @@ process as we refine our research goals.
 Phase II RR1 Instructions
 ----------------
 
-The RR1 deliverable exists in three parts, one for each CP. They each live
+The RR1 deliverable exists in five parts: one docker container for each CP and
+a docker container for the base ROS and Gazebo containers. They each live
 in the top level directories bearing their name.
+
+To build each docker container, the following process needs to be followed:
+
+```
+$ cd mars-main-p2
+$ docker build cmu-mars/base .
+$ cd ../cp-gazebo-p2
+$ docker build cmu-mars/gazebo .
+$ cd ../cp1/ta
+$ docker build cmu-mars/cp1 .
+$ cd ../../cp2/ta
+$ docker build cmu-mars/cp2 .
+$ cd ../../cp3/ta
+$ docker build cmu-mars/cp3 .
+```
+
+Once the containers are built, it will be the be possible to compose them
+for each challenge problem.
 
 Inside each CP directory, you'll find:
 
