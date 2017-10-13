@@ -10,8 +10,6 @@ import requests
 import rospy
 from gazebo_interface import GazeboInterface
 import swagger_client
-from swagger_client.rest import ApiException
-from swagger_client import Configuration
 from swagger_client import DefaultApi
 from swagger_client.models.inline_response_200 import InlineResponse200
 from swagger_client.models.parameters import Parameters
@@ -54,15 +52,15 @@ if __name__ == '__main__':
 
     app.app.before_request(log_request_info)
     
-    config = Configuration()
-    config.host = th_uri
-    
-    thApi = DefaultApi(config);
+
+    thApi = DefaultApi();
+    thApi.api_client.host = th_uri
     try:
       thApi.error_post(Parameters("Test Error", "This is a test error post to th"))  
     except Exception as e:
       logger.debug("Failed to connect with th")
-      
+      logger.debug(traceback.format_exc())
+
    
 
     rospy.init_node ("cp3_ta")
@@ -89,6 +87,7 @@ if __name__ == '__main__':
       logger.debug("Sending done")
       response = thApi.status_post(Parameters2(14.5, 25.9, 72, [72], 2500))
     except Exception as e:
+      logger.error(traceback.format_exc())
       logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
     
     logger.debug("Starting TA")

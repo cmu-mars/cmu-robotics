@@ -10,7 +10,6 @@ import rospy
 
 import swagger_client
 from swagger_client.rest import ApiException
-from swagger_client import Configuration
 from swagger_client import DefaultApi
 from swagger_client.models.parameters import Parameters
 from swagger_client.models.parameters_1 import Parameters1
@@ -56,11 +55,8 @@ if __name__ == '__main__':
     app.app.before_request(log_request_info)
 
     # Connect to th
-    config = Configuration()
-    config.host = th_uri
-    
-    thApi = DefaultApi(config)   
-    
+    thApi = DefaultApi()   
+    thApi.api_client.host = th_uri;
     
     # Hack: Try sending stuff to TH
     try:
@@ -68,7 +64,7 @@ if __name__ == '__main__':
       thApi.error_post(Parameters("parsing-error", "This is a test error post to th"))  
     except Exception as e:
       logger.debug("Failed to connect with th")
-    
+      logger.debug(traceback.format_exc())
  
     
     try:
@@ -84,7 +80,8 @@ if __name__ == '__main__':
       response = thApi.status_post(Parameters2(14.5, 25.9, 0.54, 0.35, 4000, 72, 72, [45,72], "made it", "test finished successfully"))
     except Exception as e:
       logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
-    
+      logger.debug(traceback.format_exc())
+
     # Init me as a node
     rospy.init_node("cp1_ta")
     
