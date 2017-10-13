@@ -28,7 +28,7 @@ Inside each CP directory, you'll find:
 * a simple script called `smoke.sh` to exercise each endpoint on each TA
   with some happy-path parameters, assuming it's running on localhost.
   
-* a docker-compose.yml that specifies how to compose a docker container as
+* a `docker-compose.yml` that specifies how to compose a docker container as
   a (potential) combination of several docker containers
 
 An example of launching the system locally is as follows. Note that you can
