@@ -3,14 +3,14 @@
 import configparser
 import sys
 import connexion
-from .encoder import JSONEncoder
+sys.path.append('/usr/src/app')
+from swagger_server.encoder import JSONEncoder
 import logging
 import traceback
 import rospy
 
 from gazebo_interface import GazeboInterface
 
-import swagger_client
 from swagger_client import DefaultApi
 from swagger_client.models.inline_response_200 import InlineResponse200
 from swagger_client.models.parameters import Parameters

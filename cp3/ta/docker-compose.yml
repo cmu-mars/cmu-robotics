@@ -46,7 +46,6 @@ services:
       - "ROS_MASTER_URI=http://roscore:11311"
       - "TH_URI=${TH_URI}"
       - "TA_URI=${TA_URI}"
-
     ports:
       - 8080:8080
     depends_on:
