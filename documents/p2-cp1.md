@@ -5,19 +5,11 @@
 ### Executive Summary
 
 Modern software-intensive systems are typically composed of components that
-are likely to change their behavior over time. For software to continue to operate under
-such changes, the assumptions about parts of the system made at design time
-may not hold at runtime after some point. Therefore, mechanisms must be put
-in place that can dynamically learn new models of these assumptions and use
-them to make decisions about missions, configurations, and in general, how
-to adapt the software systems at runtime for more optimal performance. The
-use of power in robotics systems is one of the characteristics of
-cyber-physical systems that
+are likely to change their behavior over time. For software to continue to operate under such changes, the assumptions about parts of the system made at design time may not hold at runtime after some point. Therefore, mechanisms must be put in place that can dynamically learn new models of these assumptions and use them to make decisions about missions, configurations, and in general, how to adapt the software systems at runtime for more optimal performance. The use of power in robotics systems is one of the characteristics of cyber-physical systems that
 
   1. is rarely used to reason about mission completion, but is typically
      critical for a mission's success,
-  2. will change over time due to chemical and physical characteristics of
-     batteries as they degrade and are replaced over time, and
+  2. its inherent characteristics (consumption behavior) will change over time due to chemical and physical characteristics of batteries as they degrade and are replaced over time, and
   3. will change as sensors/algorithms/workloads evolve over the lifetime of
      the system.
 
@@ -29,19 +21,16 @@ Using power as an example model, the aim of this challenge problem is to
      of missions of the robot over the use of no or static models.
 
 In this phase, we will restrict the problem to one where we learn the power
-model off-line, but apply it on-line for planning the mission (i.e., we
-will not consider dynamically changing power models). Lincoln Labs will
-provide models for different energy consumption profiles of hardware and
-software components used by the robot (these models may not be faithful to
+model `off-line` given a `limited learning budget`, but apply it on-line for planning the mission (i.e., we will not consider dynamically changing power models). Lincoln Labs will select models (from a predetermined set of possible models) for different energy consumption profiles of hardware and software components used by the robot (these models may not be faithful to
 existing profiles, but may reflect future hardware and software energy
 consumption characteristics). As a proxy for running physical experiments
 to determine the power model, the MARS DAS will learn the model by querying
-it with a fixed number of inputs (specified by Lincoln Labs). This learned
-off-line power model is then used during robotic missions to improve the
-the quality (and better satisfy the intents) of the mission.
+it within a predetermined number of times (note the learning budget is specified by Lincoln Labs). This learned power model is then used during robotic missions to improve the the quality (and better satisfy the intents) of the mission.
 
 
 ### Technical Summary
+
+Mobile robotic systems are expected to perform a wide variety of long range, long term and complex missions, inherently with different characteristics. By contrast to industrial robotics where energy can be supposed to be infinite, the management of autonomous mobile robot missions requires to be able predicting the energy consumption of the robot with an acceptable accuracy. Moreover, the mission complexity and the environment versatility imposes to be able managing the embedded energy according to different robot configurations (sensors, actuators, computation intensive control algorithms, etc.), making the energy management a central issue for autonomous robotic missions.  
 
 The goal of this challenge problem is to discover the power model of the
 mobile robotics platform and use the discovered model to adapt for optimal
@@ -52,12 +41,7 @@ severe changes that might be caused by unanticipated and yet-unknown
 future environment changes. This challenge problem tests whether we can
 adapt our robotic platform successfully to such situations.
 
-This challenge problem is an extension of the MARS team's CP1 in the first
-phase, "Low Power Adaptation." We expect the primary evaluation functions
-and intent elements will remain the same.
-
-Lincoln Labs will specify a secret power model which is a function of robot's configuration (speed, Kinect sensors, localization) and outputs energy consumption over time. That is, Lincoln Labs can provide drastic differences for energy
-consumption of hardware and software components that may not reflect
+Lincoln Labs will select a secret power model which is a function of robot's configuration (speed, Kinect sensors, localization) and outputs energy consumption. That is, Lincoln Labs can provide drastic differences for energy consumption of hardware and software components that may not reflect
 current but possibly distant-future hardware and software. The MARS DAS
 will be able to query the model by providing inputs and receiving back
 the output from the power model. In addition, the power model is used
@@ -67,44 +51,48 @@ The challenge problem will proceed in two phases. First, the DAS will use
 the query mechanism to query the power consumption for certain inputs
 (simulating the idea of running experiments in practice to measure power
 consumption in specific configurations). The DAS will query only a small
-number of inputs until a query budget (specified by Lincoln Labs) is reached.
+number of inputs until a query budget (specified by Lincoln Labs) is exhausted.
 The DAS will use the information gleaned to learn an approximation of the
 secret power model.
 
-In the second phase, the robot will be asked to complete `n` tasks (part of a mission) within a map without running out of energy. There are charging stations on
-the map. The learned approximation of the power model is used by the
-adaptation logic, but the actual battery levels during the evaluation are
-computed with the secret power model provided by Lincoln Labs. In the
-baseline scenario, the MARS team will use either a hard-coded energy model
-or no energy model at all. The robot would therefore not make effective
-planning decisions about whether and when to recharge. In the adaptive
-cases, the MARS team will use the energy model learned in
-phase 1. Differences should be observable in terms of mission failures
-(e.g., running out of energy) and completion time (e.g., recharging more
-effectively with fewer disruptions to the mission).
+In the second phase, the robot will be asked to complete `n` tasks (part of a mission) within a map. There are charging stations on the map. The learned approximation of the power model is used by the adaptation logic, but the actual battery levels during the evaluation are computed with the secret power model provided by Lincoln Labs. In the baseline scenario, the MARS team will use no energy model at all, but rely on reactive planning to go to the charging station when it is needed. The robot would therefore not make effective planning decisions about when to recharge. The evaluation is based on observable differences in terms of (i) mission success/failures (e.g., running out of energy) and (ii) completion time (e.g., recharging more effectively with fewer disruptions to the mission).
 
 ### Research Questions
 
-**RQ1**: Can the use of learning a power model improve the score of mission compared to using inaccurate model and no model?
-+ There might be some cases where using an accurate model might tell us that we can finish a mission without going to the charge station and therefore score better in the mission.
-+ We would like to explore corner cases that an accurate model can provide us benefit by saving time, saving energy or both, and therefore hitting a better score in total.
-+ Using an inaccurate model might tell us that we can go to the target but the discharge is quicker ($t^2$) than what the robot expects (t) and therefore fail the mission
-+ There might be some cases where the inaccurate model tells us we need to go to the charging station, but we could finish the mission without going to the station.
-+ We would also explore how the learning budget (number of queries we are allowed to do in the learning process) would affect the quality of the mission as well as the adaptation quality (cf. RQ2). For this we will do sensitivity analysis where we learn the power model under different budgets form extremely low (e.g., 1) to a high budget (e.g., 1000).
+**RQ1**: Can adaptations that reasons on `models that have been learned under budget constraint` improve the quality of missions (in terms of evaluation criteria including timeliness, success rate) compared to reactive adaptations?
 
-**RQ2**: Can the use of learning a power model improve the quality of adaptations?
-+ There might be some cases where an accurate model leads to the quality of the decisions made by the analyzer and planner. For example, an accurate model might trigger fewer adaptations, an accurate model might lead to better decision making by not going too much to the charging station or going only when it is needed.
++ We assume the learning is `under limited budget constraints`. Also, power models are assumed to be `polynomial models parameterized over robot's configuration options`. 
++ There might be some cases where using an accurate model might tell us that we can finish a mission without going to the charge station and, therefore, we finish the the mission earlier (i.e., better in terms of timeliness).
++ We will explore corner cases that adaptation using a learned model can provide us benefit by saving time, saving energy or both, and therefore hitting a better score in total.
++ There might be some cases where reactive planner force the robot to the charging station, but we could finish the mission without going to the station.
++ We would also explore how the learning budget would affect the quality of the mission. For this we will do sensitivity analysis where we learn the power model under different budgets form extremely low (e.g., 1) to a high budget (e.g., 1000).
+
+**RQ2**: Can learning generate better adaptation strategies that impact the satisfaction of mission goals and qualities?
+
++ One of the limitation of using model checking for generating the adaptations is that the number of potential states generated by adaptation strategies will explore. In this challenge problem, we use learning to enable to prone ineffective adaptation strategies and extract effective ones. More specifically, we learn the power model and we use the model for finding the strategies that lie on the Pareto front. We expect that if we learn more accurately, the Pareto front strategies are more effective with respect to the inaccurate estimation of power consumptions.
+
+### Novelty
+The first research question focuses on the learning under budget constraint. Active learning under a budget constrain is still an open problem. The end goal is to acquire the most informative data to learn a model with low generalization error.
+
+The second research question focuses on integrating a parametric power model with the planner. In BRASS MARS, we use model checking for synthesizing the adaptation plans. Model checking provides guarantees that we care about in this research. However, the possible states that the model checkers will require to check will explode, because of the high number of possible adaptations. We will explore the possibility of limiting the number of adaptation strategies by selecting the most effective ones that lie on the Pareto front with respect to the mission goals (energy consumption, accuracy).
 
 ## Test Data
+
+There are pieces of information that will be defined before the execution of a test for this challenge problem:
+* The map, including way point locations and locations of charging stations.
+* The set of Kinect sensors that the robot can use.
+* The set of software components (localization) that can be used by the robot.
+* A set of predefined power models that are inherently different from each other and they simulate different power consumptions of the robot. 
+
+This is not the full robot configuration, just the parts that are necessarily visible to adapt during test.
 
 We will provide a baseline power model that describes the power consumption
 of the system depending on a number of configuration options. The model is
 a linear model over the inputs (including interactions).
 
-Possible perturbations that we consider in this challenge problem:
-* Placement of 1 obstacle once or multiple times
-* Placement and removal of obstacle
-* Set charge (to a higher or lower degree)
+Possible secondary perturbations that corresponds to the robot's environment:
+* Placement or removal of one or multiple obstacles once or multiple times
+* Set charge
 
 ## Test Parameters
 
@@ -118,64 +106,14 @@ learned. This requires a budget (number of times the hidden function will
 be queried) that will be given by LL. We learn the function once at the
 beginning offline and then the online phase will be started.
 
-There are four test stages proposed for the evaluation of this challenge problem. They are defined as follows:
-   1. A (no perturbation, no adaptation, no power model) so the robot does
-   not have a clue to charge even when the battery goes below a threshold
+There are three test stages proposed for the evaluation of this challenge problem. They are defined as follows:
+   
+   1. A (no perturbation, no discovery/adaptation, no power model): The robot use a threshold to determine when to go to a charging station. The simulator uses the default power model to discharge and charge.
 
-   2. B (perturbation, no adaptation, no power model) so the robot does
-   not have a clue to charge even when the battery goes below a threshold
+   2. B (perturbation, no discovery/adaptation, predefined power model): The robot use a threshold to determine when to go to a charging station. The simulator uses a selected power model to discharge and charge. Also, obstacle placement and setting change as environmental perturbations are considered.
 
-   3. B' (perturbation, adaptation, static predefined power model) so the
-   planner uses an inaccurate model for planning an adaptation (We
-   implicitly assume this is inaccurate.)
+   3. C (perturbation, adaptation, learned power model): The robot adapt to the environmental perturbations using the learned power model.  
 
-   4. C (perturbation, adaptation, learned model) that the planner use
-   for adaptation
-
-* The discharge and charge functions are what we mean by the power models.
-
-  These are linear combinations of polynomial features with three different
-  variables and interactions between them.
-
-  More specifically, a power model is specified by the following general
-   definition (formula): $f(o_1,\cdots,o_d) = \beta_0 + \sum_{o_i \in \mathcal{O}} \phi_i (o_i) + \sum_{o_{i..j} \in \mathcal{O}} \Phi_i(o_{i..j})$, where $\beta_0$ represents a constant term, $\phi_i (o_i)$
-  represents terms containing individual options, $\Phi_i (o_{i..j})$
-  represents terms containing multiple options.
-
-  Here, the parameters of the model (variables) are speed of the robot
-  ($s$), Kinect components ($k$) and localization algorithms ($l$),
-  therefore, $d=3$.
-
-* For example, consider the following function as a discharge function:
-  $f(s,k,l)=2+3*s+1.2*k+10*k*l$, this means that the battery of the robot
-  will be discharge according to $b'=b-(2+3*s+1.2*k+10*k*l)*t$, where $t$
-  is the time unit.
-
-  In this discharge function, $s=1$ represent half speed and $s=2$
-  represents full speed, $k=1$ is the least accurate Kinect and less energy
-  consuming battery while $k=5$ is the most energy consuming one (note we
-  will implement 5 different Kinects that have different resolutions, etc),
-  also 5 different localization where $l=1$ is the less energy consuming
-  while $l=5$ is the most energy consuming one.
-
-  Therefore, we encode the values of each variables by $\{1 2 3 4 5\}$
-  sorted by least energy consuming to the most.
-
-  In this model, $k,l$ are interacting via the last terms in the model,
-  also the coefficients of the model reflects the effect of each
-  variable. Each of these variables could be a polynomial combinations of
-  the three variables.
-
-  So, LL specifies the function with three variables by determining the
-  coefficients and the terms of the model.
-
-* Specific to CP1 are `PARSING_ERROR` and `LEARNING_ERROR` that may happen
-  when something went wrong during the model parsing and model evaluation,
-  or during the learning process, note that we have two separate packages
-  for model parsing and evaluation as well as model learning. Model
-  learning package use the parser to evaluate expression during learning,
-  so the error might happen during the model evaluation (evaluating the
-  expression of power model), or learning process.
 
 ### Formal specification of power models
 
@@ -223,19 +161,17 @@ The total number of possible configuration for the robot is: `3*6*6 = 108`.
 The power consumption model is then specified as:
 
 ```
-$P(t,s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5) = \beta_0 + \beta_s1*s1*f_s1(t) + \beta_s2*s2*f_s2(t) + \beta_k1*k1*f_k1(t) + ... + \beta_k5*k5*f_k5(t) +
-\beta_l1*l1*f_l1(t) + ... + \beta_l5*l5*f_l5(t) +
-\beta_i1*s1*k1*l1*f_i1(t) + \beta_i2*s1*k1*l2*f_i2(t) + ... +
-\beta_i_m*s2*k5*l5*f_i_m(t)$
+$P(s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5) = \beta_0 + \beta_s1*s1 + \beta_s2*s2
++ \beta_k1*k1 + ... + \beta_k5*k5 +
+\beta_l1*l1 + ... + \beta_l5*l5 +
+\beta_i_1*s1*k1*l1 + \beta_i_2*s1*k1*l2 + ... +
+\beta_i_m*s2*k5*l5$,
 ```
 
-where t is in seconds, `s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5` are boolean
+where `s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5` are boolean
 variables, the coefficients for the variables ($\beta_i$) are any positive
 real numbers and the coefficients for the interaction terms ($\beta_{ij}$) are
-any real numbers including negative or zero, ($f_i(t)$) are non-negative
-integer exponents of t. $f_i (t) - > [t,t^2,...,t^n]$, and the output of the
-model after evaluation is in mWh. Note that if we want to omit the effect
-of any interactions, we simply put the corresponding coefficient to zero.
+any real numbers including negative or zero. 
 
 The interaction terms in the power consumption model are important. Let us
 give an example for the necessity of capturing interactions in the power
@@ -245,17 +181,6 @@ power to process the pixels, basically there is more information to
 process, therefore, these two variables (i.e., Kinect and Localization)
 might interact. This means that the consumption of the robot is bigger than
 the consumptions of each of the Kinect and Localization individually.
-
-Learning budget: `P(t,s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5)` is essentially
-50 time dependent functions that are forged together. If there was no
-interactions, we could assume that essentially the power model is an
-additive model of time dependent of 12 terms. With the interactions, the
-maximum number of terms is: 12 + C(12,2) + C(12,3) = 12 + 66 + 220 = 298. C
-is binomial coefficient. Therefore, the required budget for learning is:
-
-```
-(the largest exponent of c1 + 1) + ... + (the largest exponent of c50 + 1)
-```
 
 In this challenge problem, both discharge and charge of the robot is
 controlled, not by law of the physics for battery but as an arbitrary
@@ -268,26 +193,21 @@ Here we define some constraints for the power consumption model. The
 constraints will be used by LL and CMU team to evaluate whether an
 specified power model is a valid power model:
 
-1. $P(t,s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5) > 0$, if the power model is
+1. $P(s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5) > 0$, if the power model is
    evaluated to be negative for a combination of input variables, then the
    power model is invalid.
 
-2. $P(t,s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5)$ should be monotonically
+2. $P(s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5)$ should be monotonically
    increasing with respect to t.
 
 Both of these constraints are intuitive for power models, because we do not
 want to have a model that assumes the discharge operation actually
 increases the charge of the battery instead of discharging it.
 
-#### How to programatically evaluate whether a power model is invalid:
-
-We can differentiate the power model, for all 50 possible configurations
-separately, with respect to ``t``, if the sign of the derivatives is positive, then the power model is monotonically increasing. 
-
 #### How the battery will be discharged and charged:
 
-* *Discharge*: $updated_charge = current_charge - P_discharge(dt,s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5)$
-* *Charge*: $updated_charge = current_charge + P_charge(dt,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5)$
+* *Discharge*: $updated_charge = current_charge - P_discharge(s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5)*t$
+* *Charge*: $updated_charge = current_charge + P_charge(k1,k2,k3,k4,k5,l1,l2,l3,l4,l5)*t$
 
 
 ## Interface to the Test Harness (API)
@@ -357,7 +277,7 @@ this sequence. This interaction is omitted for clarity.
 
 
 ## Intent Specification and Evaluation Metrics
-In this challenge problem we evaluate how adaptations made by planner that uses a learned model partially restore intent (e.g., switching to an alternative Kinect, less accurate navigation algorithm). We measure quality as an approximate measure of how closely the behavior of a system meets its intent. 
+In this challenge problem, we evaluate how adaptations made by planner that uses a learned model partially restore intent (e.g., switching to an alternative Kinect, less accurate navigation algorithm). We measure quality as an approximate measure of how closely the behavior of a system meets its intent. 
 
 ### Intent Specification
 
@@ -366,20 +286,16 @@ planning) with an accurate model that we learn is better than the case with
 no learning, i.e, using an inaccurate model. In CP1, we consider two types of intents: (i) Timeliness (time to completion), and (ii) Success rate (number of targets reached). 
 
 We assume the following test stages for evaluation:
-- A (no perturbation, no adaptation, no PM)
-- B (perturbation, no adaptation, no PM)
-- B' (perturbation, adaptation, a static PM for discharge/charge, while
-  planner uses a different static PM): the challenge with inaccurate model
-- C (perturbation, adaptation, a PM will be specified by LL and planner
-  uses a learned PM): the challenge with a learned model
+- A (no perturbation, no adaptation, no PM, reactive planning)
+- B (perturbation, no adaptation, predefined power model, reactive planning)
+- C (perturbation, adaptation, a PM will be selected by LL and planner
+  uses a learned PM): the challenge with a combination of model-based planning with learned model.
 
 |             |   (p:✕,a:✕) |   (p:✔,a:✕) | (p:✔,a:✔)   |
 |-------------|-------------|-------------|-------------|
-| No PM       | `✔` (A)     | `✔` (B)     |             |
-| Predefined  |             |             | `✔` (B')    |
+| No PM       | `✔` (A)     |             |             |
+| Predefined  |             | `✔` (B)     |             |
 | Learned     |             |             | `✔` (C)     |
-
-We implicitly mean predefined is an inaccurate model.
 
 
 ### Test Cases
@@ -397,12 +313,6 @@ Each test case is described by the following:
  * Evaluation metric: Power consumed, Mission accomplish time, Distance to
    target location, Number of tasks accomplished
 
-After evaluation of all of the test stages, an ideal situation for the test outcome for this challenge problem is:
-
-```
-A: PASS, B: FAIL, C: FAIL/DEGRADED, D: PASS
-```
-
 We also intend to specify some metrics based on which we evaluate how
 ``difficult`` and how ``similar`` two test cases are. Therefore, LL could
 generate ``challenging`` and yet ``different`` test cases, this is what we mean
@@ -411,8 +321,7 @@ by interesting test cases. The metrics are dependent on both specification
 of the mission as well as the perturbation during the mission.
 
 Here are a list of metrics for determining a representative collection of test cases:
-1. Sum of the degree of the exponents of `t` for all terms in the power
-   model
+1. The number of interaction terms the power model
 
 2. The number of obstacle placement as well as number of battery set. 
 
