@@ -26,4 +26,4 @@ To summarize the intent, if a developer or team wishes to add a feature to some 
 2. Merge into **develop** for internal review and testing
 3. Merge into **cmu-master** for CMU review and integratino testing. This branch should always build, and will likely be the branch that is used for CI.
 4. Once CMU integration testing or review is complete, **cmu-master** will be merged into **master** and tagged for release to LL. This will not be done by the developer, but will likely be done by the CMU-LL Integration team (e.g., Ian, Bradley, or Josh)
-5. CMU-LL Integration will create a release branch which will contain fixes that might come up when LL tries to use this. 
+5. CMU-LL Integration will create a release branch which will contain fixes that might come up when LL tries to use this. At the same time, they will merge these fixes back into **develop** and **cmu-master** so that problems aren't reintroduced to **master** in subsequent releases.
