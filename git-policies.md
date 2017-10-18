@@ -12,7 +12,9 @@ This document describes the Git process that should be followed in this reposito
 
 ## Git branching policy
 
-The policy described here is inspired by the GitFlow policy that can be found [here](https://datasift.github.io/gitflow/IntroducingGitFlow.html). A summary of the process is included in XXX. There are three permanent branches:
+<img src="documents/img/GitBranching.PNG" alt="Git Branching Diagram" width="400">
+
+The policy described here is inspired by the GitFlow policy that can be found [here](https://datasift.github.io/gitflow/IntroducingGitFlow.html). A summary of the process is included in the image above. There are three permanent branches:
 
 1. **develop**: This branch is for internal development and integration among different teams. Teams can create feature branches off of this for working changes, new features, etc. For example, if a significant change is warranted to a challenge problem description, a new feature branch for the change should be created, wherein internal development can proceed. Once the developer is happy with the changes, it should be merged back into development, where it may go through wider review among the team developing challenge problems.
 2. **cmu-master**: This branch is for code/documentation that is intended for (a) wide review by all the PIs in the team and (b) integration staging and testing before release to Lincoln labs. For example, if a developer wants to have the challenge problem definition reviewed by all CMU participants, then they should merge from the development branch into the cmu-master branch. The latest version in this branch will be the one required for review.
