@@ -16,8 +16,27 @@ process as we refine our research goals.
 Phase II RR1 Instructions
 ----------------
 
-The RR1 deliverable exists in three parts, one for each CP. They each live
+The RR1 deliverable exists in five parts: one docker container for each CP and
+a docker container for the base ROS and Gazebo containers. They each live
 in the top level directories bearing their name.
+
+To build each docker container, the following process needs to be followed:
+
+```
+$ cd mars-main-p2
+$ docker build cmu-mars/base .
+$ cd ../cp-gazebo-p2
+$ docker build cmu-mars/gazebo .
+$ cd ../cp1/ta
+$ docker build cmu-mars/cp1 .
+$ cd ../../cp2/ta
+$ docker build cmu-mars/cp2 .
+$ cd ../../cp3/ta
+$ docker build cmu-mars/cp3 .
+```
+
+Once the containers are built, it will be the be possible to compose them
+for each challenge problem.
 
 Inside each CP directory, you'll find:
 
@@ -156,4 +175,17 @@ mars@cp3_ta:/usr/src/app$ exit
 exit
 ```
 
+What happens when you run
+-------------------------
+
+This release is purely for testing API compliance and the ability to build in the LL environment. As such, none of the APIs have semantics attached to them, neither do we assume semantics from the TH. When the container is run, the following things happen:
+
+1. (In cp1, cp2, and cp3) ROS starts up (caused by starting the cmu-mars/main container in mars-main-p2)
+2. (In cp1 and cp3) Gazebo starts up (caused by starting the cmu-mars/gazebo conainer in cp-gazebo-p2)
+3. (In cp1, cp2, and cp3) We post a dummy error, with the error "Test Error" to the TH
+4. (In cp1 and cp3) We try to conneect to Gazebo, and post a "Gazebo Error" to the TH if this fails
+5. (In cp1, cp2, and cp3) We post start, status, and done messages to TH. We print out the return to start. We log exceptiions if we fail.
+6. (In cp2, cp2, and cp3) We start the TA, at which time the TH can test our interface
+
+During the process, we log all calls sent and received to access.log in the cmu-mars/cp<N> container.
 
