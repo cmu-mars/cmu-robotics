@@ -125,14 +125,23 @@ paths:
                 description: >-
                   list of waypoints the current plan tends to visit, in
                   order. this will be sent if and only if `status == adapted`.
+                type: array
+                items: 
+                  type: string
               config:
                 description: >-
                   list of currently active nodes. this will be sent if and
                   only if `status == adapted`.
+                type: array
+                items:
+                  type: string
               sensors:
                 description: >-
                   list of currently active sensors, in order. this will be
                   sent if and only if `status == adapted`.
+                type: array
+                items:
+                  type: string  
       responses:
         '200':
           description: the TH acknowledges the status of the SUT
