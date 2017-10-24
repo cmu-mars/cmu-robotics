@@ -6,6 +6,7 @@ import sys
 import logging
 import rospy
 import traceback
+from urllib.parse import urlparse
 
 sys.path.append('/usr/src/app')
 from swagger_server.encoder import JSONEncoder
@@ -39,7 +40,7 @@ if __name__ == '__main__':
       sys.exit(1)
       
     th_uri = sys.argv[1]
-    ta_uri = sys.argv[2]
+    ta_uri = urlparse(sys.argv[2])
     
     # Set up TA server and logging
     app = connexion.App(__name__, specification_dir='./swagger/')
@@ -104,8 +105,8 @@ if __name__ == '__main__':
       logger.error(traceback.format_exc())
       logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
     
-    Init me as a node
-   rospy.init_node("cp2_ta")
+    #Init me as a node
+    rospy.init_node("cp2_ta")
     
     # Start the TA listening
-    app.run(port=8080, host='0.0.0.0', debug=True)
+    app.run(port=ta_url.port, host='0.0.0.0', debug=True)

@@ -8,6 +8,7 @@ from swagger_server.encoder import JSONEncoder
 import logging
 import traceback
 import rospy
+from urllib.parse import urlparse
 
 from gazebo_interface import GazeboInterface
 
@@ -37,7 +38,7 @@ if __name__ == '__main__':
       sys.exit(1)
       
     th_uri = sys.argv[1]
-    ta_uri = sys.argv[2]
+    ta_uri = urlparse(sys.argv[2])
 
     app = connexion.App(__name__, specification_dir='./swagger/')
     app.app.json_encoder = JSONEncoder
@@ -99,4 +100,4 @@ if __name__ == '__main__':
     
     logger.debug("Starting TA")
     print("Starting TA to listen on 8080")
-    app.run(port=8080, host='0.0.0.0')
+    app.run(port=ta_uri.port, host='0.0.0.0')

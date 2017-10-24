@@ -9,6 +9,7 @@ import logging
 import traceback
 
 import rospy
+from urllib.parse import urlparse
 
 from swagger_client.rest import ApiException
 from swagger_client import DefaultApi
@@ -37,7 +38,7 @@ if __name__ == '__main__':
       sys.exit(1)
       
     th_uri = sys.argv[1]
-    ta_uri = sys.argv[2]
+    ta_uri = urlparse(sys.argv[2])
     
     # Set up TA server and logging
     app = connexion.App(__name__, specification_dir='./swagger/')
@@ -94,4 +95,4 @@ if __name__ == '__main__':
     rospy.init_node("cp1_ta")
     
     # Start the TA listening
-    app.run(port=8080)
+    app.run(port=ta_uri.port)
