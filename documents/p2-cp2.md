@@ -7,10 +7,11 @@ adaptation in response to source code perturbations. Our proposed challenge
 problem involves semi-automatically injecting code-level perturbations into
 the system, and alerting the code adaptation engine to the presence of a
 code-level perturbation (but not necessarily the location of the
-perturbation). We focus the scope of this challenge problem on
+perturbation)
+**We focus the scope of this challenge problem on
 perturbations that mimic the kinds of changes that are introduced through
 API migrations (e.g., method renaming, parameter addition, modification and
-removal, change of units, etc.).
+removal, change of units, etc.).**
 
 The process of injecting perturbations is to be conducted by a third-party
 (i.e., Lincoln Labs) with the aid of a perturbation engine, provided by
@@ -32,8 +33,9 @@ test harness.
 
 Using this approach, we propose that Lincoln Labs assesses the ability of
 the MARS system to self-adapt at the code-level by evaluating its response
-to a set of N generated code-level perturbation scenarios. To gain a more
-detailed understanding of the strengths and limitations of our
+to a set of generated code-level perturbation scenarios, inspired by
+bugs observed in real-world robotics systems.
+To gain a more detailed understanding of the strengths and limitations of our
 code-adaptation engine, we propose that the system be evaluated against
 scenarios of varying levels of difficulty. For example, we may evaluate 60,
 30 and 15 perturbation scenarios belonging to three coarsely defined
