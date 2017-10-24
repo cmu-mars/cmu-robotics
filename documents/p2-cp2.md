@@ -35,35 +35,31 @@ Using this approach, we propose that Lincoln Labs assesses the ability of
 the MARS system to self-adapt at the code-level by evaluating its response
 to a set of generated code-level perturbation scenarios, inspired by
 bugs observed in real-world robotics systems.
-To gain a more detailed understanding of the strengths and limitations of our
+
+**To gain a more detailed understanding of the strengths and limitations of our
 code-adaptation engine, we propose that the system be evaluated against
 scenarios of varying levels of difficulty. For example, we may evaluate 60,
 30 and 15 perturbation scenarios belonging to three coarsely defined
 difficulty levels D1, D2 and D3, respectively. Each of these scenarios is
 to be passed to the test harness to determine the system’s ability to
-respond.
+respond.**
 
-## Test Data
 
-No specific test data are required by this challenge problem. All
-code-level perturbations will be generated using our supplied perturbation
-engine.
+## Realistic Faults
 
-## Test Parameters
 
-Below, we describe parameters that may be supplied to the perturbation
-engine (via the test harness) to specify the nature of the perturbation.
 
-| Name        | Description                                                    |
-|-------------|----------------------------------------------------------------|
-| Location    | The location in the system at which the perturbation should be injected. This may be specified at a number of different granularities: ROS node, project, file, class, function, block, line or character range. Any details that are left unspecified by the user are selected at random by the perturbation engine. |
-| Schema      | The “shape” of the perturbation (e.g., swap binary operands, replace an expression, modify a method header, etc.). Each schema is intended to mimic a kind of perturbation that is frequently encountered in API migrations. If no schema is specified by the user, a suitable schema (w.r.t. the chosen location) will be randomly selected.</br></br> Certain parameterised schemas may also accept a number of parameters, describing the concrete details of a perturbation (e.g., the replacement expression). If these parameters are omitted by the user, the perturbation engine will randomly select suitable values. |
-| Difficulty  | A measure of the difficulty of the perturbation, according to some yet-to-be-defined difficulty metric. If unspecified, a perturbation of the lowest difficulty will be generated. |
+## Testing Procedure
 
-## Test Procedure
+**Note that no specific test data are required by this
+challenge problem; all code-level perturbations will be generated using
+our perturbation engine (discussed below) [MOVE THIS SOMEWHERE].**
 
-Below, we discuss each of the steps involved in the test procedure for this
-Challenge Problem:
+**Need to discuss internal test suite and test outcomes.**
+
+From a high-level perspective, the stages of the testing procedure for this
+challenge problem are as follows.
+
 
 1. **Generation:** A partial description of the perturbation scenario, provided
 		by the examiner to the test harness, is forwarded onto the perturbation
@@ -96,10 +92,12 @@ Challenge Problem:
 		source code of the affected container, and recompile only that container,
 		rather than recompiling the entire system.
 
-3. **Validation:** The perturbed system is evaluated against a test suite to
-		ensure that the system is sufficiently degraded, with respect to its
-		intent. If the perturbation fails to result in sufficient degradation, it
-		is discarded and an alternative perturbation is generated instead.
+3. **Validation:** The perturbed system is evaluated against the test suite to
+    ensure that its behaviour is sufficiently degraded for at least one test
+    (i.e., it must produce at least one `DEGRADED` or `FAILED` test outcome).
+		If the perturbation fails to change any of the outcomes in the test suite,
+    that perturbation is discarded and an alternative perturbation is generated
+    instead.
 		(More details on “intent” and our evaluation metric can be found at a later
 		section in this document).
 
@@ -113,6 +111,22 @@ Challenge Problem:
 		have been exhausted, a summary of the repair trial is written to disk, as a
 		JSON file. This summary may be accessed by the examiner through the
 		test harness, described next.
+
+
+We now proceed to discuss each of these stages in more detail.
+
+
+### Test Generation
+
+Below, we describe parameters that may be supplied to the perturbation
+engine (via the test harness) to specify the nature of the perturbation.
+
+| Name        | Description                                                    |
+|-------------|----------------------------------------------------------------|
+| Location    | The location in the system at which the perturbation should be injected. This may be specified at a number of different granularities: ROS node, project, file, class, function, block, line or character range. Any details that are left unspecified by the user are selected at random by the perturbation engine. |
+
+| Schema      | The “shape” of the perturbation (e.g., swap binary operands, replace an expression, modify a method header, etc.). Each schema is intended to mimic a kind of perturbation that is frequently encountered in API migrations. If no schema is specified by the user, a suitable schema (w.r.t. the chosen location) will be randomly selected.</br></br> Certain parameterised schemas may also accept a number of parameters, describing the concrete details of a perturbation (e.g., the replacement expression). If these parameters are omitted by the user, the perturbation engine will randomly select suitable values. |
+| Difficulty  | A measure of the difficulty of the perturbation, according to some yet-to-be-defined difficulty metric. If unspecified, a perturbation of the lowest difficulty will be generated. |
 
 ### Pseudocode
 
