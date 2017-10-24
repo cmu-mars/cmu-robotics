@@ -45,11 +45,11 @@ to be passed to the test harness to determine the system’s ability to
 respond.**
 
 
-## Realistic Faults
-
-
+**What is our motivation? Can we efficiently locate and fix realistic bugs
+  in robotics software?**
 
 ## Testing Procedure
+
 
 **Note that no specific test data are required by this
 challenge problem; all code-level perturbations will be generated using
@@ -60,63 +60,60 @@ our perturbation engine (discussed below) [MOVE THIS SOMEWHERE].**
 From a high-level perspective, the stages of the testing procedure for this
 challenge problem are as follows.
 
-
 1. **Generation:** A partial description of the perturbation scenario, provided
 		by the examiner to the test harness, is forwarded onto the perturbation
-		engine. The perturbation engine proceeds to generate a suitable code-level
-		perturbation with the desired characteristics.
-		</br></br>
-		Generating realistic code-level perturbations, similar to those that are
-		observed in software systems, remains an open challenge, not only for
-		robotics but for software systems in general. The use of mutation tools and
-		manual fault injection as a source of bugs for empirical studies has been
-		shown to produce different results to when those studies are conducted
-		using organic bugs [Pearson et al., 2017]. Careful consideration needs to
-		go into the design of the perturbation engine to ensure realistic bugs are
-		produced.
+		engine. The perturbation engine generates and returns a set of suitable
+    code-level perturbations to the examiner, all of which satisify the
+    specified characteristics.
 
-2. **Injection:** Once a suitable perturbation has been generated, that
-		perturbation must be injected into the system. To reduce the complexity of
-		modifying and recompiling the source code for the entire project, we
-		propose the use of an alternative system deployment architecture: Instead
-		of deploying the system to a single monolithic virtual machine, we propose
-		that each logical component (e.g., navigation, planning, actuation) is
-		deployed as a single, self-contained Docker container. System deployment is
-		orchestrated using a single YAML file, hosted on a publicly visible Git
-		repository, specifying logical components and the addresses of their
-		associated images.
-		</br></br>
-		We propose to exploit the decentralised, ephemeral nature of this
-		architecture to reduce the complexity of injecting code-level
-		perturbations. Specifically, we plan to inject perturbations into the
-		source code of the affected container, and recompile only that container,
-		rather than recompiling the entire system.
+2. **Injection:** The examiner selects one or more suitable perturbations
+    from the set of suitable perturbations, and instructs the perturbation
+    to inject those perturbations into the system.
 
 3. **Validation:** The perturbed system is evaluated against the test suite to
     ensure that its behaviour is sufficiently degraded for at least one test
     (i.e., it must produce at least one `DEGRADED` or `FAILED` test outcome).
-		If the perturbation fails to change any of the outcomes in the test suite,
-    that perturbation is discarded and an alternative perturbation is generated
-    instead.
+		If the set of perturbations do not produce a change in the outcomes of the
+    test suite, the set of perturbations is discarded and the examiner is
+    required to inject an alternative set of perturbations.
 		(More details on “intent” and our evaluation metric can be found at a later
 		section in this document).
 
 4. **Adaptation:** Once a suitable perturbation has been injected, code-level
-		adaptation is triggered. At this point, resource constraints (e.g.,
-		wall-clock time, threads) and optional hints, describing the possible shape
-		and location of the perturbation, are passed to the code adaptation engine.
-		The code adaptation engine will attempt to find a code-level
-		transformation that (partially) restores intent, within the specified
-		resource limits. Once a suitable transformation has been found or resources
-		have been exhausted, a summary of the repair trial is written to disk, as a
-		JSON file. This summary may be accessed by the examiner through the
-		test harness, described next.
-
+		adaptation is triggered. The code adaptation engine will attempt to find
+    a code-level transformation that (partially) restores intent, within a set
+    of specified resource limits. Once a suitable transformation has been
+    found or resources have been exhausted, a summary of the repair trial is
+    returned to the test harness. 
 
 We now proceed to discuss each of these stages in more detail.
 
 
-### Test Generation
+### Scenario Generation
+
+Perturbation scenarios are encoded as a set of individual code-level
+mutations, where each mutations is intended to represent a realistic
+fault (in the context of a robotics system). Each of those constituent
+faults is generated using our (soon-to-be-)open-source mutation testing
+tool, Shuriken.
+
+However, generating realistic faults remains an open challenge for both
+robotics, and software systems in general [Just et al., 2014].
+Using off-the-shelf mutation testing tools and operators can lead to
+results that are not indicative of those that would be obtained by using
+organic bugs [Pearson et al., 2017].
+
+To counter this threat, we set out to better understand the nature of faults
+in robotics systems. We conducted an empirical study of over 200 bugs in a
+popular, open-source robotics system (ArduPilot). Based on our findings, we
+crafted a set of bespoke mutation operators for Shuriken, designed to
+replicate the ten most-frequently-encountered kinds of bugs.
+
+* A (should be finished tallying results on Wednesday)
+* B
+* C
+* D
+
 
 Below, we describe parameters that may be supplied to the perturbation
 engine (via the test harness) to specify the nature of the perturbation.
@@ -366,6 +363,12 @@ case, against the degradation of the original system.
 
 
 ## References
+
+[Just et al., 2014] Just, R., Jalali, D., Inozemtseva, L., Ernst, M. D.,
+Holmes, R., and Fraser, G. (2014).
+Are mutants a valid substitute for real faults in software testing?.
+In Proceedings of the 22nd ACM SIGSOFT International Symposium on Foundations of Software Engineering,
+FSE '14. ACM.
 
 [Pearson et al., 2017] Pearson, S., Campos, J., Just, R., Fraser, G., Abreu, R., Ernst,
 M. D., Pang, D., and Keller, B. (2017). Evaluating and improving fault localization.
