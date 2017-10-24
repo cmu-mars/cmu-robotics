@@ -13,14 +13,30 @@ automatically produced markdown also checked in for convenience.
 All of these are currently still under revision and will change through the
 process as we refine our research goals.
 
-This readme will be expanded with instructions for running the system as we
-being to produce artefacts in the run up to RR1.
-
-RR1 Instructions
+Phase II RR1 Instructions
 ----------------
 
-The RR1 deliverable exists in three parts, one for each CP. They each live
+The RR1 deliverable exists in five parts: one docker container for each CP and
+a docker container for the base ROS and Gazebo containers. They each live
 in the top level directories bearing their name.
+
+To build each docker container, the following process needs to be followed:
+
+```
+$ cd mars-main-p2
+$ docker build cmu-mars/base .
+$ cd ../cp-gazebo-p2
+$ docker build cmu-mars/gazebo .
+$ cd ../cp1/ta
+$ docker build cmu-mars/cp1 .
+$ cd ../../cp2/ta
+$ docker build cmu-mars/cp2 .
+$ cd ../../cp3/ta
+$ docker build cmu-mars/cp3 .
+```
+
+Once the containers are built, it will be the be possible to compose them
+for each challenge problem.
 
 Inside each CP directory, you'll find:
 
@@ -30,41 +46,31 @@ Inside each CP directory, you'll find:
 
 * a simple script called `smoke.sh` to exercise each endpoint on each TA
   with some happy-path parameters, assuming it's running on localhost.
+  
+* a `docker-compose.yml` that specifies how to compose a docker container as
+  a (potential) combination of several docker containers
 
-An example of launching the system locally is as follows. In one terminal,
+An example of launching the system locally is as follows. Note that you can
+parameterize the location of the TH and the TA by passing URI definitions to 
+the docker compose command. In one terminal,
+
+``` 
+iev@bruce cp2 % TH_URI=http://th-brass:8080 TA_URI=http://ta-brass:8080 docker-compose up
+Creating network "ta_default" with the default driver
+Creating roscore ... <Note that the actual containers composed will differ between CPs>
+Creating roscore ... done
+Creating gazebo ...
+Creating gazebo ... done
+Creating cp3_ta ...
+Creating cp3_ta ... done
+Attaching to roscore, gazebo, cp3_ta
+... <TRACE MESSAGES FROM THE CONSOLE>
+```
+
+To stop the instance, use the command:
 
 ```
-iev@bruce ta % docker build -t swagger_server . && docker run -p 8080:8080 swagger_server
-Sending build context to Docker daemon  120.3kB
-Step 1/9 : FROM python:3-alpine
- ---> a6beab4fa70b
-Step 2/9 : RUN mkdir -p /usr/src/app
- ---> Using cache
- ---> cf9fb907b434
-Step 3/9 : WORKDIR /usr/src/app
- ---> Using cache
- ---> 31b21fb96261
-Step 4/9 : COPY requirements.txt /usr/src/app/
- ---> Using cache
- ---> 64f10e126ee6
-Step 5/9 : RUN pip3 install --no-cache-dir -r requirements.txt
- ---> Using cache
- ---> 4c5ecd5e85ab
-Step 6/9 : COPY . /usr/src/app
- ---> Using cache
- ---> b122e6a31f71
-Step 7/9 : EXPOSE 8080
- ---> Using cache
- ---> 534e30b28a19
-Step 8/9 : ENTRYPOINT python3
- ---> Using cache
- ---> 517480e3fec4
-Step 9/9 : CMD -m swagger_server
- ---> Using cache
- ---> adeb961108e1
-Successfully built adeb961108e1
-Successfully tagged swagger_server:latest
- * Running on http://0.0.0.0:8080/ (Press CTRL+C to quit)
+iev@bruce cp2 % docker-compose down
 ```
 
 In another terminal, run the relevant smoke script:
@@ -151,3 +157,35 @@ Date: Sun, 08 Oct 2017 23:14:28 GMT
 iev@bruce cp2 %
 
 ```
+As part of the composition, each docker instance will contain a docker container
+`cp<N>_ta` where `<N>` is the number of the challenge problem. You may log into 
+this container, in particular to access the log file that contains the details of
+each request made to the TA, as information about call attempts to the TH. For example,
+for challenge problem 3:
+
+```
+iev@bruce cp3 % docker exec -it cp3_ta bash
+mars@cp3_ta:/usr/src/app$ cat access.log
+Failed to connect with th
+Sending ready
+Fatal: could not connect to TH -- see last logger entry to determine which one
+Starting TA
+ * Running on http://0.0.0.0:8080/ (Press CTRL+C to quit)
+mars@cp3_ta:/usr/src/app$ exit
+exit
+```
+
+What happens when you run
+-------------------------
+
+This release is purely for testing API compliance and the ability to build in the LL environment. As such, none of the APIs have semantics attached to them, neither do we assume semantics from the TH. When the container is run, the following things happen:
+
+1. (In cp1, cp2, and cp3) ROS starts up (caused by starting the cmu-mars/main container in mars-main-p2)
+2. (In cp1 and cp3) Gazebo starts up (caused by starting the cmu-mars/gazebo conainer in cp-gazebo-p2)
+3. (In cp1, cp2, and cp3) We post a dummy error, with the error "Test Error" to the TH
+4. (In cp1 and cp3) We try to conneect to Gazebo, and post a "Gazebo Error" to the TH if this fails
+5. (In cp1, cp2, and cp3) We post start, status, and done messages to TH. We print out the return to start. We log exceptiions if we fail.
+6. (In cp2, cp2, and cp3) We start the TA, at which time the TH can test our interface
+
+During the process, we log all calls sent and received to access.log in the cmu-mars/cp<N> container.
+
