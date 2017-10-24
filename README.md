@@ -52,10 +52,10 @@ Inside each CP directory, you'll find:
 
 An example of launching the system locally is as follows. Note that you can
 parameterize the location of the TH and the TA by passing URI definitions to 
-the docker compose command. In one terminal,
+the docker compose command. In one terminal, in the `ta` directory,
 
 ``` 
-iev@bruce cp2 % TH_URI=http://th-brass:8080 TA_URI=http://ta-brass:8080 docker-compose up
+iev@bruce ta % TH_URI=http://th-brass:8080 TA_URI=http://ta-brass:8080 docker-compose up
 Creating network "ta_default" with the default driver
 Creating roscore ... <Note that the actual containers composed will differ between CPs>
 Creating roscore ... done
@@ -70,7 +70,7 @@ Attaching to roscore, gazebo, cp3_ta
 To stop the instance, use the command:
 
 ```
-iev@bruce cp2 % docker-compose down
+iev@bruce ta % docker-compose down
 ```
 
 In another terminal, run the relevant smoke script:
