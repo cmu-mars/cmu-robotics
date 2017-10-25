@@ -3,8 +3,7 @@
 import configparser
 import sys
 import connexion
-sys.path.append('/usr/src/app')
-from swagger_server.encoder import JSONEncoder
+from .encoder import JSONEncoder
 import logging
 import traceback
 import rospy
@@ -12,33 +11,67 @@ from urllib.parse import urlparse
 
 from gazebo_interface import GazeboInterface
 
+import threading
+import requests
+import time
+import random
+
 from swagger_client import DefaultApi
 from swagger_client.models.inline_response_200 import InlineResponse200
 from swagger_client.models.parameters import Parameters
 from swagger_client.models.parameters_1 import Parameters1
 from swagger_client.models.parameters_2 import Parameters2
 
-if __name__ == '__main__':
-#    config = configparser.ConfigParser()
-#    config.read('network.conf')
-    print ("The TA and TH should come now")
-    print(sys.argv[1:])
-#    try:
-#        print("brass TH at %s:%s" % (config.get('TH', 'host'), config.getint('TH', 'port')))
-#        print("brass TA at %s:%s" % (config.get('TA', 'host'), config.getint('TA', 'port')))
-#    except configparser.NoSectionError:
-#        print("malformed config file:\n" % str(e))
-#        sys.exit(1)
-#    except configparser.NoOptionError:
-#        print("malformed connfig file:\n" % str(e))
-#        sys.exit(1)
+# Function to mimic wait for ta to be up, send ready, then status, then error, then wait
+# and send done
+def fake_semantics(thApi, port):
+    def fake_ta():
+        not_started = True
+        while not_started:
+            print('Checking to see if TA is up on port ' + str(port))
+            try:
+                r = requests.get('http://0.0.0.0:' + str(port) + '/')
+                print(r.status_code)
+                if r.status_code == 200 or r.status_code == 404:
+                    print('Server started; Starting to push th')
+                    not_started=False
+            except:
+                print('server not yet started')
+            time.sleep(2)
 
-    if len(sys.argv) != 3:
-      print ("No URI for TA or TH passed in!")
+        try:
+          logger.debug("Sending ready");
+          response = thApi.ready_post()
+          logger.debug('Received response from th/ready:')
+          logger.debug ('%s' %response)
+        except Exception as e:
+          logger.error(traceback.format_exc())
+          logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
+        try:      
+          logger.debug("Sending status")
+          response = thApi.status_post(Parameters1("adapted", "Test for status", 55, ["l1", "l2", "l3"], ["MOVEBASE", "AMCL"], ["KINECT_ALL"]))
+        except Exception as e:
+          logger.error(traceback.format_exc())
+          logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
+        try: 
+          logger.debug("Sending done")
+          response = thApi.done_post(Parameters2(14.5, 25.9, 72, [72], 2500))
+        except Exception as e:
+          logger.error(traceback.format_exc())
+          logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
+          
+    print ('Starting fake semantics')
+    thread = threading.Thread(target=fake_ta)
+    thread.start()
+
+if __name__ == '__main__':
+
+    # Command line argument parsing
+    if len(sys.argv) != 2:
+      print ("No URI for TH passed in!")
       sys.exit(1)
       
     th_uri = sys.argv[1]
-    ta_uri = urlparse(sys.argv[2])
 
     app = connexion.App(__name__, specification_dir='./swagger/')
     app.app.json_encoder = JSONEncoder
@@ -63,8 +96,6 @@ if __name__ == '__main__':
       logger.debug("Failed to connect with th")
       logger.debug(traceback.format_exc())
 
-   
-
     rospy.init_node ("cp3_ta")
     
     print ("Starting up Gazebo interface")
@@ -75,29 +106,8 @@ if __name__ == '__main__':
       thApi.error_post(Parameters("Gazebo Error", "Fatal: failed to connect to gazebo: %s" %e))
       raise
     print ("Started Gazebo Interface")
-    
-   
-    try:
-      logger.debug("Sending ready");
-      response = thApi.ready_post()
-      logger.debug('Received response from th/ready:')
-      logger.debug ('%s' %response)
-    except Exception as e:
-      logger.error(traceback.format_exc())
-      logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
-    try:      
-      logger.debug("Sending status")
-      response = thApi.status_post(Parameters1("adapted", "Test for status", 55, ["l1", "l2", "l3"], ["MOVEBASE", "AMCL"], ["KINECT_ALL"]))
-    except Exception as e:
-      logger.error(traceback.format_exc())
-      logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
-    try: 
-      logger.debug("Sending done")
-      response = thApi.done_post(Parameters2(14.5, 25.9, 72, [72], 2500))
-    except Exception as e:
-      logger.error(traceback.format_exc())
-      logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
+
+    fake_semantics(thApi,5000)
     
     logger.debug("Starting TA")
-    print("Starting TA to listen on 8080")
-    app.run(port=ta_uri.port, host='0.0.0.0')
+    app.run(port=5000, host='0.0.0.0')

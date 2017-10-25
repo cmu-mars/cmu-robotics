@@ -76,7 +76,7 @@ if __name__ == '__main__':
 
     # Parameter parsing, to set up TH
     if len(sys.argv) != 2:
-      print ("No URI for TA or TH passed in!")
+      print ("No URI TH passed in!")
       sys.exit(1)
 
     th_uri = sys.argv[1]
