@@ -135,20 +135,6 @@ harness to specify the characteristics of an individual perturbation.
 
 ## Interface to the Test Harness (API)
 
-
-
-The test harness will be provided by a simple RESTful server. This server
-will implement two actions: 1) perturbation injection and 2) perturbation
-status checking. The perturbation injection action will use the parameters
-described in the “Test Parameters” section to generate a perturbation
-scenario and begin its evaluation, and will return a unique identifier for
-the scenario.  This identifier may be passed as an argument to the status
-checking action to determine the current state of the evaluation for that
-perturbation scenario.  This action will return a “status” property,
-describing the state of the scenario using one of several predefined
-labels. Each of these labels is described below, together with any
-additional details that may be returned by the API.
-
 ### Sequence Diagram for Interaction Pattern
 
 Implicitly, the TA can hit the `/error` endpoint on the TH at any time in
