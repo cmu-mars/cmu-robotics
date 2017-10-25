@@ -30,7 +30,7 @@ def fake_semantics(thApi, port):
         while not_started:
             print('Checking to see if TA is up on port ' + str(port))
             try:
-                r = requests.get('http://127.0.0.1:' + str(port) + '/')
+                r = requests.get('http://0.0.0.0:' + str(port) + '/')
                 print(r.status_code)
                 if r.status_code == 200 or r.status_code == 404:
                     print('Server started; Starting to push th')
@@ -79,11 +79,12 @@ if __name__ == '__main__':
       sys.exit(1)
       
     th_uri = sys.argv[1]
-    ta_uri = sys.argv[2]
-    if not ta_uri.startswith('http'):
-        ta_uri = 'http://' + ta_uri
-    ta_uri = urlparse(ta_uri)
-    
+    #ta_uri = sys.argv[2]
+    #if not ta_uri.startswith('http'):
+    #    ta_uri = 'http://' + ta_uri
+    #ta_uri = urlparse(ta_uri)
+    ta_port = int(sys.argv[2])
+
     # Set up TA server and logging
     app = connexion.App(__name__, specification_dir='./swagger/')
     app.app.json_encoder = JSONEncoder
@@ -117,7 +118,7 @@ if __name__ == '__main__':
     # Init me as a node
     rospy.init_node("cp1_ta")
     
-    fake_semantics(thApi,ta_uri.port)
+    fake_semantics(thApi,ta_port)
     
     # Start the TA listening
-    app.run(port=ta_uri.port)
+    app.run(host='0.0.0.0',port=ta_port,debug=True)
