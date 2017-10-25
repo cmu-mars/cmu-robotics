@@ -3,10 +3,12 @@
 import configparser
 import sys
 import connexion
-sys.path.append('/usr/src/app')
-from swagger_server.encoder import JSONEncoder
+#sys.path.append('/usr/src/app')
+#from swagger_server.encoder import JSONEncoder
+from .encoder import JSONEncoder
 import logging
 import traceback
+import os
 
 import rospy
 from urllib.parse import urlparse
@@ -66,7 +68,6 @@ def fake_semantics(thApi, port):
         except Exception as e:
             logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
         logger.debug(traceback.format_exc())
-
     print ('Starting fake semantics')
     thread = threading.Thread(target=fake_ta)
     thread.start()
@@ -74,16 +75,11 @@ def fake_semantics(thApi, port):
 if __name__ == '__main__':
 
     # Parameter parsing, to set up TH
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 2:
       print ("No URI for TA or TH passed in!")
       sys.exit(1)
 
     th_uri = sys.argv[1]
-    #ta_uri = sys.argv[2]
-    #if not ta_uri.startswith('http'):
-    #    ta_uri = 'http://' + ta_uri
-    #ta_uri = urlparse(ta_uri)
-    ta_port = int(sys.argv[2])
 
     # Set up TA server and logging
     app = connexion.App(__name__, specification_dir='./swagger/')
@@ -118,7 +114,7 @@ if __name__ == '__main__':
     # Init me as a node
     rospy.init_node("cp1_ta")
 
-    fake_semantics(thApi,ta_port)
+    fake_semantics(thApi,5000)
 
     # Start the TA listening
-    app.run(host='0.0.0.0',port=ta_port,debug=True)
+    app.run(host='0.0.0.0',port=5000)
