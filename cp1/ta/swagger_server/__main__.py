@@ -22,7 +22,7 @@ from swagger_client.models.parameters import Parameters
 from swagger_client.models.parameters_1 import Parameters1
 from swagger_client.models.parameters_2 import Parameters2
 
-# Function to mimic wait for ta to be up, send ready, then status, then error, then wait 
+# Function to mimic wait for ta to be up, send ready, then status, then error, then wait
 # and send done
 def fake_semantics(thApi, port):
     def fake_ta():
@@ -38,7 +38,7 @@ def fake_semantics(thApi, port):
             except:
                 print('server not yet started')
             time.sleep(2)
-            
+
         try:
             logger.debug("Sending ready");
             response = thApi.ready_post()
@@ -47,26 +47,26 @@ def fake_semantics(thApi, port):
         except Exception as e:
             logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
             logger.debug(traceback.format_exc())
-    
 
-        try:      
+
+        try:
             logger.debug("Sending status")
             response = thApi.status_post(parameters=Parameters1("learning-started", 14.5, 30.5, 0.54, 0.35, 42000, 72, 50))
         except Exception as e:
             logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
             logger.debug(traceback.format_exc())
-            
+
         wait_time = random.randint(5,60)
         print ('TA sleeping for ' + str(wait_time) + 's before sending done')
         time.sleep(wait_time)
-        
-        try:      
+
+        try:
             logger.debug("Sending done")
             response = thApi.done_post(parameters=Parameters2(14.5, 25.9, 0.54, 0.35, 4000, 72, 72, [45,72], "at-goal", "test finished successfully"))
         except Exception as e:
             logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
         logger.debug(traceback.format_exc())
-        
+
     print ('Starting fake semantics')
     thread = threading.Thread(target=fake_ta)
     thread.start()
@@ -77,7 +77,7 @@ if __name__ == '__main__':
     if len(sys.argv) != 3:
       print ("No URI for TA or TH passed in!")
       sys.exit(1)
-      
+
     th_uri = sys.argv[1]
     #ta_uri = sys.argv[2]
     #if not ta_uri.startswith('http'):
@@ -102,23 +102,23 @@ if __name__ == '__main__':
     app.app.before_request(log_request_info)
 
     # Connect to th
-    thApi = DefaultApi()   
-    thApi.api_client.host = th_uri;
-    
+    thApi = DefaultApi()
+    thApi.api_client.host = th_uri
+
     # Hack: Try sending stuff to TH
     try:
       logger.debug("Sending test parsing-error to th")
-      thApi.error_post(parameters=Parameters("parsing-error", "This is a test error post to th"))  
+      thApi.error_post(parameters=Parameters("parsing-error", "This is a test error post to th"))
     except Exception as e:
       logger.debug("Failed to connect with th")
       logger.debug(traceback.format_exc())
- 
+
 
 
     # Init me as a node
     rospy.init_node("cp1_ta")
-    
+
     fake_semantics(thApi,ta_port)
-    
+
     # Start the TA listening
     app.run(host='0.0.0.0',port=ta_port,debug=True)
