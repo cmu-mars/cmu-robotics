@@ -35,7 +35,7 @@ $ cd ../../cp3/ta
 $ docker build cmu-mars/cp3 .
 ```
 
-Once the containers are built, it will be the be possible to compose them
+Once the containers are built, it will be possible to compose them
 for each challenge problem.
 
 Inside each CP directory, you'll find:
@@ -55,7 +55,7 @@ parameterize the location of the TH and the TA by passing URI definitions to
 the docker compose command. In one terminal, in the `ta` directory,
 
 ``` 
-iev@bruce ta % TH_URI=http://th-brass:8080 TA_URI=http://ta-brass:8080 docker-compose up
+iev@bruce ta % TH_PORT=8081 TA_PORT=8080 docker-compose up
 Creating network "ta_default" with the default driver
 Creating roscore ... <Note that the actual containers composed will differ between CPs>
 Creating roscore ... done
@@ -184,8 +184,8 @@ This release is purely for testing API compliance and the ability to build in th
 2. (In cp1 and cp3) Gazebo starts up (caused by starting the cmu-mars/gazebo conainer in cp-gazebo-p2)
 3. (In cp1, cp2, and cp3) We post a dummy error, with the error "Test Error" to the TH
 4. (In cp1 and cp3) We try to conneect to Gazebo, and post a "Gazebo Error" to the TH if this fails
-5. (In cp1, cp2, and cp3) We post start, status, and done messages to TH. We print out the return to start. We log exceptiions if we fail.
-6. (In cp2, cp2, and cp3) We start the TA, at which time the TH can test our interface
+5. (In cp2, cp2, and cp3) We start the TA, at which time the TH can test our interface
+6. (In cp1, cp2, and cp3) We post ready, status, and (after a time ranging between 5 and 60 seconds) done messages to TH. We print out the return to start. We log exceptiions if we fail on other calls.
 
 During the process, we log all calls sent and received to access.log in the cmu-mars/cp<N> container.
 
