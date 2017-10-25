@@ -8,10 +8,10 @@ problem involves semi-automatically injecting code-level perturbations into
 the system, and alerting the code adaptation engine to the presence of a
 code-level perturbation (but not necessarily the location of the
 perturbation)
-**We focus the scope of this challenge problem on
+**~~We focus the scope of this challenge problem on
 perturbations that mimic the kinds of changes that are introduced through
 API migrations (e.g., method renaming, parameter addition, modification and
-removal, change of units, etc.).**
+removal, change of units, etc.).~~**
 
 The process of injecting perturbations is to be conducted by a third-party
 (i.e., Lincoln Labs) with the aid of a perturbation engine, provided by
@@ -38,6 +38,8 @@ respond.**
   territory. What tools and techniques can we bring with us? Which of our
   assumptions fail to hold in reality? Lots of interesting findings.
 * Emphasis on fault localisation and efficiency
+  * via test generation (we could build regression tests from observation
+    of the system).
 
 ### Motivation
 
@@ -85,14 +87,14 @@ challenge problem are as follows.
 Note that unlike other challenge problems, our challenge problem does not
 rely on any pre-defined test data. Instead, perturbations are generated (and
 validated) dynamically by the test harness (via our TA API).
-
+**Is this true? Is our internal test suite considered to be test data?**
 
 ### Scenario Generation
 
 Perturbation scenarios are encoded as a set of individual code-level
 mutations, where each mutations is intended to represent a realistic
-fault (in the context of a robotics system). Each of those constituent
-faults is generated using our (soon-to-be-)open-source mutation testing
+fault (in the context of a robotics system). Each constituent
+fault is generated using our (soon-to-be-)open-source mutation testing
 tool, Shuriken.
 
 However, generating realistic faults remains an open challenge for both
@@ -148,14 +150,45 @@ automatically from the Swagger definition for convenience.
 
 ## Intent Specification and Evaluation Metrics
 
-**Need to discuss internal test suite and test outcomes. (INTENT)**
-
 To evaluate candidate code-level transformations, we propose that a set of
 integration tests, each describing a mission for the robot (e.g.,
-navigating a simulated corridor), be performed in simulation. Instead of
-describing the outcome of a mission in terms of success or failure, we describe
-outcomes in terms of a set of predefined quality-of-service (QoS) attributes
-(e.g., distance from the target, power consumption, etc.).
+navigating a simulated corridor), be performed in simulation.
+Each mission is associated with a *mission schema*, responsible for describing
+a certain kind of mission (e.g., point-to-point navigation) in terms of its
+parameters (e.g., target location) and its expected behaviours (i.e., how the
+mission is performed) and outcomes (i.e., the state of the robot immediately
+after the execution of the mission).
+
+Collectively, mission schemas are used to specify *intent* (i.e., the set of
+intended behaviours of the robot in response to a mission). Test suites of
+missions (i.e., instances of mission schemas) are used to approximately
+measure whether intent is maintained by a particular version of the system.
+
+The outcome of
+each mission is described as either *passing*, *failing*, or *degraded*,
+according to the degree to which the robot exhibits the intended set of
+behaviours.
+
+**The intent of the system is implicitly defined by a predefined test suite.**
+
+### Test Suite
+
+Outcomes for each test: PASS, FAIL, DEGRADED(?).
+
+Definition of a *neutral perturbation*.
+
+### Comparison to Baseline
+
+* A: unperturbed case; passes all tests
+* B: perturbed, non-adaptive case; fails at least one test
+* C: perturbed, adapted case
+
+Does C dominate B?
+
+## Intent Specification and Evaluation Metrics (old)
+
+**Need to discuss internal test suite and test outcomes. (INTENT)**
+
 We define the intent of the system in terms of its QoS attributes: a system
 maintains intent if it completes a set of missions to a satisfactory level of
 quality. If the system fails to meet this expected level of quality, we deem
@@ -163,38 +196,6 @@ it to be degraded. We define overall system quality as an approximate measure
 of how closely the behaviour of a system meets its intent. This definition
 allows us to recognise valuable adaptations that partially restore intent (e.g.,
 switching to an alternative, less accurate navigation algorithm).
-
-### Degradation
-
-Given a test mission, we use an oracle to define a set of expected values for
-each of the system's QoS attributes. We also use the oracle to determine a
-suitable standard deviation for each of the QoS attributes. After performing
-the test, the observed QoS values are compared against the expected values. If
-the observed values are within one std. dev. of the expected value, intent is
-said to have been maintained (with respect to a particular mission and QoS
-metric). If the difference between the observed and expected values is greater
-than one std. dev., the system is said to be *degraded*.
-
-To simplify the measurement of overall system quality, and to account for
-inherent measurement errors, the *degradation* of a particular QoS attribute for
-a given mission is measured in units of standard deviation. Using this notion
-of degradation, we measure the overall system degradation (in terms of a given
-test suite) using a degradation matrix, shown below.
-
-![alt text](img/cp2-degradation-vector.png "Degradation Vector")
-
-Naively, we can produce a scalar summary of the overall system degradation by
-simply summing all values in the degradation matrix. Alternatively, we can
-summarise system degradation using either a *QoS degradation vector* or a
-*mission degradation vector*:
-
-* The *QoS degradation vector* contains the sum of each column in the degradation
-  matrix, and summarises the degradation of the system (across all tests) in
-  terms of each of the QoS attributes.
-* The *mission degradation vector* is given by the sum of each row in the
-  degradation matrix, and describes the overall system degradation (across all
-  QoS attributes) for each test.
-
 
 ### Quality of Service Attributes
 
@@ -228,14 +229,6 @@ to reduce degradation).
 From the perspective of the code-level adaptation engine, this metric also
 transforms the problem into one that is more amenable to search (i.e., it
 produces a gradient).
-
-
-### Oracle
-
-The expected quality of service for each attribute is determined by using the
-unperturbed system as an oracle. After executing each mission several times,
-the expected QoS values and standard deviations are calculated from the
-observed results.
 
 
 ### Comparison to the Baseline
