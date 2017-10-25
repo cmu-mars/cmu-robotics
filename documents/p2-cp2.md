@@ -45,8 +45,21 @@ to be passed to the test harness to determine the system’s ability to
 respond.**
 
 
+### Approach
+
+* Search-based program repair (greedy repair algos)
+* We want to improve our understanding of the problem -- this is unchartered
+  territory. What tools and techniques can we bring with us? Which of our
+  assumptions fail to hold in reality? Lots of interesting findings.
+* Emphasis on fault localisation and efficiency
+
+### Motivation
+
 **What is our motivation? Can we efficiently locate and fix realistic bugs
   in robotics software?**
+
+### Research Questions
+
 
 ## Testing Procedure
 
@@ -86,8 +99,6 @@ challenge problem are as follows.
     found or resources have been exhausted, a summary of the repair trial is
     returned to the test harness. 
 
-We now proceed to discuss each of these stages in more detail.
-
 
 ### Scenario Generation
 
@@ -114,16 +125,13 @@ replicate the ten most-frequently-encountered kinds of bugs.
 * C
 * D
 
-
-Below, we describe parameters that may be supplied to the perturbation
-engine (via the test harness) to specify the nature of the perturbation.
+Below, we describe parameters that are supplied to Shuriken by the test
+harness to specify the characteristics of an individual perturbation.
 
 | Name        | Description                                                    |
 |-------------|----------------------------------------------------------------|
-| Location    | The location in the system at which the perturbation should be injected. This may be specified at a number of different granularities: ROS node, project, file, class, function, block, line or character range. Any details that are left unspecified by the user are selected at random by the perturbation engine. |
-
-| Schema      | The “shape” of the perturbation (e.g., swap binary operands, replace an expression, modify a method header, etc.). Each schema is intended to mimic a kind of perturbation that is frequently encountered in API migrations. If no schema is specified by the user, a suitable schema (w.r.t. the chosen location) will be randomly selected.</br></br> Certain parameterised schemas may also accept a number of parameters, describing the concrete details of a perturbation (e.g., the replacement expression). If these parameters are omitted by the user, the perturbation engine will randomly select suitable values. |
-| Difficulty  | A measure of the difficulty of the perturbation, according to some yet-to-be-defined difficulty metric. If unspecified, a perturbation of the lowest difficulty will be generated. |
+| File        | The name of the source code file that should be perturbed. |
+| Mutation | The mutation operator that will be used to produce the perturbation. |
 
 ### Pseudocode
 
@@ -159,18 +167,6 @@ for i in range(numScenarios):
   # fetch the results and save them (to disk)
   results = sut.results()
 ```
-
-## Fix Schemas
-
-| Schema | Description | Parameters |
-|--------|-------------|------------|
-| DeleteStatement | appends a statement to a given location. | Location |
-| AppendStatement | appends a statement to a given location. | Location, Append |
-| ReplaceStatement | replaces a statement with another. | Location, Replacement |
-| ReplaceCallTarget | replaces the target of a function call | Location, Replacement |
-| ReplaceCallArg | replaces an argument of a function call | Location, Replacement |
-| ReplaceIfCondition | replaces an if-condition | Location, Replacement |
-| ReplaceLoopInvariant | replaces a loop invariant | Location, Replacement |
 
 ## Interface to the Test Harness (API)
 
@@ -212,28 +208,7 @@ at both the code and architectural levels. This tool may be used by any
 ROS-based system to improve model inference, perform automated test
 generation, and to systematically measure adaptiveness in a variety of
 scenarios.
-### API Data Structures
 
-> TODO: I'm not sure how to incorporate these into the API description
-> above or quite where they belong -- Ian
-
-#### CandidateAdaptation
-
-Used to describe the evaluation of a candidate adaptation.
-
-| Property | Type | Description | Example |
-|------|------|--------|-----------|
-| Identifier | String | A short description of the adaptation | `"Replace(14,0:14,39; 'x < 3')"` |
-| Compilation | CompilationOutcome | Details of the outcome of the compilation of this adaptation | See below |
-
-#### CompilationOutcome
-
-Used to describe the outcome of an attempted compilation.
-
-| Property | Type | Description | Example |
-|------|------|--------|-----------|
-| Successful | Bool | A flag indicating whether or not the compilation was successful | `true` |
-| Duration | Float | The number of seconds taken to (fail to) finish compilation | `3.56` |
 
 ### Sequence Diagram for Interaction Pattern
 
