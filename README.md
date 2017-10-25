@@ -189,3 +189,12 @@ This release is purely for testing API compliance and the ability to build in th
 
 During the process, we log all calls sent and received to access.log in the cmu-mars/cp<N> container.
 
+## Notes on getting this working in Windows 10
+
+To run on Windows 10, you need to make sure that the correct port forwarding is set up. So, as administrator, you may need to run:
+
+```
+netsh interface portproxy add v4tov4 listenaddress=127.0.0.1 listenport=8080 connectaddress=192.168.99.100 connectport=8080
+```
+
+Where `listenport` and `connectport` are the `TA_PORT` specified in docker compose, and `connectaddress` is the IP of the host machine.
