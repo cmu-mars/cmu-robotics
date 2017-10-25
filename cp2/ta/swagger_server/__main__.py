@@ -56,7 +56,11 @@ def fake_semantics(thApi, port):
         except Exception as e:
           logger.error(traceback.format_exc())
           logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
-
+        
+        wait_time = random.randint(5,60)
+        print ('TA sleeping for ' + str(wait_time) + 's before sending done')
+        time.sleep(wait_time)
+        
         try:      
           logger.debug("Sending done")
           response = thApi.done_post(
