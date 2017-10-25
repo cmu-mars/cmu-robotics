@@ -15,21 +15,7 @@ removal, change of units, etc.).**
 
 The process of injecting perturbations is to be conducted by a third-party
 (i.e., Lincoln Labs) with the aid of a perturbation engine, provided by
-ourselves. Below, we provide a high-level overview of the external
-evaluation process:
-
-![alt text](img/brass-high-level.png "High-Level Architecture of the Perturbation Injection Process")
-
-(1) The test harness sends a request to the perturbation engine, containing
-a description of the characteristics of the desired perturbation. (2) The
-perturbation engine generates a suitable perturbation at random, fitting
-the characteristics provided in step (1), and injects it into the source
-code. (3) The perturbation engine notifies the repair tool to the presence
-of a perturbation, invoking the process of code-level adaptation. (4) The
-code adaptation engine attempts to localise and adapt to the perturbation,
-within a given time or resource limit specified by the examiner. (5) The
-code adaptation engine provides a summary of the adaptation process to the
-test harness.
+ourselves.
 
 Using this approach, we propose that Lincoln Labs assesses the ability of
 the MARS system to self-adapt at the code-level by evaluating its response
@@ -63,7 +49,7 @@ respond.**
 
 ## Testing Procedure
 
-**Need to discuss internal test suite and test outcomes.**
+![alt text](img/brass-high-level.png "High-Level Architecture of the Perturbation Injection Process")
 
 From a high-level perspective, the stages of the testing procedure for this
 challenge problem are as follows.
@@ -90,9 +76,11 @@ challenge problem are as follows.
 4. **Adaptation:** Once a suitable perturbation has been injected, code-level
 		adaptation is triggered. The code adaptation engine will attempt to find
     a code-level transformation that (partially) restores intent, within a set
-    of specified resource limits. Once a suitable transformation has been
-    found or resources have been exhausted, a summary of the repair trial is
-    returned to the test harness. 
+    of specified resource limits. 
+
+5. **Summary:** Once the adaptation process has discovered a suitable
+    transformation or has exhausted its available resources, a summary of the
+    repair trial is communicated to the test harness. 
 
 Note that unlike other challenge problems, our challenge problem does not
 rely on any pre-defined test data. Instead, perturbations are generated (and
@@ -159,6 +147,8 @@ API. [swagger-yaml/cp2-ta.md](swagger-yaml/cp2-ta.md) is produced
 automatically from the Swagger definition for convenience.
 
 ## Intent Specification and Evaluation Metrics
+
+**Need to discuss internal test suite and test outcomes. (INTENT)**
 
 To evaluate candidate code-level transformations, we propose that a set of
 integration tests, each describing a mission for the robot (e.g.,
