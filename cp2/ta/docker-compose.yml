@@ -19,19 +19,31 @@ services:
     expose:
       - 11311
     command: roscore
-    
+
+  cp2_th:
+    image: docker.darpa-brass.com/ll/cmur-harness
+    container_name: cp2_th
+    hostname: cp2_th
+    environment:
+      - "TA_PORT=${TA_PORT}"
+      - "TH_PORT=${TH_PORT}"
+    ports:
+      - ${TH_PORT}:${TH_PORT}
+    command: --cp CP2 --thPort ${TH_PORT} --taHost cp2_ta --taPort 5000
+
   cp2_ta:
     image: cmu-mars/cp2
     container_name: cp2_ta
-    # hostname: cp2_ta
+    hostname: cp2_ta
     environment:
       - "ROS_HOSTNAME=cp2_ta"
       - "ROS_MASTER_URI=http://roscore:11311"
-      - "TH_URI=${TH_URI}"
-      - "TA_URI=${TA_URI}"
+      - "TA_PORT=${TA_PORT}"
     ports:
-      - 8080:8080
+      - ${TA_PORT}:5000
     depends_on:
       - roscore
-     
+      - cp2_th
+    expose:
+      - 5000
     command: bash -c "cd /usr/src/app && python3 -u -m swagger_server ${TH_URI} ${TA_URI}"
