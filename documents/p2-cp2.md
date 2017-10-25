@@ -133,40 +133,6 @@ harness to specify the characteristics of an individual perturbation.
 | File        | The name of the source code file that should be perturbed. |
 | Mutation | The mutation operator that will be used to produce the perturbation. |
 
-### Pseudocode
-
-```python
-sut.start() # block until the SUT is ready
-dsl.setup(sut.getInfo()) # prepare the DSL
-
-# evaluate N adaptation scenarios
-for i in range(numScenarios):
-
-  parameters = dsl.sample() # sample parameters from the DSL
-  perturbations = sut.adaptations(parameters) # find the set of suitable perturbations
-  shuffle(perturbations)
-
-  # select and inject K perturbations
-  selected = sample(perturbations, parameters["numFaults"])
-  sut.inject(selected)
-
-  # block until the perturbations are injected and the system is ready
-  # if an error occurred during the injection process, select another pair of
-  # perturbations and retry
-  if not sut.waitTillInjected():
-    BLAH
-
-  # trigger the code adaptation process
-  # pass along any experiment parameters (e.g., resource limits)
-  sut.adapt(experimentParams)
-
-  # block until the adaptation process has finished
-  while not sut.done():
-    sleep(5.0)
-
-  # fetch the results and save them (to disk)
-  results = sut.results()
-```
 
 ## Interface to the Test Harness (API)
 
