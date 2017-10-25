@@ -46,4 +46,4 @@ services:
       - cp2_th
     expose:
       - 5000
-    command: bash -c "cd /usr/src/app && python3 -u -m swagger_server ${TH_URI} ${TA_URI}"
+    command: bash -c "cd /usr/src/app && python3 -u -m swagger_server http://cp2_th:${TH_URI}"
