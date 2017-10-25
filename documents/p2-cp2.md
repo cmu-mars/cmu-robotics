@@ -188,28 +188,6 @@ additional details that may be returned by the API.
 | searching      | Indicates that the code adaptation engine is currently attempting to find an intent-restoring transformation.<ul><li>A description of the injected perturbation</li><li>Number of transformations attempted</li><li>A concise history of transformation attempts, each described by a label and a quality score</li><li>A concise history of transformation attempts, each described by a label and a quality score</li></ul> |
 | finished       | Indicates that the perturbation scenario has finished. Returns a short description of the evaluation. It should be possible to reproduce the results of this run by providing this description to the test harness. <ul><li>A description of the injected perturbation.</li><li>Time spent searching</li><li>Time spent generating the perturbation</li><li>Number of transformations attempted</li><li>A concise history of transformations attempts, in the same format as the response for the “searching” state.</li><li>The pareto front of transformations</li><li>A coarse summary of the extent to which (one of) the best transformation(s) restores intent: complete, partial, none.</li></ul> |
 
-To implement our perturbation engine, we plan to adapt and evolve our
-existing perturbation injection tool for generic ROS systems,
-ROSHammer. ROSHammer is currently capable of perturbing generic ROS systems
-at the architectural level (e.g., adding noise to communications, dropping
-messages, killing nodes).  We currently use this functionality to increase
-the accuracy of model inference (by falsifying hypotheses), although we
-envision its usage, by the wider project, as a more general means of
-testing the adaptability of a system.  To perform mutations at the level of
-the code, we currently use another one of our tools, Shuriken, a tool for
-generic program transformations in large-scale programs. Shuriken currently
-targets C and C++, and can be used to perform program repair, mutation
-testing, and fault localisation.
-
-As part of the BRASS project and our wider research goals, we plan to
-incorporate the abilities of Shuriken into ROSHammer. We envision that the
-resulting tool will be capable of performing a wide range of adaptations,
-at both the code and architectural levels. This tool may be used by any
-ROS-based system to improve model inference, perform automated test
-generation, and to systematically measure adaptiveness in a variety of
-scenarios.
-
-
 ### Sequence Diagram for Interaction Pattern
 
 Implicitly, the TA can hit the `/error` endpoint on the TH at any time in
