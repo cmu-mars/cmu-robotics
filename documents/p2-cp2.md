@@ -63,11 +63,6 @@ respond.**
 
 ## Testing Procedure
 
-
-**Note that no specific test data are required by this
-challenge problem; all code-level perturbations will be generated using
-our perturbation engine (discussed below) [MOVE THIS SOMEWHERE].**
-
 **Need to discuss internal test suite and test outcomes.**
 
 From a high-level perspective, the stages of the testing procedure for this
@@ -98,6 +93,10 @@ challenge problem are as follows.
     of specified resource limits. Once a suitable transformation has been
     found or resources have been exhausted, a summary of the repair trial is
     returned to the test harness. 
+
+Note that unlike other challenge problems, our challenge problem does not
+rely on any pre-defined test data. Instead, perturbations are generated (and
+validated) dynamically by the test harness (via our TA API).
 
 
 ### Scenario Generation
@@ -135,6 +134,8 @@ harness to specify the characteristics of an individual perturbation.
 
 
 ## Interface to the Test Harness (API)
+
+
 
 The test harness will be provided by a simple RESTful server. This server
 will implement two actions: 1) perturbation injection and 2) perturbation
