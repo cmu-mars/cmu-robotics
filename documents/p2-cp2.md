@@ -17,20 +17,29 @@ the MARS system to self-adapt at the code-level by evaluating its response
 to a set of generated code-level perturbation scenarios, inspired by
 bugs observed in real-world robotics systems.
 
-### Approach
-
-* Search-based program repair (greedy repair algos)
-* We want to improve our understanding of the problem -- this is unchartered
-  territory. What tools and techniques can we bring with us? Which of our
-  assumptions fail to hold in reality? Lots of interesting findings.
-* Emphasis on fault localisation and efficiency
-  * via test generation (we could build regression tests from observation
-    of the system).
-
 ### Motivation
 
 **What is our motivation? Can we efficiently locate and fix realistic bugs
   in robotics software?**
+
+### Approach
+
+To tackle this challenge problem, we plan to construct a search-based program
+repair technique, designed to efficiently fix common robotics bugs rather than
+attempting to address all theoretically possible bugs.
+We plan to construct this technique by bringing together several of our
+innovations in the fields of fault detection, localisation and repair,
+including but not limited to:
+
+* A novel search algorithm, inspired by greedy algorithms, that reduces the
+  cost repairing complex faults (i.e., multi-line faults) by several orders
+  of magnitude compared to existing genetic-algorithm-based approaches.
+* Automated (system-level) test generation for improving fault localisation
+  accuracy and reducing the cost of testing.
+* The use of an online mutation analysis, using the test results of candidate
+  patches, to learn the shape and location over the course of the search.
+* Elastic, distributed repair using commodity cloud-compute services, such as
+  Amazon EC2, Microsoft Azure, and Google Compute Engine.
 
 ### Research Questions
 
@@ -40,12 +49,19 @@ This challenge problem is designed to answer the following research questions:
 * **RQ2:** How often does search-based program repair discover a partial repair?
 * **RQ3:** How often does search-based program repair discover a complete repair?
 
+We want to improve our understanding of the problem -- this is unchartered
+  territory. What tools and techniques can we bring with us? Which of our
+  assumptions fail to hold in reality? Lots of interesting findings.
+
 ## Testing Procedure
+
+In this section, we discuss the procedure for testing our proposed solution.
 
 ![alt text](img/brass-high-level.png "High-Level Architecture of the Perturbation Injection Process")
 
-From a high-level perspective, the stages of the testing procedure for this
-challenge problem are as follows.
+A high-level overview of the testing procedure for this challenge problem is
+illustrated above. Below we briefly discuss each of the stages involved in this
+procedure.
 
 1. **Generation:** A partial description of the perturbation scenario, provided
 		by the examiner to the test harness, is forwarded onto the perturbation
