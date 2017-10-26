@@ -150,32 +150,31 @@ automatically from the Swagger definition for convenience.
 
 ## Intent Specification and Evaluation Metrics
 
-To evaluate candidate code-level transformations, we propose that a set of
-integration tests, each describing a mission for the robot (e.g.,
-navigating a simulated corridor), be performed in simulation.
-Each mission is associated with a *mission schema*, responsible for describing
-a certain kind of mission (e.g., point-to-point navigation) in terms of its
+To evaluate candidate code-level transformations, we propose that a fixed suite
+of tests, each describing a mission for the robot (e.g., to navigate a
+simulated corridor), be performed in simulation.
+Each test (or mission) within this suite is described by the following:
+
+* a mission schema, describing a kind of mission. (e.g., navigate to a
+	location.)
+* a set of mission parameters, required to instantiate the mission schema
+	as a concrete mission. (e.g., move from A to B.)
+* a simulated environment. (e.g., a randomly generated maze.)
+* a configuration for the robot. (e.g., a certain node may be disabled.)
+
+Mission schemas are used to describe a certain type of mission
+(e.g., point-to-point navigation) in terms of its
 *parameters* (e.g., target location) and its expected *behaviours* (i.e., how
 the mission is performed) and *outcomes* (i.e., the state of the robot
 immediately after the execution of the mission).
+Schemas are also responsible for classifying the outcome of a mission as either
+*passing*, *failing*, or *degraded*, according to the degree to which the
+robot behaves as expected by the schema.
 
 Collectively, mission schemas are used to specify *intent* (i.e., the set of
 intended behaviours of the robot in response to a mission). Test suites of
 missions (i.e., instances of mission schemas) are used to approximately
 measure whether intent is maintained by a particular version of the system.
-
-The outcome of
-each mission is described as either *passing*, *failing*, or *degraded*,
-according to the degree to which the robot exhibits the intended set of
-behaviours.
-
-**The intent of the system is implicitly defined by a predefined test suite.**
-
-### Test Suite
-
-Outcomes for each test: PASS, FAIL, DEGRADED(?).
-
-Definition of a *neutral perturbation*.
 
 ### Comparison to Baseline
 
@@ -196,40 +195,6 @@ results of the three versions of the system:
     **(C)** behaves identically to **(A)**, w.r.t. the test suite.)
 * *partial repair*: if **(C)** dominates **(B)**.
 * *no repair*: if **(C)** does not dominate **(B)**.
-
-### Quality of Service Attributes
-
-We plan to measure quality of service using the following attributes:
-
-* distance to target
-* power consumption
-* time taken
-* number of collisions
-
-Note, our approach is generic and can be easily extended to accommodate a
-different set of attributes.
-
-
-### Test Suite
-
-Each test case, or mission, is described by the following:
-
-* a mission schema, describing a kind of mission. (e.g., navigate to a
-	location.)
-* a set of mission parameters, required to instantiate the mission schema
-	as a concrete mission. (e.g., move from A to B.)
-* a simulated environment. (e.g., a randomly-generated maze.)
-* a configuration for the robot. (e.g., a certain node may be disabled.)
-* a set of quality of service metrics, defined by its schema, responsible for
-	measuring the success of a mission.
-
-This metric succinctly captures our goal for code-level adaptation: to
-return a perturbed system as close to its intent as possible (or alternatively,
-to reduce degradation).
-From the perspective of the code-level adaptation engine, this metric also
-transforms the problem into one that is more amenable to search (i.e., it
-produces a gradient).
-
 
 ## References
 
