@@ -285,6 +285,25 @@ The ultimate goal of CP1 is to demonstrate that the adaptation (analysis +
 planning) with an accurate model that we learn is better than the case with
 no learning, i.e, using an inaccurate model. In CP1, we consider two types of intents: (i) Timeliness (time to completion), and (ii) Success rate (number of targets reached). 
 
+
+#### Intent Element 1: Timeliness
+**Informal Description**: Robot reaches the target location earlier than a the robot in baseline B (reactive planning) in the same test case. 
+
+**Verdict Expression**: Using the time that the robot in baseline B has been reached ($t_b$) to the final target (the last task as determined in the $target-locs$ in the /ready message) to calculate the following evaluation function for the timeliness.
+
+PASS if $t_b>t_a$ or robot in baseline B failed to reach the final point, FAIL if $t_b<t_a$. 
+
+
+#### Intent Element 2: Success rate
+**Informal Description**: Robot accomplish all tasks in a mission.
+
+**Verdict Expression**: Using the information in /done message by calculating the proportion of the number of tasks that have successfully been finished ($tf$) comparing to the original list of tasks in /ready message to calculate the following evaluation function for the number of tasks completed.
+
+$r = tasks_finished / total_tasks$
+
+PASS if $r>0.7$, DEGRADED if $0.3<r<0.7$, otherwise FAIL.
+
+
 We assume the following test stages for evaluation:
 - A (no perturbation, no adaptation, no PM, reactive planning)
 - B (perturbation, no adaptation, predefined power model, reactive planning)
