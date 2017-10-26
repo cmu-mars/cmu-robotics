@@ -185,7 +185,7 @@ This release is purely for testing API compliance and the ability to build in th
 3. (In cp1, cp2, and cp3) We post a dummy error, with the error "Test Error" to the TH
 4. (In cp1 and cp3) We try to conneect to Gazebo, and post a "Gazebo Error" to the TH if this fails
 5. (In cp2, cp2, and cp3) We start the TA, at which time the TH can test our interface
-6. (In cp1, cp2, and cp3) We post ready, status, and (after a time ranging between 5 and 60 seconds) done messages to TH. We print out the return to start. We log exceptiions if we fail on other calls.
+6. (In cp1, cp2, and cp3) We post ready, status, and (after a time ranging between 5 and 60 seconds) done messages to TH. We print out the return to ready. We log exceptions if we fail on other calls.
 
 During the process, we log all calls sent and received to access.log in the cmu-mars/cp<N> container.
 
