@@ -254,3 +254,22 @@ function prediction_penalty() = 1-(number_of_predictions - 1 - number_of_adaptat
 | otherwise                                                      | 0 |
 
 ### Intent Element 3: Safety
+**Informal Description**: Whether the robot collides with something in the environment. 
+
+**Formal Description**: The intent is related to the risk that the robot takes to complete the mission. Being riskier means, e.g., traveling through an unknown environment at a high speed to complete the mission on time. We will have protrusions in the environment that are of a height that will make them undetectable by at least one of the sensors. Transitions in the map will be annotated to assess their riskiness of traversal.
+
+**Test/Capture Method**: The done message will report the number an array of times and speeds when the robot collided with something on the map.
+
+**Result Expression**: collisions = [{time, speed}, ...]
+
+**Verdict Expression**:
+
+|Constant | Value | Meaning |
+|---------|-------|---------|
+|SAFE_SPEED | .25m/s | The speed at which colliding with something becomes unsafe |
+
+| Condition                                                      | Score                                                |
+|----------------------------------------------------------------|------------------------------------------------------|
+| size(collisions) == 0                                              |   1          |
+| !exists speed in collisions . speed > SAFE_SPEED                                                      | 1 |
+| otherwise | 0 |
