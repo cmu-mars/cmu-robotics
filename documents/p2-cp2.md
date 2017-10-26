@@ -155,9 +155,9 @@ integration tests, each describing a mission for the robot (e.g.,
 navigating a simulated corridor), be performed in simulation.
 Each mission is associated with a *mission schema*, responsible for describing
 a certain kind of mission (e.g., point-to-point navigation) in terms of its
-parameters (e.g., target location) and its expected behaviours (i.e., how the
-mission is performed) and outcomes (i.e., the state of the robot immediately
-after the execution of the mission).
+*parameters* (e.g., target location) and its expected *behaviours* (i.e., how
+the mission is performed) and *outcomes* (i.e., the state of the robot
+immediately after the execution of the mission).
 
 Collectively, mission schemas are used to specify *intent* (i.e., the set of
 intended behaviours of the robot in response to a mission). Test suites of
@@ -179,23 +179,23 @@ Definition of a *neutral perturbation*.
 
 ### Comparison to Baseline
 
-* A: unperturbed case; passes all tests
-* B: perturbed, non-adaptive case; fails at least one test
-* C: perturbed, adapted case
+To measure the ability of our system to adapt to source-code perturbations, we
+compare the test suite results of its *best* candidate adaptation (i.e., patch)
+against those obtained by the unadapted, perturbed source code.
+**According to the BRASS terminology, we compare the following three versions
+of the MARS system:**
 
-Does C dominate B?
+* **A:** Original source code (i.e., unperturbed case). Passes all tests.
+* **B:** Mutated source code (i.e., perturbed case). Fails at least one test.
+* **C:** Adapted source code (i.e., adaptive case).
 
-## Intent Specification and Evaluation Metrics (old)
+The outcome of a perturbation scenario is evaluated according to the test suite
+results of the three versions of the system:
 
-**Need to discuss internal test suite and test outcomes. (INTENT)**
-
-We define the intent of the system in terms of its QoS attributes: a system
-maintains intent if it completes a set of missions to a satisfactory level of
-quality. If the system fails to meet this expected level of quality, we deem
-it to be degraded. We define overall system quality as an approximate measure
-of how closely the behaviour of a system meets its intent. This definition
-allows us to recognise valuable adaptations that partially restore intent (e.g.,
-switching to an alternative, less accurate navigation algorithm).
+* *complete repair*: if **(C)** passes all tests within the suite. (i.e.,
+    **(C)** behaves identically to **(A)**, w.r.t. the test suite.)
+* *partial repair*: if **(C)** dominates **(B)**.
+* *no repair*: if **(C)** does not dominate **(B)**.
 
 ### Quality of Service Attributes
 
@@ -229,20 +229,6 @@ to reduce degradation).
 From the perspective of the code-level adaptation engine, this metric also
 transforms the problem into one that is more amenable to search (i.e., it
 produces a gradient).
-
-
-### Comparison to the Baseline
-
-To compare the adaptive and non-adaptive behaviours of the system, we measure
-the degradation of the pareto set of adaptations, found during the adaptive
-case, against the degradation of the original system.
-
-* *complete repair*: if the sum of the degradation matrix for a given
-  adaptation is equal to zero (implying that intent was satisfied).
-* *partial repair*: if any adaptation within the pareto set dominates the
-  unadapted case in terms of degradation.
-* *no repair*: if the adaptive case is unable to find an adaptation that
-  dominates the unadapted case in terms of degradation.
 
 
 ## References
