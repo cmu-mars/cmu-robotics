@@ -3,33 +3,19 @@
 ## Overview
 
 In this document, we outline a challenge problem that requires code-level
-adaptation in response to source code perturbations. Our proposed challenge
+adaptation in response to source-code perturbations.
+
+
+Our proposed challenge
 problem involves semi-automatically injecting code-level perturbations into
 the system, and alerting the code adaptation engine to the presence of a
 code-level perturbation (but not necessarily the location of the
 perturbation)
-**~~We focus the scope of this challenge problem on
-perturbations that mimic the kinds of changes that are introduced through
-API migrations (e.g., method renaming, parameter addition, modification and
-removal, change of units, etc.).~~**
-
-The process of injecting perturbations is to be conducted by a third-party
-(i.e., Lincoln Labs) with the aid of a perturbation engine, provided by
-ourselves.
 
 Using this approach, we propose that Lincoln Labs assesses the ability of
 the MARS system to self-adapt at the code-level by evaluating its response
 to a set of generated code-level perturbation scenarios, inspired by
 bugs observed in real-world robotics systems.
-
-**To gain a more detailed understanding of the strengths and limitations of our
-code-adaptation engine, we propose that the system be evaluated against
-scenarios of varying levels of difficulty. For example, we may evaluate 60,
-30 and 15 perturbation scenarios belonging to three coarsely defined
-difficulty levels D1, D2 and D3, respectively. Each of these scenarios is
-to be passed to the test harness to determine the system’s ability to
-respond.**
-
 
 ### Approach
 
@@ -48,6 +34,11 @@ respond.**
 
 ### Research Questions
 
+This challenge problem is designed to answer the following research questions:
+
+* **RQ1:** **[Fault localisation.]**
+* **RQ2:** How often does search-based program repair discover a partial repair?
+* **RQ3:** How often does search-based program repair discover a complete repair?
 
 ## Testing Procedure
 
@@ -87,7 +78,7 @@ challenge problem are as follows.
 Note that unlike other challenge problems, our challenge problem does not
 rely on any pre-defined test data. Instead, perturbations are generated (and
 validated) dynamically by the test harness (via our TA API).
-**Is this true? Is our internal test suite considered to be test data?**
+**[Is this true? Is our internal test suite considered to be test data?]**
 
 ### Scenario Generation
 
@@ -181,8 +172,8 @@ measure whether intent is maintained by a particular version of the system.
 To measure the ability of our system to adapt to source-code perturbations, we
 compare the test suite results of its *best* candidate adaptation (i.e., patch)
 against those obtained by the unadapted, perturbed source code.
-**According to the BRASS terminology, we compare the following three versions
-of the MARS system:**
+**[According to the BRASS terminology, we compare the following three versions
+of the MARS system:]**
 
 * **A:** Original source code (i.e., unperturbed case). Passes all tests.
 * **B:** Mutated source code (i.e., perturbed case). Fails at least one test.
