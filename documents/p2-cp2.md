@@ -31,14 +31,16 @@ We plan to construct this technique by bringing together several of our
 innovations in the fields of fault detection, localisation and repair,
 including but not limited to:
 
-* A novel search algorithm, inspired by greedy algorithms, that reduces the
+* A novel search algorithm, inspired by *greedy algorithms*, that reduces the
   cost repairing complex faults (i.e., multi-line faults) by several orders
   of magnitude compared to existing genetic-algorithm-based approaches.
+* The use of *targeted repair* operators and better *fix prediction* to
+  concentrate the allocation of limited resources on likely bug fixes.
 * Automated (system-level) test generation for improving fault localisation
   accuracy and reducing the cost of testing.
-* The use of an online mutation analysis, using the test results of candidate
+* The use of an *online mutation analysis*, using the test results of candidate
   patches, to learn the shape and location over the course of the search.
-* Elastic, distributed repair using commodity cloud-compute services, such as
+* Elastic, *distributed repair* using commodity cloud-compute services, such as
   Amazon EC2, Microsoft Azure, and Google Compute Engine.
 
 ### Research Questions
