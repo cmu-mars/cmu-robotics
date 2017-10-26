@@ -3,24 +3,23 @@
 ## Overview
 
 In this document, we outline a challenge problem that requires code-level
-adaptation in response to source-code perturbations.
+adaptation in response to source-code perturbations, representative of commonly
+encountered robotics bugs.
+Our challenge problem aims to simulate bugs that are exposed (or introduced)
+during the natural evolution of robotics systems. For example, the system may
+be modified to use a new computer vision system following the recent
+discontinuation of Microsoft's Kinect camera, or a new feature may be
+introduced (e.g., searching the environment for a particular object or QR code).
+In such cases, (possibly latent) flaws in the implementation of the system may
+manifest in test suite failure.
+To simulate such bugs, we use a custom mutation injection tool, Shuriken,
+designed to create bugs that are similar to those that frequently occur in
+robotics systems.
 
-
-Our proposed challenge
-problem involves semi-automatically injecting code-level perturbations into
-the system, and alerting the code adaptation engine to the presence of a
-code-level perturbation (but not necessarily the location of the
-perturbation)
-
-Using this approach, we propose that Lincoln Labs assesses the ability of
-the MARS system to self-adapt at the code-level by evaluating its response
-to a set of generated code-level perturbation scenarios, inspired by
-bugs observed in real-world robotics systems.
-
-### Motivation
-
-**What is our motivation? Can we efficiently locate and fix realistic bugs
-  in robotics software?**
+We propose that the ability of the MARS system to adapt at the code-level be
+evaluated by subjecting it to realistic faults (referred to as
+*perturbation scenarios*) and measuring the degree to which intent
+(represented by a fixed set of system-level tests) is recovered.
 
 ### Approach
 
@@ -36,7 +35,7 @@ including but not limited to:
   of magnitude compared to existing genetic-algorithm-based approaches.
 * The use of *targeted repair* operators and better *fix prediction* to
   concentrate the allocation of limited resources on likely bug fixes.
-* Automated (system-level) test generation for improving fault localisation
+* *Automated (system-level) test generation* for improving fault localisation
   accuracy and reducing the cost of testing.
 * The use of an *online mutation analysis*, using the test results of candidate
   patches, to learn the shape and location over the course of the search.
