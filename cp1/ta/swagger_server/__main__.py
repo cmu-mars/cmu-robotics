@@ -13,6 +13,8 @@ import os
 import rospy
 from urllib.parse import urlparse
 
+from operator import eq
+
 import threading
 import requests
 import time
@@ -46,6 +48,18 @@ def fake_semantics(thApi, port):
             response = thApi.ready_post()
             logger.debug('Received response from th/ready:')
             logger.debug ('%s' %response)
+
+            # check to make sure that all adjacent waypoints are disequal
+            waypoints = response.target_locs
+
+            if not waypoints:
+              logger.debug("malformed response from ready: target_locs must not be empty; posting to error")
+              thApi.error_post(parameters=Parameters("ready error", "target_locs must not be empty"))
+
+            waypoints.insert(0,response.start_loc)
+            if any(map(eq, waypoints, waypoints[1:])):
+              logger.debug("malformed response from ready: start_loc @ target_locs has adjacent equal elements; posting to error")
+              thApi.error_post(parameters=Parameters("ready error", "start_loc @ target_locs has adjacent equal elements"))
         except Exception as e:
             logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
             logger.debug(traceback.format_exc())

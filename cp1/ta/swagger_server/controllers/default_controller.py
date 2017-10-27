@@ -45,6 +45,8 @@ def perturb_battery_post(Parameters=None):
     if connexion.request.is_json:
         Parameters = Parameters2.from_dict(connexion.request.get_json())
 
+    global response
+
     ret = InlineResponse2002()
     ret.sim_time = 0
     return ret
