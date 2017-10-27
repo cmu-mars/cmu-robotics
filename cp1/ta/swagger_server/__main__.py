@@ -26,6 +26,8 @@ from swagger_client.models.parameters import Parameters
 from swagger_client.models.parameters_1 import Parameters1
 from swagger_client.models.parameters_2 import Parameters2
 
+import swagger_server.config as config
+
 # Function to mimic wait for ta to be up, send ready, then status, then error, then wait
 # and send done
 def fake_semantics(thApi, port):
@@ -48,6 +50,7 @@ def fake_semantics(thApi, port):
             response = thApi.ready_post()
             logger.debug('Received response from th/ready:')
             logger.debug ('%s' %response)
+            config.ready_response = response
 
             # check to make sure that all adjacent waypoints are disequal
             waypoints = response.target_locs
