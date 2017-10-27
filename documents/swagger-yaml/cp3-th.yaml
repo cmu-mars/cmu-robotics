@@ -34,6 +34,14 @@ paths:
                 description: >-
                   if `true`, then the DAS will use adapative behaiviours; if
                   `false` then the DAS will not use adaptive behaiviours
+              start-configuration:
+                type: string
+                description: >-
+                  the label of the starting configuration for the robot
+                enum:
+                  - CONFIG1
+                  - CONFIG2
+                  - CONFIG3
         '400':
           description: TH encountered an error producing configuration data
   /error:
