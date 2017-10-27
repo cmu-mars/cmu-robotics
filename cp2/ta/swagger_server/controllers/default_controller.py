@@ -123,6 +123,14 @@ def perturbations_get(Parameters):
     if connexion.request.is_json:
         Parameters = Parameters0.from_dict(connexion.request.get_json())
 
+    # this is an RR1 hack; really we need a list of all the files that we
+    # can perturb, but this is the only one that's valid at the moment
+    # because it's the only one that i hard coded above
+    if not Parameters.file == "main.cpp":
+        ret = InlineResponse400()
+        ret.message = "unknown file name %s" % Parameters.file
+        return ret , 400
+
     inner = Perturbation()
     inner.kind = "swap arguments"
 
