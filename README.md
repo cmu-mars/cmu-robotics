@@ -48,7 +48,11 @@ Inside each CP directory, you'll find:
   with some happy-path parameters, assuming it's running on localhost.
   
 * a `docker-compose.yml` that specifies how to compose a docker container as
-  a (potential) combination of several docker containers
+  a (potential) combination of several docker containers, including the th
+  from Lincoln Labs
+  
+* a `docker-compose-no-th.yml` that specifies a how to compose a docker container
+  like the one above, but without the TH from Lincoln Labs
 
 An example of launching the system locally is as follows. Note that you can
 parameterize the location of the TH and the TA by passing URI definitions to 
@@ -156,6 +160,12 @@ Date: Sun, 08 Oct 2017 23:14:28 GMT
 }
 iev@bruce cp2 %
 
+```
+
+To compose withouth a th (although, you still need to have a TH somewhere), you should do the following:
+
+``` 
+iev@bruce ta % TH_HOST=<some host> TH_PORT=8081 TA_PORT=8080 docker-compose up
 ```
 As part of the composition, each docker instance will contain a docker container
 `cp<N>_ta` where `<N>` is the number of the challenge problem. You may log into 
