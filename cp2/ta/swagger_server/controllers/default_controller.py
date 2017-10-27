@@ -104,6 +104,10 @@ def perturb_post(Parameters):
     """
     if connexion.request.is_json:
         Parameters = Parameters2.from_dict(connexion.request.get_json())
+    if not Parameters.perturbations:
+        ret = InlineResponse400()
+        ret.message = "perturbations list cannot be empty"
+        return ret , 400
     return {} , 200
 
 
