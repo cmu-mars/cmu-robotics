@@ -37,10 +37,10 @@ Used to indicate that evaluation of the test scenario has been completed. A summ
 |Name|Description|Schema|
 |---|---|---|
 |**log**  <br>*required*|A list containing details of each of the attempted repairs.|< [CandidateAdaptation](#candidateadaptation) > array|
-|**num-attempts**  <br>*required*|The number of code adaptations attempted.|integer|
+|**num-attempts**  <br>*required*|The number of code adaptations attempted.  <br>**Minimum value** : `0`|integer|
 |**outcome**  <br>*required*|A short description of the success of the repair process. A complete repair is one which fully restores the intent of the system (i.e., system degradation is reduced to zero). A partial repair reduces the degradation of the system from its initial value to a value greater than zero. If the level of degradation remains unchanged, no (partial) repair has been found.|enum (CompleteRepair, PartialRepair, NoRepair)|
 |**pareto-set**  <br>*required*|A list containing details of all adaptations within the pareto set.|< [CandidateAdaptation](#candidateadaptation) > array|
-|**running-time**  <br>*required*|The number of minutes taken to complete the repair process.|number (float)|
+|**running-time**  <br>*required*|The number of minutes taken to complete the repair process.  <br>**Minimum value** : `0`|number (float)|
 
 
 #### Responses
@@ -164,7 +164,7 @@ Used to inform the test harness that a new adaptation has been added to the Pare
 |Name|Description|Schema|
 |---|---|---|
 |**successful**  <br>*required*|A flag indicating whether the compilation of this adaptation was successful or not.|boolean|
-|**time-taken**  <br>*required*|The number of seconds taken to compile this adaptation.|number (float)|
+|**time-taken**  <br>*required*|The number of seconds taken to compile this adaptation.  <br>**Minimum value** : `0`|number (float)|
 
 
 <a name="degradation"></a>
@@ -180,7 +180,7 @@ Used to inform the test harness that a new adaptation has been added to the Pare
 |**crashed**  <br>*optional*|A flag indicating whether or not the system crashed during execution of the test.|boolean|
 |**qos**  <br>*optional*|A summary of the quality of service that was observed during the execution of the test.|[TestQoS](#testqos)|
 |**test-id**  <br>*required*|A unique identifier for the test to which this outcome belongs.|string|
-|**time-taken**  <br>*required*|The number of seconds taken to complete the test.|number (float)|
+|**time-taken**  <br>*required*|The number of seconds taken to complete the test.  <br>**Minimum value** : `0`|number (float)|
 |**timed-out**  <br>*required*|A flag indicating whether or not the test timed out during execution.|boolean|
 
 

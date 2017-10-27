@@ -66,7 +66,7 @@ Returns a list of all the source lines at which perturbations may be injected.
 
 |HTTP Code|Description|Schema|
 |---|---|---|
-|**200**|Successfully computed and returned a list of source lines within the project.|No Content|
+|**200**|Successfully computed and returned a list of source lines within the project.|< [SourceLine](#sourceline) > array|
 |**400**|Failed to produce a list of source lines within the project.|No Content|
 
 
@@ -89,7 +89,7 @@ Returns the current status of the SUT.
 
 |Name|Description|Schema|
 |---|---|---|
-|**pareto-set**  <br>*optional*|A list containing details of the sub-set of adaptations that have been encountered that belong to the pareto set (i.e., the set of non-dominated adaptations).|< [Adaptation](#adaptation) > array|
+|**pareto-set**  <br>*optional*|A list containing details of the sub-set of adaptations that have been encountered that belong to the pareto set (i.e., the set of non-dominated adaptations).|< [CandidateAdaptation](#candidateadaptation) > array|
 |**resource-consumption**  <br>*optional*|A description of the resources that have been consumed in the process of searching for an adaptation.|[resource-consumption](#observe-get-resource-consumption)|
 |**stage**  <br>*required*|A concise description of the current state of the system.|enum (awaiting-perturbation, injecting-perturbation, localising-perturbation, searching-for-adaptation, finished-adapting)|
 
@@ -157,7 +157,7 @@ Returns a list of possible perturbations of an (optionally) specified shape and 
 |Name|Description|Schema|
 |---|---|---|
 |**file**  <br>*required*|The file at which the perturbation should be injected.|string|
-|**line**  <br>*optional*|The number of the line at which the perturbation should be injected. N.b. if this parameter is used, then the file parameter must also be specified.|integer|
+|**line**  <br>*optional*|The number of the line at which the perturbation should be injected.|integer|
 |**shape**  <br>*required*|The shape of the fault (e.g., incorrect conditional, missing control flow).|enum (DeleteStatement, ReplaceStatement, InsertStatement)|
 
 
@@ -187,6 +187,38 @@ Returns a list of possible perturbations of an (optionally) specified shape and 
 
 <a name="definitions"></a>
 ## Definitions
+
+<a name="adaptation"></a>
+### Adaptation
+placeholder for actual definition of adaptations
+
+*Type* : string
+
+
+<a name="candidateadaptation"></a>
+### CandidateAdaptation
+
+|Name|Description|Schema|
+|---|---|---|
+|**compilation-outcome**  <br>*required*|A description of the outcome of attempting to compile this adaptation.|[CompilationOutcome](#compilationoutcome)|
+|**degradation**  <br>*required*|A description of the level of degradation that was observed when this adaptation was applied.|[Degradation](#degradation)|
+|**diff**  <br>*required*|A description of the change to the code, given in the form of a diff.|string|
+|**test-outcomes**  <br>*required*|A summary of the outcomes for each of the test cases that this adaptation was evaluated against.|< [TestOutcome](#testoutcome) > array|
+
+
+<a name="compilationoutcome"></a>
+### CompilationOutcome
+
+|Name|Description|Schema|
+|---|---|---|
+|**successful**  <br>*required*|A flag indicating whether the compilation of this adaptation was successful or not.|boolean|
+|**time-taken**  <br>*required*|The number of seconds taken to compile this adaptation.  <br>**Minimum value** : `0`|number (float)|
+
+
+<a name="degradation"></a>
+### Degradation
+*Type* : object
+
 
 <a name="deletestatementperturbation"></a>
 ### DeleteStatementPerturbation
@@ -259,6 +291,28 @@ Returns a list of possible perturbations of an (optionally) specified shape and 
 |---|---|---|
 |**start**  <br>*required*|The location that marks the start of this source range.|[SourceLocation](#sourcelocation)|
 |**stop**  <br>*required*|The location that marks the end of this source range.|[SourceLocation](#sourcelocation)|
+
+
+<a name="testoutcome"></a>
+### TestOutcome
+
+|Name|Description|Schema|
+|---|---|---|
+|**crashed**  <br>*optional*|A flag indicating whether or not the system crashed during execution of the test.|boolean|
+|**qos**  <br>*optional*|A summary of the quality of service that was observed during the execution of the test.|[TestQoS](#testqos)|
+|**test-id**  <br>*required*|A unique identifier for the test to which this outcome belongs.|string|
+|**time-taken**  <br>*required*|The number of seconds taken to complete the test.  <br>**Minimum value** : `0`|number (float)|
+|**timed-out**  <br>*required*|A flag indicating whether or not the test timed out during execution.|boolean|
+
+
+<a name="testqos"></a>
+### TestQoS
+
+|Name|Description|Schema|
+|---|---|---|
+|**collisions**  <br>*required*|A measure of service quality with respect to the number of collisions.|object|
+|**duration**  <br>*required*|A measure of service quality with respect to time taken to complete the test.|object|
+|**proximity**  <br>*required*|A measure of service quality with respect to proximity to the goal.|object|
 
 
 
