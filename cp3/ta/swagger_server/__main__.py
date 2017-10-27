@@ -44,27 +44,30 @@ def fake_semantics(thApi, port):
           response = thApi.ready_post()
           logger.debug('Received response from th/ready:')
           logger.debug ('%s' %response)
+          if response.start_loc == response.target_loc:
+              logger.debug("malformed response from ready: start_loc is target_loc; posting to error")
+              thApi.error_post(Parameters("ready error", "start_loc is target_loc"))
         except Exception as e:
           logger.error(traceback.format_exc())
           logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
-        try:      
+        try:
           logger.debug("Sending status")
           response = thApi.status_post(Parameters1("adapted", "Test for status", 55, ["l1", "l2", "l3"], ["MOVEBASE", "AMCL"], ["KINECT_ALL"]))
         except Exception as e:
           logger.error(traceback.format_exc())
           logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
-          
+
         wait_time = random.randint(5,60)
         print ('TA sleeping for ' + str(wait_time) + 's before sending done')
-        time.sleep(wait_time)  
-          
-        try: 
+        time.sleep(wait_time)
+
+        try:
           logger.debug("Sending done")
           response = thApi.done_post(Parameters2(14.5, 25.9, 72, [72], 2500))
         except Exception as e:
           logger.error(traceback.format_exc())
           logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
-          
+
     print ('Starting fake semantics')
     thread = threading.Thread(target=fake_ta)
     thread.start()
@@ -75,7 +78,7 @@ if __name__ == '__main__':
     if len(sys.argv) != 2:
       print ("No URI for TH passed in!")
       sys.exit(1)
-      
+
     th_uri = sys.argv[1]
 
     app = connexion.App(__name__, specification_dir='./swagger/')
@@ -91,18 +94,18 @@ if __name__ == '__main__':
        logger.debug('Body: %s', connexion.request.get_data())
 
     app.app.before_request(log_request_info)
-    
 
-    thApi = DefaultApi();
+
+    thApi = DefaultApi()
     thApi.api_client.host = th_uri
     try:
-      thApi.error_post(Parameters("Test Error", "This is a test error post to th"))  
+      thApi.error_post(Parameters("Test Error", "This is a test error post to th"))
     except Exception as e:
       logger.debug("Failed to connect with th")
       logger.debug(traceback.format_exc())
 
     rospy.init_node ("cp3_ta")
-    
+
     print ("Starting up Gazebo interface")
     try:
       gazebo = GazeboInterface()
@@ -113,6 +116,6 @@ if __name__ == '__main__':
     print ("Started Gazebo Interface")
 
     fake_semantics(thApi,5000)
-    
+
     logger.debug("Starting TA")
     app.run(port=5000, host='0.0.0.0')
