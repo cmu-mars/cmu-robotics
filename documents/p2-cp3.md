@@ -39,6 +39,7 @@ There are three pieces of information that will be defined pre-test for this cha
 1. The map, including waypoint locations and locations of lights.
 2. The set of sensors that the robot can use.
 3. The set of software components (nodes) that can be used and perturbed in the test. (Note: this is not the full robot configuration, just the parts that are neccessarily visible to perturb during test.)
+4. A set of valid starting configurations that can be used to set up the test.
 
 The JSON format for these pieces of information are:
 
@@ -83,12 +84,21 @@ The robot will have a set of software nodes that can be referred to by the test 
 NODE_SET = enum {MOVEBASE, AMCL, MRPT, CB_BASE, ...}
 ```
 
+### Configurations
+> TODO: This set needs to be finalized
+The robot will have a set of valid configurations that the test harness can start the robot up in. These will be given a label of the form `CONFIG<N>`. 
+
+```
+CONFIG_SET = enum {CONFIG1, CONFIG2, ..., CONFIGN}
+```
+
 ## Test Parameters
 
 The test will be able to be parameterized in a number of ways, and this will be done via the response to ready. The elements that may be specified for the test are:
 
-- the initial robot position, as well as the target location for the robot, which constitutes the mission
-- whether adaptation is enabled for this test
+- the initial robot position, as well as the target location for the robot, which constitutes the mission. Both of these will be specified using waypoint labels defined in the map. It is intended that the start and target waypoint **NOT** be the same label.
+- the initial configuration of the robot, chosen from a set of potential robot configurations. This will be one chosen from a set of labels that specify the configuration, that are part of the test data, i.e., CONFIG1, CONFIG2, ..., CONFIGN
+- whether adaptation is enabled for this test. A boolean.
 
 ## Test Procedure
 > TODO
@@ -223,6 +233,43 @@ function prediction_penalty() = 1-(number_of_predictions - 1 - number_of_adaptat
 | else | 0 |
 
 
-### Intent Element 3: Safety
+### Intent Element 3: Efficiency
+**Informal Description**: Robot uses minimal resources.
 
-(If safety is in play for the uncertainty requirement, we will have an intent for this; otherwise, it will not be a factor)
+**Formal Description**: The intent is related to power usage of the robot for the mission. Having more power left at the end of a mission means that the robot would be able to do more subsequent tasks. We will use a power model from CP1 for evaluating this. The score for this will be based on how much power was used. Assuming that the robot finishes the mission with some energy left in the battery, then each condition will (A,B,C) will receive a score. The one with the highest score wins.
+
+**Test/Capture Method**: The done message will report the remaining charge in the battery for the end of the mission.
+
+**Result Expression**: final_charge
+
+**Verdict Expression**:
+
+|Constant | Value | Meaning |
+|---------|-------|---------|
+|MAX_CHARGE | 15000 | The maximum mwh that the battery can hold |
+
+| Condition                                                      | Score                                                |
+|----------------------------------------------------------------|------------------------------------------------------|
+| final_charge > 0                                               | (MAX_CHARGE - final_charge)/MAX_CHARGE               |
+| otherwise                                                      | 0 |
+
+### Intent Element 3: Safety
+**Informal Description**: Whether the robot collides with something in the environment. 
+
+**Formal Description**: The intent is related to the risk that the robot takes to complete the mission. Being riskier means, e.g., traveling through an unknown environment at a high speed to complete the mission on time. We will have protrusions in the environment that are of a height that will make them undetectable by at least one of the sensors. Transitions in the map will be annotated to assess their riskiness of traversal.
+
+**Test/Capture Method**: The done message will report the number an array of times and speeds when the robot collided with something on the map.
+
+**Result Expression**: collisions = [{time, speed}, ...]
+
+**Verdict Expression**:
+
+|Constant | Value | Meaning |
+|---------|-------|---------|
+|SAFE_SPEED | .25m/s | The speed at which colliding with something becomes unsafe |
+
+| Condition                                                      | Score                                                |
+|----------------------------------------------------------------|------------------------------------------------------|
+| size(collisions) == 0                                              |   1          |
+| !exists speed in collisions . speed > SAFE_SPEED                                                      | 1 |
+| otherwise | 0 |
