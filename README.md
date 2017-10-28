@@ -35,7 +35,7 @@ $ cd ../../cp3/ta
 $ docker build cmu-mars/cp3 .
 ```
 
-Once the containers are built, it will be the be possible to compose them
+Once the containers are built, it will be possible to compose them
 for each challenge problem.
 
 Inside each CP directory, you'll find:
@@ -48,14 +48,18 @@ Inside each CP directory, you'll find:
   with some happy-path parameters, assuming it's running on localhost.
   
 * a `docker-compose.yml` that specifies how to compose a docker container as
-  a (potential) combination of several docker containers
+  a (potential) combination of several docker containers, including the th
+  from Lincoln Labs
+  
+* a `docker-compose-no-th.yml` that specifies a how to compose a docker container
+  like the one above, but without the TH from Lincoln Labs
 
 An example of launching the system locally is as follows. Note that you can
 parameterize the location of the TH and the TA by passing URI definitions to 
-the docker compose command. In one terminal,
+the docker compose command. In one terminal, in the `ta` directory,
 
 ``` 
-iev@bruce cp2 % TH_URI=http://th-brass:8080 TA_URI=http://ta-brass:8080 docker-compose up
+iev@bruce ta % TH_PORT=8081 TA_PORT=8080 docker-compose up
 Creating network "ta_default" with the default driver
 Creating roscore ... <Note that the actual containers composed will differ between CPs>
 Creating roscore ... done
@@ -70,7 +74,7 @@ Attaching to roscore, gazebo, cp3_ta
 To stop the instance, use the command:
 
 ```
-iev@bruce cp2 % docker-compose down
+iev@bruce ta % docker-compose down
 ```
 
 In another terminal, run the relevant smoke script:
@@ -157,6 +161,12 @@ Date: Sun, 08 Oct 2017 23:14:28 GMT
 iev@bruce cp2 %
 
 ```
+
+To compose withouth a th (although, you still need to have a TH somewhere), you should do the following:
+
+``` 
+iev@bruce ta % TH_HOST=<some host> TH_PORT=8081 TA_PORT=8080 docker-compose up
+```
 As part of the composition, each docker instance will contain a docker container
 `cp<N>_ta` where `<N>` is the number of the challenge problem. You may log into 
 this container, in particular to access the log file that contains the details of
@@ -184,8 +194,17 @@ This release is purely for testing API compliance and the ability to build in th
 2. (In cp1 and cp3) Gazebo starts up (caused by starting the cmu-mars/gazebo conainer in cp-gazebo-p2)
 3. (In cp1, cp2, and cp3) We post a dummy error, with the error "Test Error" to the TH
 4. (In cp1 and cp3) We try to conneect to Gazebo, and post a "Gazebo Error" to the TH if this fails
-5. (In cp1, cp2, and cp3) We post start, status, and done messages to TH. We print out the return to start. We log exceptiions if we fail.
-6. (In cp2, cp2, and cp3) We start the TA, at which time the TH can test our interface
+5. (In cp2, cp2, and cp3) We start the TA, at which time the TH can test our interface
+6. (In cp1, cp2, and cp3) We post ready, status, and (after a time ranging between 5 and 60 seconds) done messages to TH. We print out the return to ready. We log exceptions if we fail on other calls.
 
 During the process, we log all calls sent and received to access.log in the cmu-mars/cp<N> container.
 
+## Notes on getting this working in Windows 10
+
+To run on Windows 10, you need to make sure that the correct port forwarding is set up. So, as administrator, you may need to run:
+
+```
+netsh interface portproxy add v4tov4 listenaddress=127.0.0.1 listenport=8080 connectaddress=192.168.99.100 connectport=8080
+```
+
+Where `listenport` and `connectport` are the `TA_PORT` specified in docker compose, and `connectaddress` is the IP of the host machine.
