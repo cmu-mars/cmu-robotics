@@ -46,13 +46,10 @@ including but not limited to:
 
 This challenge problem is designed to answer the following research questions:
 
-* **RQ1:** **[Fault localisation.]**
+* **RQ1:** How often does search-based program repair successfully localise the
+    perturbation to a single file?
 * **RQ2:** How often does search-based program repair discover a partial repair?
 * **RQ3:** How often does search-based program repair discover a complete repair?
-
-We want to improve our understanding of the problem -- this is unchartered
-  territory. What tools and techniques can we bring with us? Which of our
-  assumptions fail to hold in reality? Lots of interesting findings.
 
 ## Testing Procedure
 
