@@ -92,7 +92,6 @@ procedure.
 Note that unlike other challenge problems, our challenge problem does not
 rely on any pre-defined test data. Instead, perturbations are generated (and
 validated) dynamically by the test harness (via our TA API).
-**[Is this true? Is our internal test suite considered to be test data?]**
 
 ### Scenario Generation
 
@@ -186,8 +185,8 @@ measure whether intent is maintained by a particular version of the system.
 To measure the ability of our system to adapt to source-code perturbations, we
 compare the test suite results of its *best* candidate adaptation (i.e., patch)
 against those obtained by the unadapted, perturbed source code.
-**[According to the BRASS terminology, we compare the following three versions
-of the MARS system:]**
+According to the BRASS terminology, we compare the following three versions
+of the MARS system:
 
 * **A:** Original source code (i.e., unperturbed case). Passes all tests.
 * **B:** Mutated source code (i.e., perturbed case). Fails at least one test.
@@ -205,7 +204,7 @@ results of the three versions of the system:
 
 [Just et al., 2014] Just, R., Jalali, D., Inozemtseva, L., Ernst, M. D.,
 Holmes, R., and Fraser, G. (2014).
-Are mutants a valid substitute for real faults in software testing?.
+Are mutants a valid substitute for real faults in software testing?
 In Proceedings of the 22nd ACM SIGSOFT International Symposium on Foundations of Software Engineering,
 FSE '14. ACM.
 
