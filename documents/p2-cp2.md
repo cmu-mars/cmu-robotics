@@ -32,7 +32,7 @@ including but not limited to:
 
 * A novel search algorithm, inspired by *greedy algorithms*, that reduces the
   cost repairing complex faults (i.e., multi-line faults) by several orders
-  of magnitude compared to existing genetic-algorithm-based approaches.
+  of magnitude compared to existing genetic algorithm--based approaches.
 * The use of *targeted repair* operators and better *fix prediction* to
   concentrate the allocation of limited resources on likely bug fixes.
 * *Automated (system-level) test generation* for improving fault localisation
