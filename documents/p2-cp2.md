@@ -89,10 +89,6 @@ procedure.
     transformation or has exhausted its available resources, a summary of the
     repair trial is communicated to the test harness. 
 
-Note that unlike other challenge problems, our challenge problem does not
-rely on any pre-defined test data. Instead, perturbations are generated (and
-validated) dynamically by the test harness (via our TA API).
-
 ### Scenario Generation
 
 Perturbation scenarios are encoded as a set of individual code-level
