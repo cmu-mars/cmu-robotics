@@ -113,19 +113,14 @@ popular, open-source robotics system (ArduPilot). Based on our findings, we
 crafted a set of bespoke mutation operators for Shuriken, designed to
 replicate the ten most-frequently-encountered kinds of bugs.
 
-* A (should be finished tallying results on Wednesday)
-* B
-* C
-* D
-
-Below, we describe parameters that are supplied to Shuriken by the test
-harness to specify the characteristics of an individual perturbation.
-
-| Name        | Description                                                    |
-|-------------|----------------------------------------------------------------|
-| File        | The name of the source code file that should be perturbed. |
-| Mutation | The mutation operator that will be used to produce the perturbation. |
-
+* Insert void-function call
+* Remove void-function call
+* Remove transformation function call
+* Remove conditional control flow
+* Insert conjunction into boolean expression
+* Remove conjunction from boolean expression
+* Flip arithmetic operator (e.g., `+` to `-`)
+* ...
 
 ## Interface to the Test Harness (API)
 
