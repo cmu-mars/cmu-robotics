@@ -116,7 +116,7 @@ replicate the ten most-frequently-encountered kinds of bugs.
 * Insert void-function call
 * Remove void-function call
 * Remove transformation function call
-* Remove conditional control flow
+* Remove conditional control-flow statement
 * Insert conjunction into boolean expression
 * Remove conjunction from boolean expression
 * Flip arithmetic operator (e.g., `+` to `-`)
