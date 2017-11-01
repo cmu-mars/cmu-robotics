@@ -24,15 +24,15 @@ To build each docker container, the following process needs to be followed:
 
 ```
 $ cd mars-main-p2
-$ docker build cmu-mars/base .
+$ docker build -t cmu-mars/base .
 $ cd ../cp-gazebo-p2
-$ docker build cmu-mars/gazebo .
+$ docker build -t cmu-mars/gazebo .
 $ cd ../cp1/ta
-$ docker build cmu-mars/cp1 .
+$ docker build -t cmu-mars/cp1 .
 $ cd ../../cp2/ta
-$ docker build cmu-mars/cp2 .
+$ docker build -t cmu-mars/cp2 .
 $ cd ../../cp3/ta
-$ docker build cmu-mars/cp3 .
+$ docker build -t cmu-mars/cp3 .
 ```
 
 Once the containers are built, it will be the be possible to compose them
