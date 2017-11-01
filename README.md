@@ -55,7 +55,7 @@ parameterize the location of the TH and the TA by passing URI definitions to
 the docker compose command. In one terminal,
 
 ``` 
-iev@bruce cp2 % TH_URI=http://th-brass:8080 TA_URI=http://ta-brass:8080 docker-compose up
+iev@bruce cp2 % TH_PORT=8081 TA_PORT=8080 docker-compose up
 Creating network "ta_default" with the default driver
 Creating roscore ... <Note that the actual containers composed will differ between CPs>
 Creating roscore ... done
