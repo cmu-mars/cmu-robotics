@@ -150,6 +150,8 @@ automatically from the Swagger definition for convenience.
 
 **Test/Capture Method**: The position of the robot will be read from the simulator. This will be returned in test-ta/action/observed
 
+**Result expression**: `location = (/done/final_x, /done/final_y)`
+
 **Verdict Expression**:
 
 | Constant | likely value | meaning |
@@ -160,6 +162,8 @@ automatically from the Swagger definition for convenience.
 ```
 function distance(loc1, loc2) = sqrt((loc1.x - loc2.x)^2 + (loc1.y - loc2.y)^2))
 ```
+
+
 
 | Condition                                                        | Score                                             |
 |------------------------------------------------------------------|---------------------------------------------------|
@@ -181,7 +185,7 @@ DEG_B = the score (0..1) degraded of B
 | DEGRADED    | PASS              | PASS if DEG_C > DEG_B<br/>INCONCLUSIVE if DEG_C == DEG_B<br/>FAIL otherwise | FAIL |
 | FAIL        | PASS | PASS | INCONCLUSIVE |
 
-###Intent Element 2: Timing
+### Intent Element 2: Timing
 **Informal Description**: Robot reaches target location by a deadline
 
 **Formal Description**:
@@ -200,7 +204,14 @@ We’re allowed one prediction at the beginning of the test. So if there is one 
 
 **Test/Capture Method**: The running time of the test will be calculated starting when the test begins to when the mission is complete. The predicted deadline will be sent in the observations.
 
-**Result Expression**: {(location, target, deadline, arrival_time, number_of_predictions, number_of_adaptations)}
+**Result Expression**: 
+```
+location=(/done/final_x,/done/final_y)
+deadline=(/done/arrival-predictions[size(/done/arrival-prediction)]
+arrival=/done/final-sim-time
+number_of_predictions=size(/done/arrival-predictions)
+number_of_adaptations=size(/done/adaptation-times)
+```
 
 **Verdict Expressions**:
 
@@ -240,7 +251,7 @@ function prediction_penalty() = 1-(number_of_predictions - 1 - number_of_adaptat
 
 **Test/Capture Method**: The done message will report the remaining charge in the battery for the end of the mission.
 
-**Result Expression**: final_charge
+**Result Expression**: `final_charge = /done/final-charge`
 
 **Verdict Expression**:
 
@@ -260,7 +271,7 @@ function prediction_penalty() = 1-(number_of_predictions - 1 - number_of_adaptat
 
 **Test/Capture Method**: The done message will report the number an array of times and speeds when the robot collided with something on the map.
 
-**Result Expression**: collisions = [{time, speed}, ...]
+**Result Expression**: `collisions = /done/collisions`
 
 **Verdict Expression**:
 
