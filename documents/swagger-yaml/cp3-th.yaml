@@ -157,21 +157,21 @@ paths:
               plan:
                 description: >-
                   list of waypoints the current plan tends to visit, in
-                  order. this will be sent if and only if `status == adapted`.
+                  order. This will not be sent with `status == live`.
                 type: array
                 items: 
                   type: string
               config:
                 description: >-
-                  list of currently active nodes. this will be sent if and
-                  only if `status == adapted`.
+                  list of currently active nodes. This will not be sent 
+                  with `status == live`.
                 type: array
                 items:
                   type: string
               sensors:
                 description: >-
-                  list of currently active sensors, in order. this will be
-                  sent if and only if `status == adapted`.
+                  list of currently active sensors, in order. This will 
+                  not be sent with `status == live`.
                 type: array
                 items:
                   type: string  
