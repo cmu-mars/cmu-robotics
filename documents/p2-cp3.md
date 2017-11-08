@@ -1,10 +1,10 @@
-# CMU MARS (Aldrich), CP3: On-line robotic adaptation to software failure, unexpected environments
+# CMU MARS (Aldrich), CP3: On-line robotic software architecture adaptation to software failure, unexpected environments
 
 ## Overview
 
 This challenge problem will demonstrate major advances in our capability to adapt to perturbations such as software component failure or environmental change.
 
-Today's self-adaptive systems are typically limited to selecting from pre-determined plans for adapting to specific responses.  In BRASS--and for long-lived software in general--these adaptations will need to be discovered when the system is in operation.  We use relational and probabilistic multi-objective planning to consider a wide range of adaptations including:
+Today's self-adaptive systems are typically limited to selecting from pre-determined plans for adapting to specific responses. In BRASS--and for long-lived software in general--these adaptations will need to be discovered when the system is in operation, to enhance maintainability and software resilience over time.  We use relational and probabilistic multi-objective planning to consider a wide range of adaptations including:
  * software configuration
  * software component parameters
  * mission adaptations
@@ -193,8 +193,8 @@ DEG_B = the score (0..1) degraded of B
 Scoring requirements:
 
 1. Account for some inaccuracy (can’t be right on the deadline). Call this BUFFER
-2. Being early is better than being late, but don’t want to encourage inaccurate over predictions. We can be early by 2*BUFFER or late by BUFFER
-3. Want to penalize too many deadline predictions (so we don’t predict just before getting there). If there is no adaptation, then we can make one prediction. Let’s allow ourselves one more prediction per adaptation that we do. We will be penalized score*(1-over_predictions)^(3/2)/15. I.e., we get penalized more severely the more we over predict. A new prediction causes the robot to send a notification to the participant.
+2. Being early is better than being late, but don’t want to encourage inaccurate over predictions. We can be early by 2 x BUFFER or late by BUFFER
+3. Want to penalize too many deadline predictions (so we don’t predict just before getting there). If there is no adaptation, then we can make one prediction. Let’s allow ourselves one more prediction per adaptation that we do. We will be penalized score x (1-over_predictions)^(3/2)/15. I.e., we get penalized more severely the more we over predict. A new prediction causes the robot to send a notification to the participant.
 
 ![Timing diagram](img/cp3-timing-intent.png "Timing Intent Intent")
 
