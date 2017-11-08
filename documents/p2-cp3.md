@@ -120,15 +120,14 @@ this sequence. This interaction is omitted for clarity.
 
 ### REST Interface to the TH
 
-This API is currently still a draft. Some, but not all, possible future
-changes include:
- * adding more constants to the enumerated error codes in the TH `/error`
-   end point
+The API to the TH defines endpoints for the following REST APIs:
 
- * adding more constants to the enumerated status codes in the TH `/status`
-   end point
+- /ready - indicates that the TA is ready and should be given configuration information for the test
+- /error - indicates that the TA encountered an unrecoverable error, and the test case has failed
+- /status - indicates various status messages as the test progresses
+- /done - indicates that the test is done and the machine running the test can be shut down.
 
-The Swagger file describing this interface is
+The Swagger file describing this interface in full is
 [swagger-yaml/cp3-th.yaml](swagger-yaml/cp3-th.yaml) which should be
 considered the canonical definition of the
 API. [swagger-yaml/cp3-th.md](swagger-yaml/cp3-th.md) is produced
@@ -136,10 +135,14 @@ automatically from the Swagger definition for convenience.
 
 ### REST Interface to the TA
 
-This API is currently still a draft. Some, but not all, possible future
-changes include:
- * adding more constants to the enumerated error codes in the `400` returns
-   from different end points
+The API to the TA defines endpoints for the following REST APIs:
+
+- /start - indicates that the robot should start its assigned mission
+- /perturb/light - cause a light in the environment to be turned on or off
+- /perturb/sensor - cause a sensor's state to change to on or off
+- /perturb/nodefail - cause a component in the robot software to fail at run time
+- /observe - returns the current state of the mission
+
 
 The Swagger file describing this interface is
 [swagger-yaml/cp3-ta.yaml](swagger-yaml/cp3-ta.yaml) which should be
