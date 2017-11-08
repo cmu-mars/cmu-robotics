@@ -283,25 +283,25 @@ In this challenge problem, we evaluate how adaptations made by planner that uses
 
 The ultimate goal of CP1 is to demonstrate that the adaptation (analysis +
 planning) with an accurate model that we learn is better than the case with
-no learning, i.e, using an inaccurate model. In CP1, we consider two types of intents: (i) Timeliness (time to completion), and (ii) Success rate (number of targets reached). 
+no learning, i.e, using an inaccurate model. In CP1, we consider two types of intents at two different levels (i.e., one is primary criterion and the other is secondary): (i) Success rate (number of targets reached), and (ii) Timeliness (time to completion). 
 
 
-#### Intent Element 1: Timeliness
-**Informal Description**: Robot reaches the target location earlier than a the robot in baseline A in the same test case. 
-
-**Verdict Expression**: Using the time that the robot in baseline A has been reached (`$t_a$`) to the final target (the last task as determined in the `$target-locs$` in the `/ready` message) to calculate the following evaluation function for the timeliness.
-
-`PASS` if `$t_a>t_c$`, otherwise `FAIL`. 
-
-
-#### Intent Element 2: Success rate
+#### Intent Element 1: Success rate
 **Informal Description**: Robot accomplish all tasks in a mission.
 
 **Verdict Expression**: Using the information in `/done` message by calculating the proportion of the number of tasks that have successfully been finished (`$tf$`) comparing to the original list of tasks in `/ready` message to calculate the following evaluation function for the number of tasks completed.
 
 `$r = tasks_finished / total_tasks$`
 
-`PASS` if `$r>0.7$`, DEGRADED if `$0.3<r<0.7$`, otherwise `FAIL`.
+`PASS` if `$r_c >= r_a$`, `DEGRADED` if `$0 < r_c < r_a$`, `FAIL` if `$r_c == 0$`. 
+The score in the `DEGRADED` is proportional to the number of tasks that has been accomplished in baseline A: `$r_c / r_a$`. 
+
+#### Intent Element 2: Timeliness
+**Informal Description**: Robot reaches the target location earlier than a the robot in baseline B in the same test case. Note that this is a secondary criteria and we evaluate it as far as we can retain information for baseline B. 
+
+**Verdict Expression**: Using the time that the robot in baseline B has been reached (`$t_b(lt)$`) to the location of the last successful task (`lt`). Note that every time robot accomplishes a task it send a status message to TH so we will have the status containing the location and timing associated for the last accomplished task even through it may fail to accomplish all the tasks to calculate the following evaluation function for the timeliness. Also, we can retain the time that robot accomplishes the associated task in baseline c (`$t_c(lt)$`).
+
+`PASS` if `$t_b(lt) >= t_c(lt)$`, `DEGRADED` if `$t_b(lt) < t_c(lt) <= 2*t_b(lt)$`, `FAIL` if `$t_c(lt) > 2*t_b(lt)$`. 
 
 
 We assume the following test stages for evaluation:
