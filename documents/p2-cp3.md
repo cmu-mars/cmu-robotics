@@ -101,7 +101,14 @@ The test will be able to be parameterized in a number of ways, and this will be 
 - whether adaptation is enabled for this test. A boolean.
 
 ## Test Procedure
-> TODO
+As in Phase 1, this challenge problem will have three cases A, B, and C, as described below.
+
+- *Baseline A*: The robot will be given an initial configuration (software and sensor components), a starting location, and a target location, and will attempt to navigate using a predefined plan to the target location.
+- *Baseline B*: This is the same as *Baseline A*, but the robot and environment can be perturbed in a number of ways
+- *Challenge*: A DAS will run on top of *Baseline B* that can make changes to the robot software and sensor activation.
+
+It is intended that there be a range of perturbation sets explored (e.g., not all perturbations should be made for each test). Furthermoe, some perturbations to make make sense in some contexts. For example, if the kinect or lidar are valid sensors, changing lighting conditions will not have an effect. (If the kinect fails, or if the initial configuration starts without the kinect active) then it lighting may come into play.
+
 ## Interface to the Test Harness (API)
 
 ### Sequence Diagram for Interaction Pattern
