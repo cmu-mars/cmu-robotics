@@ -5,6 +5,31 @@ info:
 schemes:
   - http
 host: brass-th
+definitions:
+  CollisionData:
+    type: object
+    required: 
+      - robot-x
+      - robot-y
+      - robot-speed
+      - sime-time
+    properties:
+      robot-x:
+        type: float
+        description: >-
+          The x location of the robot center when collision occured
+      robot-y:
+        type: float
+        description: >-
+          The y lcoation of the robot center when collision occured
+      robot-speed:
+        type: float
+        description: >-
+          The speed of the robot (m/s) at the time the collision occured
+      sim-time:
+        type: float
+        description: >-
+          The (simulation) time at which the collision occurred (seconds from start of simulator)
 paths:
   /ready:
     post:
@@ -170,6 +195,7 @@ paths:
               - final-sim-time
               - arrival-predictions
               - final-charge
+              - collisions
             properties:
               final-x:
                 type: number
@@ -197,6 +223,12 @@ paths:
                 type: integer
                 description: >-
                   the charge left in the battery when the test ended
+              collisions:
+                type: array
+                items: 
+                  $ref: "#/definitions/CollisionData"
+                description: >-
+                  A (possibly empty) list of locations, times, and speeds of any collisions of the robot
       responses:
         '200':
           description: >-
