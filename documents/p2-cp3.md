@@ -276,7 +276,7 @@ function prediction_penalty() = number_predicitions > 1 + number_adaptations?0:1
 | final_charge > 0                                               | (MAX_CHARGE - final_charge)/MAX_CHARGE               |
 | otherwise                                                      | 0 |
 
-### Intent Element 3: Safety
+### Intent Element 4: Safety
 **Informal Description**: Whether the robot collides with something in the environment. 
 
 **Formal Description**: The intent is related to the risk that the robot takes to complete the mission. Being riskier means, e.g., traveling through an unknown environment at a high speed to complete the mission on time. We will have protrusions in the environment that are of a height that will make them undetectable by at least one of the sensors. Transitions in the map will be annotated to assess their riskiness of traversal.
