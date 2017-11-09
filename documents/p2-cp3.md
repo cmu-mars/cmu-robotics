@@ -47,7 +47,7 @@ The JSON format for these pieces of information are:
 
 ```
 {"map" : [ {"node-id" : STRING, "coord" : { "x" : FLOAT, "y" : FLOAT}, "connected-to" : [ STRING, ...] }, ...],
- "lights" : {"light-id" : STRING, "coord" : {"x" : FLOAT, "y" : FLOAT}]
+ "lights" : [{"light-id" : STRING, "coord" : {"x" : FLOAT, "y" : FLOAT}]
 }
 ```
 
