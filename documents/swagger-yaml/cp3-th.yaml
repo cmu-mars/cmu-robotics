@@ -196,6 +196,7 @@ paths:
               - arrival-predictions
               - final-charge
               - collisions
+              - num-adaptations
             properties:
               final-x:
                 type: number
@@ -229,6 +230,10 @@ paths:
                   $ref: "#/definitions/CollisionData"
                 description: >-
                   A (possibly empty) list of locations, times, and speeds of any collisions of the robot
+              num-adaptation:
+                type: integer
+                description: >-
+                  the number of times that the robot adapted (0 if there is no DAS)
       responses:
         '200':
           description: >-
