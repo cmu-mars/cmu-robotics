@@ -35,7 +35,7 @@ services:
       - "GAZEBO_MASTER_URI=http://localhost:11345"
     depends_on:
       - roscore
-    command: roslaunch --wait /home/mars/catkin_ws/src/cp-gazebo/launch/cp1.launch 
+    command: roslaunch --wait /home/mars/catkin_ws/src/cp_gazebo/launch/cp1.launch 
     
   cp3_ta:
     image: cmu-mars/cp3
