@@ -3,224 +3,122 @@
 ## Overview
 
 In this document, we outline a challenge problem that requires code-level
-adaptation in response to source code perturbations. Our proposed challenge
-problem involves semi-automatically injecting code-level perturbations into
-the system, and alerting the code adaptation engine to the presence of a
-code-level perturbation (but not necessarily the location of the
-perturbation). We focus the scope of this challenge problem on
-perturbations that mimic the kinds of changes that are introduced through
-API migrations (e.g., method renaming, parameter addition, modification and
-removal, change of units, etc.).
+adaptation in response to source-code perturbations, representative of commonly
+encountered robotics bugs.
+Our challenge problem aims to simulate bugs that are exposed (or introduced)
+during the natural evolution of robotics systems. For example, the system may
+be modified to use a new computer vision system following the recent
+discontinuation of Microsoft's Kinect camera, or a new feature may be
+introduced (e.g., searching the environment for a particular object or QR code).
+In such cases, (possibly latent) flaws in the implementation of the system may
+manifest in test suite failure.
+To simulate such bugs, we use a custom mutation injection tool, Shuriken,
+designed to create bugs that are similar to those that frequently occur in
+robotics systems.
 
-The process of injecting perturbations is to be conducted by a third-party
-(i.e., Lincoln Labs) with the aid of a perturbation engine, provided by
-ourselves. Below, we provide a high-level overview of the external
-evaluation process:
+We propose that the ability of the MARS system to adapt at the code-level be
+evaluated by subjecting it to realistic faults (referred to as
+*perturbation scenarios*) and measuring the degree to which intent
+(represented by a fixed set of system-level tests) is recovered.
+
+### Approach
+
+To tackle this challenge problem, we plan to construct a search-based program
+repair technique, designed to efficiently fix common robotics bugs rather than
+attempting to address all theoretically possible bugs.
+We plan to construct this technique by bringing together several of our
+innovations in the fields of fault detection, localisation and repair,
+including but not limited to:
+
+* A novel search algorithm, inspired by *greedy algorithms*, that reduces the
+  cost repairing complex faults (i.e., multi-line faults) by several orders
+  of magnitude compared to existing genetic algorithm--based approaches.
+* The use of *targeted repair* operators and better *fix prediction* to
+  concentrate the allocation of limited resources on likely bug fixes.
+* *Automated (system-level) test generation* for improving fault localisation
+  accuracy and reducing the cost of testing.
+* The use of an *online mutation analysis*, using the test results of candidate
+  patches, to learn the shape and location over the course of the search.
+* Elastic, *distributed repair* using commodity cloud-compute services, such as
+  Amazon EC2, Microsoft Azure, and Google Compute Engine.
+
+### Research Questions
+
+This challenge problem is designed to answer the following research questions:
+
+* **RQ1:** How often does search-based program repair successfully localise the
+    perturbation to a single file?
+* **RQ2:** How often does search-based program repair discover a partial repair?
+* **RQ3:** How often does search-based program repair discover a complete repair?
+
+## Testing Procedure
+
+In this section, we discuss the procedure for testing our proposed solution.
 
 ![alt text](img/brass-high-level.png "High-Level Architecture of the Perturbation Injection Process")
 
-(1) The test harness sends a request to the perturbation engine, containing
-a description of the characteristics of the desired perturbation. (2) The
-perturbation engine generates a suitable perturbation at random, fitting
-the characteristics provided in step (1), and injects it into the source
-code. (3) The perturbation engine notifies the repair tool to the presence
-of a perturbation, invoking the process of code-level adaptation. (4) The
-code adaptation engine attempts to localise and adapt to the perturbation,
-within a given time or resource limit specified by the examiner. (5) The
-code adaptation engine provides a summary of the adaptation process to the
-test harness.
-
-Using this approach, we propose that Lincoln Labs assesses the ability of
-the MARS system to self-adapt at the code-level by evaluating its response
-to a set of N generated code-level perturbation scenarios. To gain a more
-detailed understanding of the strengths and limitations of our
-code-adaptation engine, we propose that the system be evaluated against
-scenarios of varying levels of difficulty. For example, we may evaluate 60,
-30 and 15 perturbation scenarios belonging to three coarsely defined
-difficulty levels D1, D2 and D3, respectively. Each of these scenarios is
-to be passed to the test harness to determine the system’s ability to
-respond.
-
-## Test Data
-
-No specific test data are required by this challenge problem. All
-code-level perturbations will be generated using our supplied perturbation
-engine.
-
-## Test Parameters
-
-Below, we describe parameters that may be supplied to the perturbation
-engine (via the test harness) to specify the nature of the perturbation.
-
-| Name        | Description                                                    |
-|-------------|----------------------------------------------------------------|
-| Location    | The location in the system at which the perturbation should be injected. This may be specified at a number of different granularities: ROS node, project, file, class, function, block, line or character range. Any details that are left unspecified by the user are selected at random by the perturbation engine. |
-| Schema      | The “shape” of the perturbation (e.g., swap binary operands, replace an expression, modify a method header, etc.). Each schema is intended to mimic a kind of perturbation that is frequently encountered in API migrations. If no schema is specified by the user, a suitable schema (w.r.t. the chosen location) will be randomly selected.</br></br> Certain parameterised schemas may also accept a number of parameters, describing the concrete details of a perturbation (e.g., the replacement expression). If these parameters are omitted by the user, the perturbation engine will randomly select suitable values. |
-| Difficulty  | A measure of the difficulty of the perturbation, according to some yet-to-be-defined difficulty metric. If unspecified, a perturbation of the lowest difficulty will be generated. |
-
-## Test Procedure
-
-Below, we discuss each of the steps involved in the test procedure for this
-Challenge Problem:
+A high-level overview of the testing procedure for this challenge problem is
+illustrated above. Below we briefly discuss each of the stages involved in this
+procedure.
 
 1. **Generation:** A partial description of the perturbation scenario, provided
 		by the examiner to the test harness, is forwarded onto the perturbation
-		engine. The perturbation engine proceeds to generate a suitable code-level
-		perturbation with the desired characteristics.
-		</br></br>
-		Generating realistic code-level perturbations, similar to those that are
-		observed in software systems, remains an open challenge, not only for
-		robotics but for software systems in general. The use of mutation tools and
-		manual fault injection as a source of bugs for empirical studies has been
-		shown to produce different results to when those studies are conducted
-		using organic bugs [Pearson et al., 2017]. Careful consideration needs to
-		go into the design of the perturbation engine to ensure realistic bugs are
-		produced.
+		engine. The perturbation engine generates and returns a set of suitable
+    code-level perturbations to the examiner, all of which satisify the
+    specified characteristics.
 
-2. **Injection:** Once a suitable perturbation has been generated, that
-		perturbation must be injected into the system. To reduce the complexity of
-		modifying and recompiling the source code for the entire project, we
-		propose the use of an alternative system deployment architecture: Instead
-		of deploying the system to a single monolithic virtual machine, we propose
-		that each logical component (e.g., navigation, planning, actuation) is
-		deployed as a single, self-contained Docker container. System deployment is
-		orchestrated using a single YAML file, hosted on a publicly visible Git
-		repository, specifying logical components and the addresses of their
-		associated images.
-		</br></br>
-		We propose to exploit the decentralised, ephemeral nature of this
-		architecture to reduce the complexity of injecting code-level
-		perturbations. Specifically, we plan to inject perturbations into the
-		source code of the affected container, and recompile only that container,
-		rather than recompiling the entire system.
+2. **Injection:** The examiner selects one or more suitable perturbations
+    from the set of suitable perturbations, and instructs the perturbation
+    to inject those perturbations into the system.
 
-3. **Validation:** The perturbed system is evaluated against a test suite to
-		ensure that the system is sufficiently degraded, with respect to its
-		intent. If the perturbation fails to result in sufficient degradation, it
-		is discarded and an alternative perturbation is generated instead.
+3. **Validation:** The perturbed system is evaluated against the test suite to
+    ensure that its behaviour is sufficiently degraded for at least one test
+    (i.e., it must produce at least one `DEGRADED` or `FAILED` test outcome).
+		If the set of perturbations do not produce a change in the outcomes of the
+    test suite, the set of perturbations is discarded and the examiner is
+    required to inject an alternative set of perturbations.
 		(More details on “intent” and our evaluation metric can be found at a later
 		section in this document).
 
 4. **Adaptation:** Once a suitable perturbation has been injected, code-level
-		adaptation is triggered. At this point, resource constraints (e.g.,
-		wall-clock time, threads) and optional hints, describing the possible shape
-		and location of the perturbation, are passed to the code adaptation engine.
-		The code adaptation engine will attempt to find a code-level
-		transformation that (partially) restores intent, within the specified
-		resource limits. Once a suitable transformation has been found or resources
-		have been exhausted, a summary of the repair trial is written to disk, as a
-		JSON file. This summary may be accessed by the examiner through the
-		test harness, described next.
+		adaptation is triggered. The code adaptation engine will attempt to find
+    a code-level transformation that (partially) restores intent, within a set
+    of specified resource limits. 
 
-### Pseudocode
+5. **Summary:** Once the adaptation process has discovered a suitable
+    transformation or has exhausted its available resources, a summary of the
+    repair trial is communicated to the test harness. 
 
-```python
-sut.start() # block until the SUT is ready
-dsl.setup(sut.getInfo()) # prepare the DSL
+### Scenario Generation
 
-# evaluate N adaptation scenarios
-for i in range(numScenarios):
+Perturbation scenarios are encoded as a set of individual code-level
+mutations, where each mutations is intended to represent a realistic
+fault (in the context of a robotics system). Each constituent
+fault is generated using our (soon-to-be-)open-source mutation testing
+tool, Shuriken.
 
-  parameters = dsl.sample() # sample parameters from the DSL
-  perturbations = sut.adaptations(parameters) # find the set of suitable perturbations
-  shuffle(perturbations)
+However, generating realistic faults remains an open challenge for both
+robotics, and software systems in general [Just et al., 2014].
+Using off-the-shelf mutation testing tools and operators can lead to
+results that are not indicative of those that would be obtained by using
+organic bugs [Pearson et al., 2017].
 
-  # select and inject K perturbations
-  selected = sample(perturbations, parameters["numFaults"])
-  sut.inject(selected)
+To counter this threat, we set out to better understand the nature of faults
+in robotics systems. We conducted an empirical study of over 200 bugs in a
+popular, open-source robotics system (ArduPilot). Based on our findings, we
+crafted a set of bespoke mutation operators for Shuriken, designed to
+replicate the ten most-frequently-encountered kinds of bugs.
 
-  # block until the perturbations are injected and the system is ready
-  # if an error occurred during the injection process, select another pair of
-  # perturbations and retry
-  if not sut.waitTillInjected():
-    BLAH
-
-  # trigger the code adaptation process
-  # pass along any experiment parameters (e.g., resource limits)
-  sut.adapt(experimentParams)
-
-  # block until the adaptation process has finished
-  while not sut.done():
-    sleep(5.0)
-
-  # fetch the results and save them (to disk)
-  results = sut.results()
-```
-
-## Fix Schemas
-
-| Schema | Description | Parameters |
-|--------|-------------|------------|
-| DeleteStatement | appends a statement to a given location. | Location |
-| AppendStatement | appends a statement to a given location. | Location, Append |
-| ReplaceStatement | replaces a statement with another. | Location, Replacement |
-| ReplaceCallTarget | replaces the target of a function call | Location, Replacement |
-| ReplaceCallArg | replaces an argument of a function call | Location, Replacement |
-| ReplaceIfCondition | replaces an if-condition | Location, Replacement |
-| ReplaceLoopInvariant | replaces a loop invariant | Location, Replacement |
+* Insert void-function call
+* Remove void-function call
+* Remove transformation function call
+* Remove conditional control-flow statement
+* Insert conjunction into boolean expression
+* Remove conjunction from boolean expression
+* Flip arithmetic operator (e.g., `+` to `-`)
+* ...
 
 ## Interface to the Test Harness (API)
-
-The test harness will be provided by a simple RESTful server. This server
-will implement two actions: 1) perturbation injection and 2) perturbation
-status checking. The perturbation injection action will use the parameters
-described in the “Test Parameters” section to generate a perturbation
-scenario and begin its evaluation, and will return a unique identifier for
-the scenario.  This identifier may be passed as an argument to the status
-checking action to determine the current state of the evaluation for that
-perturbation scenario.  This action will return a “status” property,
-describing the state of the scenario using one of several predefined
-labels. Each of these labels is described below, together with any
-additional details that may be returned by the API.
-
-| Scenario State | Description |
-|----------------|-------------|
-| generating     | Indicates that the perturbation engine is currently attempting to generate and inject a suitable code-level perturbation. |
-| searching      | Indicates that the code adaptation engine is currently attempting to find an intent-restoring transformation.<ul><li>A description of the injected perturbation</li><li>Number of transformations attempted</li><li>A concise history of transformation attempts, each described by a label and a quality score</li><li>A concise history of transformation attempts, each described by a label and a quality score</li></ul> |
-| finished       | Indicates that the perturbation scenario has finished. Returns a short description of the evaluation. It should be possible to reproduce the results of this run by providing this description to the test harness. <ul><li>A description of the injected perturbation.</li><li>Time spent searching</li><li>Time spent generating the perturbation</li><li>Number of transformations attempted</li><li>A concise history of transformations attempts, in the same format as the response for the “searching” state.</li><li>The pareto front of transformations</li><li>A coarse summary of the extent to which (one of) the best transformation(s) restores intent: complete, partial, none.</li></ul> |
-
-To implement our perturbation engine, we plan to adapt and evolve our
-existing perturbation injection tool for generic ROS systems,
-ROSHammer. ROSHammer is currently capable of perturbing generic ROS systems
-at the architectural level (e.g., adding noise to communications, dropping
-messages, killing nodes).  We currently use this functionality to increase
-the accuracy of model inference (by falsifying hypotheses), although we
-envision its usage, by the wider project, as a more general means of
-testing the adaptability of a system.  To perform mutations at the level of
-the code, we currently use another one of our tools, Shuriken, a tool for
-generic program transformations in large-scale programs. Shuriken currently
-targets C and C++, and can be used to perform program repair, mutation
-testing, and fault localisation.
-
-As part of the BRASS project and our wider research goals, we plan to
-incorporate the abilities of Shuriken into ROSHammer. We envision that the
-resulting tool will be capable of performing a wide range of adaptations,
-at both the code and architectural levels. This tool may be used by any
-ROS-based system to improve model inference, perform automated test
-generation, and to systematically measure adaptiveness in a variety of
-scenarios.
-### API Data Structures
-
-> TODO: I'm not sure how to incorporate these into the API description
-> above or quite where they belong -- Ian
-
-#### CandidateAdaptation
-
-Used to describe the evaluation of a candidate adaptation.
-
-| Property | Type | Description | Example |
-|------|------|--------|-----------|
-| Identifier | String | A short description of the adaptation | `"Replace(14,0:14,39; 'x < 3')"` |
-| Compilation | CompilationOutcome | Details of the outcome of the compilation of this adaptation | See below |
-
-#### CompilationOutcome
-
-Used to describe the outcome of an attempted compilation.
-
-| Property | Type | Description | Example |
-|------|------|--------|-----------|
-| Successful | Bool | A flag indicating whether or not the compilation was successful | `true` |
-| Duration | Float | The number of seconds taken to (fail to) finish compilation | `3.56` |
 
 ### Sequence Diagram for Interaction Pattern
 
@@ -247,109 +145,59 @@ automatically from the Swagger definition for convenience.
 
 ## Intent Specification and Evaluation Metrics
 
-To evaluate candidate code-level transformations, we propose that a set of
-integration tests, each describing a mission for the robot (e.g.,
-navigating a simulated corridor), be performed in simulation. Instead of
-describing the outcome of a mission in terms of success or failure, we describe
-outcomes in terms of a set of predefined quality-of-service (QoS) attributes
-(e.g., distance from the target, power consumption, etc.).
-We define the intent of the system in terms of its QoS attributes: a system
-maintains intent if it completes a set of missions to a satisfactory level of
-quality. If the system fails to meet this expected level of quality, we deem
-it to be degraded. We define overall system quality as an approximate measure
-of how closely the behaviour of a system meets its intent. This definition
-allows us to recognise valuable adaptations that partially restore intent (e.g.,
-switching to an alternative, less accurate navigation algorithm).
-
-### Degradation
-
-Given a test mission, we use an oracle to define a set of expected values for
-each of the system's QoS attributes. We also use the oracle to determine a
-suitable standard deviation for each of the QoS attributes. After performing
-the test, the observed QoS values are compared against the expected values. If
-the observed values are within one std. dev. of the expected value, intent is
-said to have been maintained (with respect to a particular mission and QoS
-metric). If the difference between the observed and expected values is greater
-than one std. dev., the system is said to be *degraded*.
-
-To simplify the measurement of overall system quality, and to account for
-inherent measurement errors, the *degradation* of a particular QoS attribute for
-a given mission is measured in units of standard deviation. Using this notion
-of degradation, we measure the overall system degradation (in terms of a given
-test suite) using a degradation matrix, shown below.
-
-![alt text](img/cp2-degradation-vector.png "Degradation Vector")
-
-Naively, we can produce a scalar summary of the overall system degradation by
-simply summing all values in the degradation matrix. Alternatively, we can
-summarise system degradation using either a *QoS degradation vector* or a
-*mission degradation vector*:
-
-* The *QoS degradation vector* contains the sum of each column in the degradation
-  matrix, and summarises the degradation of the system (across all tests) in
-  terms of each of the QoS attributes.
-* The *mission degradation vector* is given by the sum of each row in the
-  degradation matrix, and describes the overall system degradation (across all
-  QoS attributes) for each test.
-
-
-### Quality of Service Attributes
-
-We plan to measure quality of service using the following attributes:
-
-* distance to target
-* power consumption
-* time taken
-* number of collisions
-
-Note, our approach is generic and can be easily extended to accommodate a
-different set of attributes.
-
-
-### Test Suite
-
-Each test case, or mission, is described by the following:
+To evaluate candidate code-level transformations, we propose that a fixed suite
+of tests, each describing a mission for the robot (e.g., to navigate a
+simulated corridor), be performed in simulation.
+Each test (or mission) within this suite is described by the following:
 
 * a mission schema, describing a kind of mission. (e.g., navigate to a
 	location.)
 * a set of mission parameters, required to instantiate the mission schema
 	as a concrete mission. (e.g., move from A to B.)
-* a simulated environment. (e.g., a randomly-generated maze.)
+* a simulated environment. (e.g., a randomly generated maze.)
 * a configuration for the robot. (e.g., a certain node may be disabled.)
-* a set of quality of service metrics, defined by its schema, responsible for
-	measuring the success of a mission.
 
-This metric succinctly captures our goal for code-level adaptation: to
-return a perturbed system as close to its intent as possible (or alternatively,
-to reduce degradation).
-From the perspective of the code-level adaptation engine, this metric also
-transforms the problem into one that is more amenable to search (i.e., it
-produces a gradient).
+Mission schemas are used to describe a certain type of mission
+(e.g., point-to-point navigation) in terms of its
+*parameters* (e.g., target location) and its expected *behaviours* (i.e., how
+the mission is performed) and *outcomes* (i.e., the state of the robot
+immediately after the execution of the mission).
+Schemas are also responsible for classifying the outcome of a mission as either
+*passing*, *failing*, or *degraded*, according to the degree to which the
+robot behaves as expected by the schema.
 
+Collectively, mission schemas are used to specify *intent* (i.e., the set of
+intended behaviours of the robot in response to a mission). Test suites of
+missions (i.e., instances of mission schemas) are used to approximately
+measure whether intent is maintained by a particular version of the system.
 
-### Oracle
+### Comparison to Baseline
 
-The expected quality of service for each attribute is determined by using the
-unperturbed system as an oracle. After executing each mission several times,
-the expected QoS values and standard deviations are calculated from the
-observed results.
+To measure the ability of our system to adapt to source-code perturbations, we
+compare the test suite results of its *best* candidate adaptation (i.e., patch)
+against those obtained by the unadapted, perturbed source code.
+According to the BRASS terminology, we compare the following three versions
+of the MARS system:
 
+* **A:** Original source code (i.e., unperturbed case). Passes all tests.
+* **B:** Mutated source code (i.e., perturbed case). Fails at least one test.
+* **C:** Adapted source code (i.e., adaptive case).
 
-### Comparison to the Baseline
+The outcome of a perturbation scenario is evaluated according to the test suite
+results of the three versions of the system:
 
-To compare the adaptive and non-adaptive behaviours of the system, we measure
-the degradation of the pareto set of adaptations, found during the adaptive
-case, against the degradation of the original system.
-
-* *complete repair*: if the sum of the degradation matrix for a given
-  adaptation is equal to zero (implying that intent was satisfied).
-* *partial repair*: if any adaptation within the pareto set dominates the
-  unadapted case in terms of degradation.
-* *no repair*: if the adaptive case is unable to find an adaptation that
-  dominates the unadapted case in terms of degradation.
-
+* *complete repair*: if **(C)** passes all tests within the suite. (i.e.,
+    **(C)** behaves identically to **(A)**, w.r.t. the test suite.)
+* *partial repair*: if **(C)** dominates **(B)**.
+* *no repair*: if **(C)** does not dominate **(B)**.
 
 ## References
+
+[Just et al., 2014] Just, R., Jalali, D., Inozemtseva, L., Ernst, M. D.,
+Holmes, R., and Fraser, G. (2014).
+Are mutants a valid substitute for real faults in software testing?
+In Proceedings of the 22nd ACM SIGSOFT International Symposium on Foundations of Software Engineering,
+FSE '14. ACM.
 
 [Pearson et al., 2017] Pearson, S., Campos, J., Just, R., Fraser, G., Abreu, R., Ernst,
 M. D., Pang, D., and Keller, B. (2017). Evaluating and improving fault localization.
