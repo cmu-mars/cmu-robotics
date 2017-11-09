@@ -1,10 +1,10 @@
-# CMU MARS (Aldrich), CP3: On-line robotic adaptation to software failure, unexpected environments
+# CMU MARS (Aldrich), CP3: On-line robotic software architecture adaptation to software failure, unexpected environments
 
 ## Overview
 
 This challenge problem will demonstrate major advances in our capability to adapt to perturbations such as software component failure or environmental change.
 
-Today's self-adaptive systems are typically limited to selecting from pre-determined plans for adapting to specific responses.  In BRASS--and for long-lived software in general--these adaptations will need to be discovered when the system is in operation.  We use relational and probabilistic multi-objective planning to consider a wide range of adaptations including:
+Today's self-adaptive systems are typically limited to selecting from pre-determined plans for adapting to specific responses. In BRASS--and for long-lived software in general--these adaptations will need to be discovered when the system is in operation, to enhance maintainability and software resilience over time.  We use relational and probabilistic multi-objective planning to consider a wide range of adaptations including:
  * software configuration
  * software component parameters
  * mission adaptations
@@ -47,7 +47,7 @@ The JSON format for these pieces of information are:
 
 ```
 {"map" : [ {"node-id" : STRING, "coord" : { "x" : FLOAT, "y" : FLOAT}, "connected-to" : [ STRING, ...] }, ...],
- "lights" : {"light-id" : STRING, "coord" : {"x" : FLOAT, "y" : FLOAT}]
+ "lights" : [{"light-id" : STRING, "coord" : {"x" : FLOAT, "y" : FLOAT}]
 }
 ```
 
@@ -101,7 +101,14 @@ The test will be able to be parameterized in a number of ways, and this will be 
 - whether adaptation is enabled for this test. A boolean.
 
 ## Test Procedure
-> TODO
+As in Phase 1, this challenge problem will have three cases A, B, and C, as described below.
+
+- *Baseline A*: The robot will be given an initial configuration (software and sensor components), a starting location, and a target location, and will attempt to navigate using a predefined plan to the target location.
+- *Baseline B*: This is the same as *Baseline A*, but the robot and environment can be perturbed in a number of ways
+- *Challenge*: A DAS will run on top of *Baseline B* that can make changes to the robot software and sensor activation.
+
+It is intended that there be a range of perturbation sets explored (e.g., not all perturbations should be made for each test). Furthermoe, some perturbations to make make sense in some contexts. For example, if the kinect or lidar are valid sensors, changing lighting conditions will not have an effect. (If the kinect fails, or if the initial configuration starts without the kinect active) then it lighting may come into play.
+
 ## Interface to the Test Harness (API)
 
 ### Sequence Diagram for Interaction Pattern
@@ -113,15 +120,14 @@ this sequence. This interaction is omitted for clarity.
 
 ### REST Interface to the TH
 
-This API is currently still a draft. Some, but not all, possible future
-changes include:
- * adding more constants to the enumerated error codes in the TH `/error`
-   end point
+The API to the TH defines endpoints for the following REST APIs:
 
- * adding more constants to the enumerated status codes in the TH `/status`
-   end point
+- /ready - indicates that the TA is ready and should be given configuration information for the test
+- /error - indicates that the TA encountered an unrecoverable error, and the test case has failed
+- /status - indicates various status messages as the test progresses
+- /done - indicates that the test is done and the machine running the test can be shut down.
 
-The Swagger file describing this interface is
+The Swagger file describing this interface in full is
 [swagger-yaml/cp3-th.yaml](swagger-yaml/cp3-th.yaml) which should be
 considered the canonical definition of the
 API. [swagger-yaml/cp3-th.md](swagger-yaml/cp3-th.md) is produced
@@ -129,10 +135,14 @@ automatically from the Swagger definition for convenience.
 
 ### REST Interface to the TA
 
-This API is currently still a draft. Some, but not all, possible future
-changes include:
- * adding more constants to the enumerated error codes in the `400` returns
-   from different end points
+The API to the TA defines endpoints for the following REST APIs:
+
+- /start - indicates that the robot should start its assigned mission
+- /perturb/light - cause a light in the environment to be turned on or off
+- /perturb/sensor - cause a sensor's state to change to on or off
+- /perturb/nodefail - cause a component in the robot software to fail at run time
+- /observe - returns the current state of the mission
+
 
 The Swagger file describing this interface is
 [swagger-yaml/cp3-ta.yaml](swagger-yaml/cp3-ta.yaml) which should be
@@ -147,8 +157,11 @@ automatically from the Swagger definition for convenience.
 **Informal Description**: Robot comes to the target location.
 
 **Formal Description**: The intent here is that if we get close to the goal (within 30cm from the center of the robot), then we get 1. Otherwise we get a linearly decreasing score the further away we are. So, if the turtlebot finishes in the green area in the figure below we get a score of 1; in the blue area we get 0 > score > 1; outside the blue circle we get 0.
+![Accuracy diagram](img/cp3-accuracy.png "Accuracy Intent")
 
 **Test/Capture Method**: The position of the robot will be read from the simulator. This will be returned in test-ta/action/observed
+
+**Result expression**: `location = (/done/final_x, /done/final_y)`
 
 **Verdict Expression**:
 
@@ -160,6 +173,8 @@ automatically from the Swagger definition for convenience.
 ```
 function distance(loc1, loc2) = sqrt((loc1.x - loc2.x)^2 + (loc1.y - loc2.y)^2))
 ```
+
+
 
 | Condition                                                        | Score                                             |
 |------------------------------------------------------------------|---------------------------------------------------|
@@ -181,7 +196,7 @@ DEG_B = the score (0..1) degraded of B
 | DEGRADED    | PASS              | PASS if DEG_C > DEG_B<br/>INCONCLUSIVE if DEG_C == DEG_B<br/>FAIL otherwise | FAIL |
 | FAIL        | PASS | PASS | INCONCLUSIVE |
 
-###Intent Element 2: Timing
+### Intent Element 2: Timing
 **Informal Description**: Robot reaches target location by a deadline
 
 **Formal Description**:
@@ -189,10 +204,10 @@ DEG_B = the score (0..1) degraded of B
 Scoring requirements:
 
 1. Account for some inaccuracy (can’t be right on the deadline). Call this BUFFER
-2. Being early is better than being late, but don’t want to encourage inaccurate over predictions. We can be early by 2*BUFFER or late by BUFFER
-3. Want to penalize too many deadline predictions (so we don’t predict just before getting there). If there is no adaptation, then we can make one prediction. Let’s allow ourselves one more prediction per adaptation that we do. We will be penalized score*(1-over_predictions)^(3/2)/15. I.e., we get penalized more severely the more we over predict. A new prediction causes the robot to send a notification to the participant.
+2. Being early is better than being late, but don’t want to encourage inaccurate over predictions. We can be early by 2 x BUFFER or late by BUFFER
+3. Want to penalize too many deadline predictions (so we don’t predict just before getting there). If there is no adaptation, then we can make one prediction. In Phase II, we will allow ourselves only the number of predicitions for the times we adapt. If we adapt one more than allowed, then the prediction penalty is 0, otherwise it is 1.
 
-![Timing diagram](img/cp3-timing-intent.png "Timing Intent Intent")
+![Timing diagram](img/cp3-timing-intent.png "Timing Intent")
 
 The above diagram gives the intent of the base score. If inDeadlineWindow, then we get 1. If too early, then we get less score, but at a slower rate (½) than if we are too late.
 We’re allowed one prediction at the beginning of the test. So if there is one adaptation, then we expect two predictions.
@@ -200,7 +215,14 @@ We’re allowed one prediction at the beginning of the test. So if there is one 
 
 **Test/Capture Method**: The running time of the test will be calculated starting when the test begins to when the mission is complete. The predicted deadline will be sent in the observations.
 
-**Result Expression**: {(location, target, deadline, arrival_time, number_of_predictions, number_of_adaptations)}
+**Result Expression**: 
+```
+location=(/done/final_x,/done/final_y)
+deadline=(/done/arrival-predictions[size(/done/arrival-prediction)]
+arrival=/done/final-sim-time
+number_of_predictions=size(/done/arrival-predictions)
+number_of_adaptations=/done/num-adaptations
+```
 
 **Verdict Expressions**:
 
@@ -222,14 +244,15 @@ function tooEarly(deadline, arrival) = arrival <= deadline - 2*BUFFER
 // 3 minutes late is ok, but later than one minutes gives us a degraded score
 function tooLate(deadline, arrival) = arrival > deadline + BUFFER
 
-function prediction_penalty() = 1-(number_of_predictions - 1 - number_of_adaptations)^(3/2)/15
+function prediction_penalty() = number_predicitions > 1 + number_adaptations?0:1
 ```
 
 | Condition                                                      | Score                                                |
 |---|---|
-| eventually(close(location,target)  and inDeadlineWindow(deadline, arrival)) | 	1*prediction_penalty () |
-| eventually(close(location,target)  and  tooEarly (deadline, arrival)) | prediction_penalty() * (arrival -  (deadline - 2 * (PENALTY+BUFFER)) /(2*PENALTY)) |
-| eventually(close(location,target)  and tooLate(deadline, arrival)) | prediction_penalty() * ((arrival -  (deadline + PENALTY+BUFFER))  / (-PENALTY)) |
+| prediction_penalty == 0                                        | 0 |
+| eventually(close(location,target)  and inDeadlineWindow(deadline, arrival)) | 	1 |
+| eventually(close(location,target)  and  tooEarly (deadline, arrival)) | (arrival -  (deadline - 2 * (PENALTY+BUFFER)) /(2*PENALTY)) |
+| eventually(close(location,target)  and tooLate(deadline, arrival)) | ((arrival -  (deadline + PENALTY+BUFFER))  / (-PENALTY)) |
 | else | 0 |
 
 
@@ -240,7 +263,7 @@ function prediction_penalty() = 1-(number_of_predictions - 1 - number_of_adaptat
 
 **Test/Capture Method**: The done message will report the remaining charge in the battery for the end of the mission.
 
-**Result Expression**: final_charge
+**Result Expression**: `final_charge = /done/final-charge`
 
 **Verdict Expression**:
 
@@ -253,14 +276,14 @@ function prediction_penalty() = 1-(number_of_predictions - 1 - number_of_adaptat
 | final_charge > 0                                               | (MAX_CHARGE - final_charge)/MAX_CHARGE               |
 | otherwise                                                      | 0 |
 
-### Intent Element 3: Safety
+### Intent Element 4: Safety
 **Informal Description**: Whether the robot collides with something in the environment. 
 
 **Formal Description**: The intent is related to the risk that the robot takes to complete the mission. Being riskier means, e.g., traveling through an unknown environment at a high speed to complete the mission on time. We will have protrusions in the environment that are of a height that will make them undetectable by at least one of the sensors. Transitions in the map will be annotated to assess their riskiness of traversal.
 
 **Test/Capture Method**: The done message will report the number an array of times and speeds when the robot collided with something on the map.
 
-**Result Expression**: collisions = [{time, speed}, ...]
+**Result Expression**: `collisions = /done/collisions`
 
 **Verdict Expression**:
 
