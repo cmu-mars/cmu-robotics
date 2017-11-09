@@ -157,6 +157,7 @@ automatically from the Swagger definition for convenience.
 **Informal Description**: Robot comes to the target location.
 
 **Formal Description**: The intent here is that if we get close to the goal (within 30cm from the center of the robot), then we get 1. Otherwise we get a linearly decreasing score the further away we are. So, if the turtlebot finishes in the green area in the figure below we get a score of 1; in the blue area we get 0 > score > 1; outside the blue circle we get 0.
+![Accuracy diagram](img/cp3-accuracy.png "Accuracy Intent")
 
 **Test/Capture Method**: The position of the robot will be read from the simulator. This will be returned in test-ta/action/observed
 
@@ -204,9 +205,9 @@ Scoring requirements:
 
 1. Account for some inaccuracy (can’t be right on the deadline). Call this BUFFER
 2. Being early is better than being late, but don’t want to encourage inaccurate over predictions. We can be early by 2 x BUFFER or late by BUFFER
-3. Want to penalize too many deadline predictions (so we don’t predict just before getting there). If there is no adaptation, then we can make one prediction. Let’s allow ourselves one more prediction per adaptation that we do. We will be penalized score x (1-over_predictions)^(3/2)/15. I.e., we get penalized more severely the more we over predict. A new prediction causes the robot to send a notification to the participant.
+3. Want to penalize too many deadline predictions (so we don’t predict just before getting there). If there is no adaptation, then we can make one prediction. In Phase II, we will allow ourselves only the number of predicitions for the times we adapt. If we adapt one more than allowed, then the prediction penalty is 0, otherwise it is 1.
 
-![Timing diagram](img/cp3-timing-intent.png "Timing Intent Intent")
+![Timing diagram](img/cp3-timing-intent.png "Timing Intent")
 
 The above diagram gives the intent of the base score. If inDeadlineWindow, then we get 1. If too early, then we get less score, but at a slower rate (½) than if we are too late.
 We’re allowed one prediction at the beginning of the test. So if there is one adaptation, then we expect two predictions.
@@ -220,7 +221,7 @@ location=(/done/final_x,/done/final_y)
 deadline=(/done/arrival-predictions[size(/done/arrival-prediction)]
 arrival=/done/final-sim-time
 number_of_predictions=size(/done/arrival-predictions)
-number_of_adaptations=size(/done/adaptation-times)
+number_of_adaptations=/done/num-adaptations
 ```
 
 **Verdict Expressions**:
@@ -243,14 +244,15 @@ function tooEarly(deadline, arrival) = arrival <= deadline - 2*BUFFER
 // 3 minutes late is ok, but later than one minutes gives us a degraded score
 function tooLate(deadline, arrival) = arrival > deadline + BUFFER
 
-function prediction_penalty() = 1-(number_of_predictions - 1 - number_of_adaptations)^(3/2)/15
+function prediction_penalty() = number_predicitions > 1 + number_adaptations?0:1
 ```
 
 | Condition                                                      | Score                                                |
 |---|---|
-| eventually(close(location,target)  and inDeadlineWindow(deadline, arrival)) | 	1*prediction_penalty () |
-| eventually(close(location,target)  and  tooEarly (deadline, arrival)) | prediction_penalty() * (arrival -  (deadline - 2 * (PENALTY+BUFFER)) /(2*PENALTY)) |
-| eventually(close(location,target)  and tooLate(deadline, arrival)) | prediction_penalty() * ((arrival -  (deadline + PENALTY+BUFFER))  / (-PENALTY)) |
+| prediction_penalty == 0                                        | 0 |
+| eventually(close(location,target)  and inDeadlineWindow(deadline, arrival)) | 	1 |
+| eventually(close(location,target)  and  tooEarly (deadline, arrival)) | (arrival -  (deadline - 2 * (PENALTY+BUFFER)) /(2*PENALTY)) |
+| eventually(close(location,target)  and tooLate(deadline, arrival)) | ((arrival -  (deadline + PENALTY+BUFFER))  / (-PENALTY)) |
 | else | 0 |
 
 
