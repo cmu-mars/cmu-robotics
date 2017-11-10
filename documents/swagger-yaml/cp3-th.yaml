@@ -67,6 +67,14 @@ paths:
                   - CONFIG1
                   - CONFIG2
                   - CONFIG3
+              utility-function:
+                type: string
+                description: >-
+                  the utility function to use for evaluating mission quality
+                enum:
+                  - FAVOR_TIMELINESS
+                  - FAVOR_SAFETY
+                  - FAVOR_EFFICIENCY
         '400':
           description: TH encountered an error producing configuration data
   /error:
@@ -197,6 +205,7 @@ paths:
               - final-charge
               - collisions
               - num-adaptations
+              - final-utility
             properties:
               final-x:
                 type: number
@@ -234,6 +243,10 @@ paths:
                 type: integer
                 description: >-
                   the number of times that the robot adapted (0 if there is no DAS)
+              final-utility:
+                type: float
+                description: >-
+                  the utility achieved at the end of the mission
       responses:
         '200':
           description: >-
