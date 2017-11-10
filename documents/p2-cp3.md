@@ -36,13 +36,12 @@ Mission quality will be assessed using a utility preference function. Lincoln La
 
 ## Test Data
 
-There are three pieces of information that will be defined pre-test for this challenge problem:
+The following pieces of indormation will be defined pre-test for this challenge problem:
 
 1. The map, including waypoint locations and locations of lights.
 2. The set of sensors that the robot can use.
 3. The set of software components (nodes) that can be used and perturbed in the test. (Note: this is not the full robot configuration, just the parts that are neccessarily visible to perturb during test.)
 4. A set of valid starting configurations that can be used to set up the test.
-5. The utility function to use for adaptation trade-offs.
 
 The JSON format for these pieces of information are:
 
@@ -312,7 +311,7 @@ function prediction_penalty() = number_predicitions > 1 + number_adaptations?0:1
 ### Intent Element 5: Utility
 **Informal Description**: The DAS maintains a high level of utility for the mission
 
-**Formal Description**: Software systems are designed to trade-off different business goals. Over time, these trade-offs may adapt and the system must change the way it responds to match these new trade-offs. For the purposes of this challenge problem, we represent the trade-offs as a utility preference function, but limit the preference functions to one that favors timeliness, one that favors efficiency, and another that favors safety.
+**Formal Description**: Software systems are designed to trade-off different business goals. Over time, these trade-offs may adapt and the system must change the way it responds to match these new trade-offs. For the purposes of this challenge problem, we represent the trade-offs as a utility preference function, but limit the preference functions to one that favors timeliness, one that favors efficiency, and another that favors safety. Utility will be a value on the interval [0,1].
 
 **Test/Capture Method**: The done message will contain the final utility of the system, based on combining the metrics from intents 2-4. 
 
