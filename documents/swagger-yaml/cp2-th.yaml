@@ -7,11 +7,11 @@ schemes:
 host: brass-th
 
 definitions:
+
   CandidateAdaptation:
     type: object
     required:
       - diff
-      - degradation
       - compilation-outcome
       - test-outcomes
     properties:
@@ -24,13 +24,6 @@ definitions:
         $ref: '#/definitions/CompilationOutcome'
         description: >-
           A description of the outcome of attempting to compile this adaptation.
-      degradation:
-        type: object
-        $ref: '#/definitions/Degradation'
-        description: >-
-          A description of the level of degradation that was observed when
-          this adaptation was applied.
-
       test-outcomes:
         type: array
         items:
@@ -110,9 +103,6 @@ definitions:
         type: object
         description:
           A measure of service quality with respect to the number of collisions.
-
-  Degradation:
-    type: object
 
 paths:
   /error:
