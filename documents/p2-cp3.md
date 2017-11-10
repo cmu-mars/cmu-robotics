@@ -32,6 +32,8 @@ The perturbations to the robot and environment that will trigger change are:
 - Turning on and off lights in the world
 - Failing components (ROS nodes) in the robot itself
 
+Mission quality will be assessed using a utility preference function. Lincoln Labs will be able to choose a preference function from among a set of three such functions (see below).
+
 ## Test Data
 
 There are three pieces of information that will be defined pre-test for this challenge problem:
@@ -40,6 +42,7 @@ There are three pieces of information that will be defined pre-test for this cha
 2. The set of sensors that the robot can use.
 3. The set of software components (nodes) that can be used and perturbed in the test. (Note: this is not the full robot configuration, just the parts that are neccessarily visible to perturb during test.)
 4. A set of valid starting configurations that can be used to set up the test.
+5. The utility function to use for adaptation trade-offs.
 
 The JSON format for these pieces of information are:
 
@@ -92,6 +95,13 @@ The robot will have a set of valid configurations that the test harness can star
 CONFIG_SET = enum {CONFIG1, CONFIG2, ..., CONFIGN}
 ```
 
+### Utilities
+The adaptation engine will use one of a set of utility functions that can be specified for Lincoln Labs. The utility function may cause different adaptations to occur in the same context, depending on what trade-off is being made. The set of allowable functions are labeled as:
+
+```
+UTILITY_SET = enum {FAVOR_TIMELINESS, FAVOR_SAFETY, FAVOR_EFFICIENCY}
+```
+
 ## Test Parameters
 
 The test will be able to be parameterized in a number of ways, and this will be done via the response to ready. The elements that may be specified for the test are:
@@ -99,8 +109,10 @@ The test will be able to be parameterized in a number of ways, and this will be 
 - the initial robot position, as well as the target location for the robot, which constitutes the mission. Both of these will be specified using waypoint labels defined in the map. It is intended that the start and target waypoint **NOT** be the same label.
 - the initial configuration of the robot, chosen from a set of potential robot configurations. This will be one chosen from a set of labels that specify the configuration, that are part of the test data, i.e., CONFIG1, CONFIG2, ..., CONFIGN
 - whether adaptation is enabled for this test. A boolean.
+- the utility preference function to use for trading off adaptations
 
 ## Test Procedure
+
 As in Phase 1, this challenge problem will have three cases A, B, and C, as described below.
 
 - *Baseline A*: The robot will be given an initial configuration (software and sensor components), a starting location, and a target location, and will attempt to navigate using a predefined plan to the target location.
