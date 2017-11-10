@@ -247,6 +247,7 @@ function distance(loc1, loc2) = sqrt((loc1.x - loc2.x)^2 + (loc1.y - loc2.y)^2))
 ```
 
 For each task:
+
 | Condition                                                        | Score                                             |
 |------------------------------------------------------------------|---------------------------------------------------|
 | eventually(distance(location,target) < MAX_DISTANCE)	           | 1                                                 |
