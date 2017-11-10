@@ -239,14 +239,14 @@ paths:
                   $ref: "#/definitions/CollisionData"
                 description: >-
                   A (possibly empty) list of locations, times, and speeds of any collisions of the robot
-              num-adaptation:
+              num-adaptations:
                 type: integer
                 description: >-
                   the number of times that the robot adapted (0 if there is no DAS)
               final-utility:
                 type: float
                 description: >-
-                  the utility achieved at the end of the mission
+                  the utility achieved at the end of the mission, in the range [0,1]
       responses:
         '200':
           description: >-
