@@ -296,3 +296,14 @@ function prediction_penalty() = number_predicitions > 1 + number_adaptations?0:1
 | size(collisions) == 0                                              |   1          |
 | !exists speed in collisions . speed > SAFE_SPEED                                                      | 1 |
 | otherwise | 0 |
+
+### Intent Element 5: Utility
+**Informal Description**: The DAS maintains a high level of utility for the mission
+
+**Formal Description**: Software systems are designed to trade-off different business goals. Over time, these trade-offs may adapt and the system must change the way it responds to match these new trade-offs. For the purposes of this challenge problem, we represent the trade-offs as a utility preference function, but limit the preference functions to one that favors timeliness, one that favors efficiency, and another that favors safety.
+
+**Test/Capture Method**: The done message will contain the final utility of the system, based on combining the metrics from intents 2-4. 
+
+**Result expression**: `utility = /done/final-utility`
+
+**Verdict Expression**: The value for the verdict expression will be the value of utility. In the roll-up of the test, the test succeeds if the utility of the Challenge is greater than the utility of Baseline B.
