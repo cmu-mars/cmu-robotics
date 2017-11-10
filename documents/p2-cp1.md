@@ -9,7 +9,7 @@ are likely to change their behavior over time. For software to continue to opera
 
   1. is rarely used to reason about mission completion, but is typically
      critical for a mission's success,
-  2. its inherent characteristics (consumption behavior) will change over time due to chemical and physical characteristics of batteries as they degrade and are replaced over time, and
+  2. will change over time due to chemical and physical characteristics of batteries as they degrade and are replaced over time, and
   3. will change as sensors/algorithms/workloads evolve over the lifetime of
      the system.
 
@@ -59,9 +59,9 @@ In the second phase, the robot will be asked to complete `n` tasks (part of a mi
 
 ### Research Questions
 
-**RQ1**: Can adaptations that reasons on `models that have been learned under budget constraint` improve the quality of missions (in terms of evaluation criteria including timeliness, success rate) compared to reactive adaptations?
+**RQ1**: Can adaptations that reason using *models that have been learned under budget constraint* improve the quality of missions (in terms of evaluation criteria including timeliness, success rate) compared to reactive adaptations?
 
-+ We assume the learning is `under limited budget constraints`. Also, power models are assumed to be `polynomial models parameterized over robot's configuration options`. 
++ We assume the learning is *under limited budget constraints*. Also, power models are assumed to be *polynomial models parameterized over robot's configuration options*. 
 + There might be some cases where using an accurate model might tell us that we can finish a mission without going to the charge station and, therefore, we finish the the mission earlier (i.e., better in terms of timeliness).
 + We will explore corner cases that adaptation using a learned model can provide us benefit by saving time, saving energy or both, and therefore hitting a better score in total.
 + There might be some cases where reactive planner force the robot to the charging station, but we could finish the mission without going to the station.
@@ -101,15 +101,15 @@ The start location, target locations, initial battery, ..., are all defined in t
 ## Test Procedure
 
 See overview above. In particular, this challenge problem will require a
-training phase, `Tr`, where the model, that is `selected from a predefined set of power models` by Lincoln Labs, is learned. This requires a budget (number of times the hidden function will be queried) that will be given by LL. We learn the function once at the beginning offline and then the online phase will be started.
+training phase, `Tr`, where the model, that is selected from a predefined set of power models by Lincoln Labs, is learned. This requires a budget (number of times the hidden function will be queried) that will be given by LL. We learn the function once during the `Tr` phase, and then consume the learned model during the missions.
 
 There are three test stages proposed for the evaluation of this challenge problem. They are defined as follows:
    
    1. A (no perturbation, no discovery/adaptation, no power model): The robot use a threshold to determine when to go to a charging station. The simulator uses the default power model to discharge and charge.
 
-   2. B (perturbation, no discovery/adaptation, predefined power model): The robot use a threshold to determine when to go to a charging station. The simulator uses a selected power model to discharge and charge. Also, obstacle placement and setting change as environmental perturbations are considered.
+   2. B (perturbation, no discovery/adaptation, predefined power model): The robot use a threshold to determine when to go to a charging station. The simulator uses a selected power model to discharge and charge. Also, obstacle placement and setting changes as environmental perturbations are considered.
 
-   3. C (perturbation, adaptation, learned power model): The robot adapt to the environmental perturbations using the learned power model.  
+   3. C (perturbation, adaptation, learned power model): The robot adapts to the environmental perturbations, the same perturbations as in stage B, using the learned power model.  
 
 
 ### Adaptation space and power model selection
@@ -128,9 +128,9 @@ actions) determining the configuration of the robot is as follows:
 Note that we abstracted different aspects of the robot that are known to be
 the main source of power consumption in robots, i.e., robot's motion
 actuator, sensors, and computationally intensive algorithms in the
-robot. These variations will be implemented by adjusting different
-measurement frequency of the Kinect sensor or spatial and depth resolution
-of the base Kinect. Also, for the localization, we will implement different
+robot. These variations will be implemented by adjusting
+measurement frequencies, spatial resolution, or depth resolution
+of the Kinect sensor. Also, for the localization, we will implement different
 components with different accuracy for localizing the robot.
 
 Therefore, the configuration of the robot is encoded by 12 Boolean
@@ -228,7 +228,7 @@ this sequence. This interaction is omitted for clarity.
 
 
 ## Intent Specification and Evaluation Metrics
-In this challenge problem, we evaluate how adaptations made by planner that uses a learned model partially restore intent (e.g., switching to an alternative Kinect, less accurate navigation algorithm). We measure quality as an approximate measure of how closely the behavior of a system meets its intent. 
+In this challenge problem, we evaluate how adaptations made by a planner that uses a learned model partially restore intent (e.g., switching to an alternative Kinect, less accurate navigation algorithm). We measure quality as an approximate measure of how closely the behavior of a system meets its intent. 
 
 ### Intent Specification
 
