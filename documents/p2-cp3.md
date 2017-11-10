@@ -167,7 +167,7 @@ automatically from the Swagger definition for convenience.
 ### Intent Element 1: Accuracy
 **Informal Description**: Robot comes to the target location.
 
-**Formal Description**: The intent here is that if we get close to the goal (within 30cm from the center of the robot), then we get 1. Otherwise we get a linearly decreasing score the further away we are. So, if the turtlebot finishes in the green area in the figure below we get a score of 1; in the blue area we get 0 > score > 1; outside the blue circle we get 0.
+**Formal Description**: The intent here is that if we get close to the goal (within 50cm from the center of the robot), then we get 1. Otherwise we get a linearly decreasing score the further away we are. So, if the turtlebot finishes in the green area in the figure below we get a score of 1; in the blue area we get 0 > score > 1; outside the blue circle we get 0.
 ![Accuracy diagram](img/cp3-accuracy.png "Accuracy Intent")
 
 **Test/Capture Method**: The position of the robot will be read from the simulator. This will be returned in test-ta/action/observed
