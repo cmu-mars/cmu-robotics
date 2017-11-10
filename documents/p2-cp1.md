@@ -238,11 +238,21 @@ no learning, i.e, using an inaccurate model. In CP1, we consider two types of in
 
 
 #### Intent Element 1: Success rate
-**Informal Description**: Robot accomplish all tasks in a mission.
+**Informal Description**: Percentage of tasks in which the robot gets to the target location. 
 
-**Verdict Expression**: Using the information in `/done` message by calculating the proportion of the number of tasks that have successfully been finished (`$tf$`) comparing to the original list of tasks in `/ready` message to calculate the following evaluation function for the number of tasks completed. Note that every time robot accomplishes a task it send a status message to TH. We consider a task accomplished, if it get close to the task target location within a `BUFFER` (most likely 50cm Euclidean distance from the center of the robot).
+**Verdict Expression**: Using the information in `/done` message by calculating the proportion of the number of tasks that have successfully been finished (`$tf$`) comparing to the original list of tasks in `/ready` message to calculate the following evaluation function for the number of tasks completed. Note that every time robot accomplishes a task it send a status message to TH. We consider a task accomplished, if it gets within `MAX_DISTANCE` of the target.
 
-`$r = tasks_finished / total_tasks$`
+```
+function distance(loc1, loc2) = sqrt((loc1.x - loc2.x)^2 + (loc1.y - loc2.y)^2))
+```
+
+For each task:
+| Condition                                                        | Score                                             |
+|------------------------------------------------------------------|---------------------------------------------------|
+| eventually(distance(location,target) < MAX_DISTANCE)	           | 1                                                 |
+| else                                                             | 0                                                 |
+
+`$r = sum(score) / total_tasks$`
 
 `PASS` if `$r_c >= r_a$`, `DEGRADED` if `$0 < r_c < r_a$`, `FAIL` if `$r_c == 0$`. 
 The score in the `DEGRADED` is proportional to the number of tasks that has been accomplished in baseline A: `$r_c / r_a$`. 
