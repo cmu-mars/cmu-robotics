@@ -32,9 +32,11 @@ The perturbations to the robot and environment that will trigger change are:
 - Turning on and off lights in the world
 - Failing components (ROS nodes) in the robot itself
 
+Mission quality will be assessed using a utility preference function. Lincoln Labs will be able to choose a preference function from among a set of three such functions (see below).
+
 ## Test Data
 
-There are three pieces of information that will be defined pre-test for this challenge problem:
+The following pieces of indormation will be defined pre-test for this challenge problem:
 
 1. The map, including waypoint locations and locations of lights.
 2. The set of sensors that the robot can use.
@@ -92,6 +94,13 @@ The robot will have a set of valid configurations that the test harness can star
 CONFIG_SET = enum {CONFIG1, CONFIG2, ..., CONFIGN}
 ```
 
+### Utilities
+The adaptation engine will use one of a set of utility functions that can be specified for Lincoln Labs. The utility function may cause different adaptations to occur in the same context, depending on what trade-off is being made. The set of allowable functions are labeled as:
+
+```
+UTILITY_SET = enum {FAVOR_TIMELINESS, FAVOR_SAFETY, FAVOR_EFFICIENCY}
+```
+
 ## Test Parameters
 
 The test will be able to be parameterized in a number of ways, and this will be done via the response to ready. The elements that may be specified for the test are:
@@ -99,8 +108,10 @@ The test will be able to be parameterized in a number of ways, and this will be 
 - the initial robot position, as well as the target location for the robot, which constitutes the mission. Both of these will be specified using waypoint labels defined in the map. It is intended that the start and target waypoint **NOT** be the same label.
 - the initial configuration of the robot, chosen from a set of potential robot configurations. This will be one chosen from a set of labels that specify the configuration, that are part of the test data, i.e., CONFIG1, CONFIG2, ..., CONFIGN
 - whether adaptation is enabled for this test. A boolean.
+- the utility preference function to use for trading off adaptations
 
 ## Test Procedure
+
 As in Phase 1, this challenge problem will have three cases A, B, and C, as described below.
 
 - *Baseline A*: The robot will be given an initial configuration (software and sensor components), a starting location, and a target location, and will attempt to navigate using a predefined plan to the target location.
@@ -296,3 +307,14 @@ function prediction_penalty() = number_predicitions > 1 + number_adaptations?0:1
 | size(collisions) == 0                                              |   1          |
 | !exists speed in collisions . speed > SAFE_SPEED                                                      | 1 |
 | otherwise | 0 |
+
+### Intent Element 5: Utility
+**Informal Description**: The DAS maintains a high level of utility for the mission
+
+**Formal Description**: Software systems are designed to trade-off different business goals. Over time, these trade-offs may adapt and the system must change the way it responds to match these new trade-offs. For the purposes of this challenge problem, we represent the trade-offs as a utility preference function, but limit the preference functions to one that favors timeliness, one that favors efficiency, and another that favors safety. Utility will be a value on the interval [0,1].
+
+**Test/Capture Method**: The done message will contain the final utility of the system, based on combining the metrics from intents 2-4. 
+
+**Result expression**: `utility = /done/final-utility`
+
+**Verdict Expression**: The value for the verdict expression will be the value of utility. In the roll-up of the test, the test succeeds if the utility of the Challenge is greater than the utility of Baseline B.
