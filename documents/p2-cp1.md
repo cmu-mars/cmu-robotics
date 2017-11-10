@@ -258,7 +258,7 @@ For each task:
 
 **Challenge Evaluation**:
 `PASS` if `$r_c == r_a$`, `DEGRADED` if `$r_b < r_c <= r_a$`, `FAIL` if `$r_c < r_b$`. 
-The score in the `DEGRADED` is proportional to the number of tasks that has been accomplished in baseline A: `$r_c / r_a$`. 
+In the `DEGRADED` case, the score is proportional to the number of tasks that have been accomplished in baseline A: `$r_c / r_a$`. 
 
 #### Intent Element 2: Timeliness
 **Informal Description**: Robot reaches the target location earlier than a the robot in baseline B in the same test case. Note that this is a secondary criteria and we evaluate it as far as we can retain information for baseline B. 
