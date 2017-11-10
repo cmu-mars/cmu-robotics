@@ -261,7 +261,7 @@ For each task:
 In the `DEGRADED` case, the score is proportional to the number of tasks that have been accomplished in baseline A: `$r_c / r_a$`. 
 
 #### Intent Element 2: Timeliness
-**Informal Description**: Robot reaches the target location earlier than a the robot in baseline B in the same test case. Note that this is a secondary criteria and we evaluate it as far as we can retain information for baseline B. 
+**Informal Description**: The total time to complete all tasks completed in both stage B and stage C. Note that this is a secondary criteria and we evaluate it as far as we can retain information for baseline B. 
 
 **Verdict Expression**: Using the time that the robot in baseline B has been reached (`$t_b(lt)$`) to the location of the last successful task (`lt`). Note that every time robot accomplishes a task it send a status message to TH so we will have the status containing the location and timing associated for the last accomplished task even through it may fail to accomplish all the tasks. Also, we can retain the time that robot accomplishes the associated task in baseline C (`$t_c(lt)$`).
 
