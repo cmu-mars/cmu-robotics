@@ -188,20 +188,12 @@ Returns a list of possible perturbations of an (optionally) specified shape and 
 <a name="definitions"></a>
 ## Definitions
 
-<a name="adaptation"></a>
-### Adaptation
-placeholder for actual definition of adaptations
-
-*Type* : string
-
-
 <a name="candidateadaptation"></a>
 ### CandidateAdaptation
 
 |Name|Description|Schema|
 |---|---|---|
 |**compilation-outcome**  <br>*required*|A description of the outcome of attempting to compile this adaptation.|[CompilationOutcome](#compilationoutcome)|
-|**degradation**  <br>*required*|A description of the level of degradation that was observed when this adaptation was applied.|[Degradation](#degradation)|
 |**diff**  <br>*required*|A description of the change to the code, given in the form of a diff.|string|
 |**test-outcomes**  <br>*required*|A summary of the outcomes for each of the test cases that this adaptation was evaluated against.|< [TestOutcome](#testoutcome) > array|
 
@@ -213,11 +205,6 @@ placeholder for actual definition of adaptations
 |---|---|---|
 |**successful**  <br>*required*|A flag indicating whether the compilation of this adaptation was successful or not.|boolean|
 |**time-taken**  <br>*required*|The number of seconds taken to compile this adaptation.  <br>**Minimum value** : `0`|number (float)|
-
-
-<a name="degradation"></a>
-### Degradation
-*Type* : object
 
 
 <a name="deletestatementperturbation"></a>
