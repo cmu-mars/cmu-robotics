@@ -257,7 +257,7 @@ For each task:
 
 
 **Challenge Evaluation**:
-`PASS` if `$r_c == r_a$`, `DEGRADED` if `$r_b < r_c <= r_a$`, `FAIL` if `$r_c < r_b$`. 
+`PASS` if `$r_c == r_a$`, `DEGRADED` if `$r_b <= r_c <= r_a$`, `FAIL` if `$r_c < r_b$`. 
 In the `DEGRADED` case, the score is proportional to the number of tasks that have been accomplished in baseline A: `$r_c / r_a$`. 
 
 #### Intent Element 2: Timeliness
