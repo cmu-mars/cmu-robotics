@@ -263,10 +263,10 @@ In the `DEGRADED` case, the score is proportional to the number of tasks that ha
 #### Intent Element 2: Timeliness
 **Informal Description**: The total time to complete all tasks completed in both stage B and stage C. Note that this is a secondary criteria and we evaluate it as far as we can retain information for baseline B. 
 
-**Verdict Expression**: Using the time that the robot in baseline B has been reached (`$t_b(lt)$`) to the location of the last successful task (`lt`). Note that every time robot accomplishes a task it send a status message to TH so we will have the status containing the location and timing associated for the last accomplished task even through it may fail to accomplish all the tasks. Also, we can retain the time that robot accomplishes the associated task in baseline C (`$t_c(lt)$`).
+**Verdict Expression**: Using the total time that the robot in baseline B has finished the successful tasks (`$T_b = \sum_{t=1}^{lt} t_b(t)$`). Note that every time robot accomplishes a task it send a status message to TH so we will have the status containing the location and timing associated for the last accomplished task even through it may fail to accomplish all the tasks. Also, we can retain the time that robot accomplishes the associated tasks in baseline C (`$T_c = \sum_{t=1}^{lt} t_c(t)$`).
 
-
-`PASS` if `$t_b(lt) >= t_c(lt)$`, `DEGRADED` if `$t_b(lt) < t_c(lt) <= 2*t_b(lt)$`, `FAIL` if `$t_c(lt) > 2*t_b(lt)$`. 
+**Challenge Evaluation**:
+`PASS` if `$T_b >= T_c$`, `DEGRADED` if `$T_b < T_c <= 2*T_b$`, `FAIL` if `$T_c > 2*T_b$`. In the `DEGRADED` case, the score is: `$T_c / 2*T_b$`. 
 
 
 We assume the following test stages for evaluation:
