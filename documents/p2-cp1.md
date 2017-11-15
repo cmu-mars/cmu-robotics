@@ -9,7 +9,7 @@ are likely to change their behavior over time. For software to continue to opera
 
   1. is rarely used to reason about mission completion, but is typically
      critical for a mission's success,
-  2. its inherent characteristics (consumption behavior) will change over time due to chemical and physical characteristics of batteries as they degrade and are replaced over time, and
+  2. will change over time due to chemical and physical characteristics of batteries as they degrade and are replaced over time, and
   3. will change as sensors/algorithms/workloads evolve over the lifetime of
      the system.
 
@@ -59,9 +59,9 @@ In the second phase, the robot will be asked to complete `n` tasks (part of a mi
 
 ### Research Questions
 
-**RQ1**: Can adaptations that reasons on `models that have been learned under budget constraint` improve the quality of missions (in terms of evaluation criteria including timeliness, success rate) compared to reactive adaptations?
+**RQ1**: Can adaptations that reason using *models that have been learned under budget constraint* improve the quality of missions (in terms of evaluation criteria including timeliness, success rate) compared to reactive adaptations?
 
-+ We assume the learning is `under limited budget constraints`. Also, power models are assumed to be `polynomial models parameterized over robot's configuration options`. 
++ We assume the learning is *under limited budget constraints*. Also, power models are assumed to be *polynomial models parameterized over robot's configuration options*. 
 + There might be some cases where using an accurate model might tell us that we can finish a mission without going to the charge station and, therefore, we finish the the mission earlier (i.e., better in terms of timeliness).
 + We will explore corner cases that adaptation using a learned model can provide us benefit by saving time, saving energy or both, and therefore hitting a better score in total.
 + There might be some cases where reactive planner force the robot to the charging station, but we could finish the mission without going to the station.
@@ -101,25 +101,18 @@ The start location, target locations, initial battery, ..., are all defined in t
 ## Test Procedure
 
 See overview above. In particular, this challenge problem will require a
-training phase, Tr, where the model specified by Lincoln Labs is
-learned. This requires a budget (number of times the hidden function will
-be queried) that will be given by LL. We learn the function once at the
-beginning offline and then the online phase will be started.
+training phase, `Tr`, where the model, that is selected from a predefined set of power models by Lincoln Labs, is learned. This requires a budget (number of times the hidden function will be queried) that will be given by LL. We learn the function once during the `Tr` phase, and then consume the learned model during the missions.
 
 There are three test stages proposed for the evaluation of this challenge problem. They are defined as follows:
    
    1. A (no perturbation, no discovery/adaptation, no power model): The robot use a threshold to determine when to go to a charging station. The simulator uses the default power model to discharge and charge.
 
-   2. B (perturbation, no discovery/adaptation, predefined power model): The robot use a threshold to determine when to go to a charging station. The simulator uses a selected power model to discharge and charge. Also, obstacle placement and setting change as environmental perturbations are considered.
+   2. B (perturbation, no discovery/adaptation, predefined power model): The robot use a threshold to determine when to go to a charging station. The simulator uses a selected power model to discharge and charge. Also, obstacle placement and setting changes as environmental perturbations are considered.
 
-   3. C (perturbation, adaptation, learned power model): The robot adapt to the environmental perturbations using the learned power model.  
+   3. C (perturbation, adaptation, learned power model): The robot adapts to the environmental perturbations, the same perturbations as in stage B, using the learned power model.  
 
 
-### Formal specification of power models
-
-Here, we formally define discharge and charge function, the constraints
-that determine their validity, as well as metrics for evaluating the test
-cases.
+### Adaptation space and power model selection
 
 In this challenge problem, the possible variations (and possible adaptation
 actions) determining the configuration of the robot is as follows:
@@ -135,9 +128,9 @@ actions) determining the configuration of the robot is as follows:
 Note that we abstracted different aspects of the robot that are known to be
 the main source of power consumption in robots, i.e., robot's motion
 actuator, sensors, and computationally intensive algorithms in the
-robot. These variations will be implemented by adjusting different
-measurement frequency of the Kinect sensor or spatial and depth resolution
-of the base Kinect. Also, for the localization, we will implement different
+robot. These variations will be implemented by adjusting
+measurement frequencies, spatial resolution, or depth resolution
+of the Kinect sensor. Also, for the localization, we will implement different
 components with different accuracy for localizing the robot.
 
 Therefore, the configuration of the robot is encoded by 12 Boolean
@@ -184,25 +177,10 @@ the consumptions of each of the Kinect and Localization individually.
 
 In this challenge problem, both discharge and charge of the robot is
 controlled, not by law of the physics for battery but as an arbitrary
-function that looks similar to power model that exist int he literature but
+function that looks similar to power model that exist in the literature but
 with different coefficients that meant to simulate discharge and charge
 functions for possible future sensory, computational, or actuating
 components of the robot.
-
-Here we define some constraints for the power consumption model. The
-constraints will be used by LL and CMU team to evaluate whether an
-specified power model is a valid power model:
-
-1. $P(s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5) > 0$, if the power model is
-   evaluated to be negative for a combination of input variables, then the
-   power model is invalid.
-
-2. $P(s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5)$ should be monotonically
-   increasing with respect to t.
-
-Both of these constraints are intuitive for power models, because we do not
-want to have a model that assumes the discharge operation actually
-increases the charge of the battery instead of discharging it.
 
 #### How the battery will be discharged and charged:
 
@@ -227,33 +205,6 @@ changes include:
  * adding more constants to the enumerated status codes in the TH `/status`
    end point
 
-The format `function-spec`, used to in the `/ready` end point to
-describe the charge and discharge functions, is given by the following BNF:
-
-```
-powermodel ::= term | term "+" powermodel
-term ::= factor | factor ops2 term | ops1"(" term ")"
-factor ::= constant | variable | "(" powermodel ")"
-variable ::= letter | variable digitSequence
-constant ::= digitSequence | "-" digitSequence
-digitSequence ::= digit | digit digitSequence
-digit ::= "0" | "1" | "2" | ... | "9"
-letter ::= "s1" | "s2" | "k1" | ... | "k5" | "l1 ... "l5"
-ops1 ::= "-"
-ops2 ::= "*" | "/" | "^"
-```
-
-Additionally, we require two semantic properties of the polynomials `f`
-described with this syntax.
-
- 1. _monotonicity_: For all times `t`, `df/dt > 0` for the function
-    describing charging and `df/dt < 0` for the function describing
-    discharging.
- 2. _positivity_: For all times `t`, `f(t) > 0`
-
-Together, this corresponds to the intuition that any battery---no matter
-its charge and discharge characteristics---only discharges over time and
-never spontaneously recharges, and cannot discharge past `0 mWh`.
 
 ### REST Interface to the TA
 
@@ -277,7 +228,7 @@ this sequence. This interaction is omitted for clarity.
 
 
 ## Intent Specification and Evaluation Metrics
-In this challenge problem, we evaluate how adaptations made by planner that uses a learned model partially restore intent (e.g., switching to an alternative Kinect, less accurate navigation algorithm). We measure quality as an approximate measure of how closely the behavior of a system meets its intent. 
+In this challenge problem, we evaluate how adaptations made by a planner that uses a learned model partially restore intent (e.g., switching to an alternative Kinect, less accurate navigation algorithm). We measure quality as an approximate measure of how closely the behavior of a system meets its intent. 
 
 ### Intent Specification
 
@@ -287,21 +238,35 @@ no learning, i.e, using an inaccurate model. In CP1, we consider two types of in
 
 
 #### Intent Element 1: Success rate
-**Informal Description**: Robot accomplish all tasks in a mission.
+**Informal Description**: Percentage of tasks in which the robot gets to the target location. 
 
-**Verdict Expression**: Using the information in `/done` message by calculating the proportion of the number of tasks that have successfully been finished (`$tf$`) comparing to the original list of tasks in `/ready` message to calculate the following evaluation function for the number of tasks completed.
+**Verdict Expression**: Using the information in `/done` message by calculating the proportion of the number of tasks that have successfully been finished (`$tf$`) comparing to the original list of tasks in `/ready` message to calculate the following evaluation function for the number of tasks completed. Note that every time robot accomplishes a task it send a status message to TH. We consider a task accomplished, if it gets within `MAX_DISTANCE` of the target.
 
-`$r = tasks_finished / total_tasks$`
+```
+function distance(loc1, loc2) = sqrt((loc1.x - loc2.x)^2 + (loc1.y - loc2.y)^2))
+```
 
-`PASS` if `$r_c >= r_a$`, `DEGRADED` if `$0 < r_c < r_a$`, `FAIL` if `$r_c == 0$`. 
-The score in the `DEGRADED` is proportional to the number of tasks that has been accomplished in baseline A: `$r_c / r_a$`. 
+For each task:
+
+| Condition                                                        | Score                                             |
+|------------------------------------------------------------------|---------------------------------------------------|
+| eventually(distance(location,target) < MAX_DISTANCE)	           | 1                                                 |
+| else                                                             | 0                                                 |
+
+`$r = sum(score) / total_tasks$`
+
+
+**Challenge Evaluation**:
+`PASS` if `$r_c == r_a$`, `DEGRADED` if `$r_b <= r_c < r_a$`, `FAIL` if `$r_c < r_b$`. 
+In the `DEGRADED` case, the score is proportional to the number of tasks that have been accomplished in baseline A: `$r_c / r_a$`. 
 
 #### Intent Element 2: Timeliness
-**Informal Description**: Robot reaches the target location earlier than a the robot in baseline B in the same test case. Note that this is a secondary criteria and we evaluate it as far as we can retain information for baseline B. 
+**Informal Description**: The total time to complete all tasks completed in both stage B and stage C. Note that this is a secondary criteria and we evaluate it as far as we can retain information for baseline B. 
 
-**Verdict Expression**: Using the time that the robot in baseline B has been reached (`$t_b(lt)$`) to the location of the last successful task (`lt`). Note that every time robot accomplishes a task it send a status message to TH so we will have the status containing the location and timing associated for the last accomplished task even through it may fail to accomplish all the tasks to calculate the following evaluation function for the timeliness. Also, we can retain the time that robot accomplishes the associated task in baseline c (`$t_c(lt)$`).
+**Verdict Expression**: Using the total time that the robot in baseline B has finished the successful tasks (`$T_b = \sum_{t=1}^{lt} t_b(t)$`). Note that every time robot accomplishes a task it send a status message to TH so we will have the status containing the location and timing associated for the last accomplished task even through it may fail to accomplish all the tasks. Also, we can retain the time that robot accomplishes the associated tasks in baseline C (`$T_c = \sum_{t=1}^{lt} t_c(t)$`).
 
-`PASS` if `$t_b(lt) >= t_c(lt)$`, `DEGRADED` if `$t_b(lt) < t_c(lt) <= 2*t_b(lt)$`, `FAIL` if `$t_c(lt) > 2*t_b(lt)$`. 
+**Challenge Evaluation**:
+`PASS` if `$T_b >= T_c$`, `DEGRADED` if `$T_b < T_c <= 2*T_b$`, `FAIL` if `$T_c > 2*T_b$`. In the `DEGRADED` case, the score is: `$T_c / 2*T_b$`. 
 
 
 We assume the following test stages for evaluation:
@@ -321,12 +286,11 @@ We assume the following test stages for evaluation:
 To evaluate intent discovery, we propose that a set of test cases, each
 describing a mission as well as perturbations for the robot (e.g.,
 navigating a simulated corridor, placing 1 obstacle and changing the
-battery level once). 
-Each test case is described by the following:
+battery level once). Each test case is described by the following:
 
  * Mission schema: Navigation
  * Mission parameters: ``A->T1->T2->...->Tn`` (the way points or tasks that the robot need to accomplish)
- * Charge and discharge functions according to the specification
+ * Charge and discharge functions to be selected from a set of predefined models (most likely 100 pre-specified models).
  * Perturbations: Obstacles + Battery level change
  * Possible adaptations: possible variations for ``Speed, Kinects, Localization algorithms``
  * Evaluation metric: Power consumed, Mission accomplish time, Distance to
@@ -335,16 +299,12 @@ Each test case is described by the following:
 We also intend to specify some metrics based on which we evaluate how
 ``difficult`` and how ``similar`` two test cases are. Therefore, LL could
 generate ``challenging`` and yet ``different`` test cases, this is what we mean
-by interesting test cases. The metrics are dependent on both specification
-(including the shape of discharge/charge function and mission parameters)
-of the mission as well as the perturbation during the mission.
+by interesting test cases. The metrics are dependent on perturbations during the mission. 
 
 Here are a list of metrics for determining a representative collection of test cases:
 
-1. The number of interaction terms the power model
+1. The number of obstacle placement as well as number of battery set. 
 
-2. The number of obstacle placement as well as number of battery set. 
-
-3. The number of tasks (determined by the number of way points) and the distance that the robot need to traverse to accomplish the tasks. 
+2. The number of tasks (determined by the number of way points) and the distance that the robot need to traverse to accomplish the tasks. 
 
 Any two test cases would be different if the difficulty levels of them are different. However, if two test cases are similar with respect to the difficulty of the test, we consider them identical.

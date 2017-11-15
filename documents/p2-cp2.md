@@ -107,16 +107,25 @@ To counter this threat, we set out to better understand the nature of faults
 in robotics systems. We conducted an empirical study of over 200 bugs in a
 popular, open-source robotics system (ArduPilot). Based on our findings, we
 crafted a set of bespoke mutation operators for Shuriken, designed to
-replicate the ten most-frequently-encountered kinds of bugs.
+replicate several of the most frequently encountered kinds of bugs.
 
-* Insert void-function call
-* Remove void-function call
-* Remove transformation function call
-* Remove conditional control-flow statement
-* Insert conjunction into boolean expression
-* Remove conjunction from boolean expression
-* Flip arithmetic operator (e.g., `+` to `-`)
-* ...
+1.  Remove void-function call (i.e., a function that returns void).
+2.  Flip arithmetic operator (i.e., flip addition and subtraction, and
+    multiplication and division).
+3.  Flip boolean logic operator (i.e., flip `||` and `&&`).
+4.  Flip relational operator.
+5.  Undo transformation.
+6.  Remove conditional control-flow statement.
+7.  Replace (un)signed numeric type used by a given variable with the
+    (un)signed equivalent of that type.
+
+Note that all of the proposed mutation operators delete existing code -- no
+operators inject new, faulty code. The reasoning behind this decision is
+two-fold: Firstly, it produces a (single-edit) perturbation space that scales
+linearly with the number of lines in the program, rather than polynomially.
+Secondly, it excludes bug fixes that simply delete code, which are trivial
+to find -- we keep the *truly challenging* bugs whose fixes require the
+insertion of code.
 
 ## Interface to the Test Harness (API)
 
@@ -171,6 +180,70 @@ intended behaviours of the robot in response to a mission). Test suites of
 missions (i.e., instances of mission schemas) are used to approximately
 measure whether intent is maintained by a particular version of the system.
 
+### Mission Schemas
+
+We propose that all missions within the test suite should belong to a
+single mission schema, representing point-to-point navigation missions.
+The parameters of each mission are used to specify the initial position
+of the robot, and its target position.
+The outcome of each mission will be classified as either `PASSING`, `FAILING`,
+or `DEGRADED`, according to three internal elements intents, described
+below.
+
+1. **Accuracy:** The robot should come to rest at the target position.
+    If the distance from the centre of the robot, `(l_x,l_y)`, to the
+    target position, `(t_x, t_y)`, is less than or equal to the sum of the
+    radius of the robot, `r`, and an expected error tolerance, `Δ_satisfied`,
+    this intent is satisfied:
+
+    ```
+    dist((l_x, l_y), (t_x, t_y)) <= r + Δ_satisfied
+    ```
+
+    The intent is is said to be degraded if the position of the robot lies
+    no further than `r + Δ_degraded` from the target position, where
+    `Δ_degraded > Δ_satisfied`:
+
+    ```
+    r + Δ_satisfied <= dist((l_x, l_y), (t_x, t_y)) <= r + Δ_degraded
+    ```
+
+    This intent is violated if the resting position of the robot is further
+    than `r + Δ_degraded` from the target position.
+
+    ```
+    dist((l_x, l_y), (t_x, t_y)) > r + Δ_degraded
+    ```
+
+2. **Timeliness:** The robot should come to rest within a certain period of
+    simulator-clock time. This intent is satisfied if the time taken to
+    reach a resting state, `t_rest`, is less than or equal to the sum of
+    the expected duration of the mission, `t_expected`, and a tolerated
+    lateness, `Δ_satisfied`:
+
+    ```
+    t_rest <= t_expected + Δ_satisfied
+    ```
+
+    If the time taken to reach a resting state exceeds the deadline for
+    satisfying the intent, the intent may regarded as degraded by reaching
+    a resting state before a second deadline:
+
+    ```
+    t_expected + Δ_satisfied <= t_rest <= t_expected + Δ_degraded
+    
+    where Δ_degraded > Δ_satisfied
+    ```
+
+3. **Safety:** The robot should not collide with any objects during the
+      mission. This intent metric has no notion of being degraded -- collisions
+      will result in the failure of the mission.
+
+If any of these intents is violated, the outcome of the mission is labelled
+as `FAILING`. If no intents are violated but at least one intent is
+degraded, the outcome of the mission is labelled as `DEGRADED`. If all intents
+are satisfied, the outcome is assigned a `PASSING` label.
+
 ### Comparison to Baseline
 
 To measure the ability of our system to adapt to source-code perturbations, we
@@ -188,8 +261,57 @@ results of the three versions of the system:
 
 * *complete repair*: if **(C)** passes all tests within the suite. (i.e.,
     **(C)** behaves identically to **(A)**, w.r.t. the test suite.)
-* *partial repair*: if **(C)** dominates **(B)**.
-* *no repair*: if **(C)** does not dominate **(B)**.
+* *partial repair*: if **(C)** pareto dominates **(B)**, but does not pass
+    all of the tests.
+* *no repair*: if **(C)** does not pareto dominate **(B)**.
+
+More formally, we use a vector of ternary variables to describe the outcome of
+the test suite for a particular baseline (or for any version of the program),
+where the *i-th* component of that vector describes the outcome of the *i-th*
+test in the suite. The totally ordered set of possible outcomes for individual
+tests is given below.
+
+```
+type test_outcome := FAILED | DEGRADED | PASSED
+  where FAILED < DEGRADED < PASSED
+```
+
+Below we describe an outcome for classifying the outcome of a perturbation
+scenario (i.e., the success of our adaptive system). Let
+`perturbed` and `adapted` be the vector of test suite outcomes for baselines
+`B` and `C`, respectively.
+
+```
+def compute_scenario_outcome(perturbed, adapted):
+  is_complete = True
+  is_partial = False
+
+  # compare results for each test case
+  for (outcome_perturbed, outcome_adapted) in zip(perturbed, adapted):
+
+    # to be considered a complete repair, C must pass all tests.
+    is_complete &= outcome_adapted == PASSED
+
+    # if C fails any tests that were passed by B, we label C as "no repair"
+    if outcome_adapted < outcome_peturbed:
+      return NO_REPAIR
+
+    # if C performs better than B on this test, C is a partial repair, unless
+    # it fails a (different) test that was passed by B
+    if outcome_perturbed > outcome_adapted:
+      is_partial = True
+
+  # implies C = A (in terms of test outcomes)
+  if is_complete:
+    return COMPLETE_REPAIR
+
+  # implies B < C < A (in terms of test outcomes)
+  if is_partial:
+    return PARTIAL_REPAIR
+
+  # implies C = B (in terms of test outcomes)
+  return NO_REPAIR
+```
 
 ## References
 
