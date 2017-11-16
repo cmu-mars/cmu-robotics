@@ -5,6 +5,31 @@ info:
 schemes:
   - http
 host: brass-th
+definitions:
+  CollisionData:
+    type: object
+    required: 
+      - robot-x
+      - robot-y
+      - robot-speed
+      - sime-time
+    properties:
+      robot-x:
+        type: float
+        description: >-
+          The x location of the robot center when collision occured
+      robot-y:
+        type: float
+        description: >-
+          The y lcoation of the robot center when collision occured
+      robot-speed:
+        type: float
+        description: >-
+          The speed of the robot (m/s) at the time the collision occured
+      sim-time:
+        type: float
+        description: >-
+          The (simulation) time at which the collision occurred (seconds from start of simulator)
 paths:
   /ready:
     post:
@@ -34,6 +59,22 @@ paths:
                 description: >-
                   if `true`, then the DAS will use adapative behaiviours; if
                   `false` then the DAS will not use adaptive behaiviours
+              start-configuration:
+                type: string
+                description: >-
+                  the label of the starting configuration for the robot
+                enum:
+                  - CONFIG1
+                  - CONFIG2
+                  - CONFIG3
+              utility-function:
+                type: string
+                description: >-
+                  the utility function to use for evaluating mission quality
+                enum:
+                  - FAVOR_TIMELINESS
+                  - FAVOR_SAFETY
+                  - FAVOR_EFFICIENCY
         '400':
           description: TH encountered an error producing configuration data
   /error:
@@ -124,21 +165,21 @@ paths:
               plan:
                 description: >-
                   list of waypoints the current plan tends to visit, in
-                  order. this will be sent if and only if `status == adapted`.
+                  order. This will not be sent with `status == live`.
                 type: array
                 items: 
                   type: string
               config:
                 description: >-
-                  list of currently active nodes. this will be sent if and
-                  only if `status == adapted`.
+                  list of currently active nodes. This will not be sent 
+                  with `status == live`.
                 type: array
                 items:
                   type: string
               sensors:
                 description: >-
-                  list of currently active sensors, in order. this will be
-                  sent if and only if `status == adapted`.
+                  list of currently active sensors, in order. This will 
+                  not be sent with `status == live`.
                 type: array
                 items:
                   type: string  
@@ -162,6 +203,9 @@ paths:
               - final-sim-time
               - arrival-predictions
               - final-charge
+              - collisions
+              - num-adaptations
+              - final-utility
             properties:
               final-x:
                 type: number
@@ -189,6 +233,20 @@ paths:
                 type: integer
                 description: >-
                   the charge left in the battery when the test ended
+              collisions:
+                type: array
+                items: 
+                  $ref: "#/definitions/CollisionData"
+                description: >-
+                  A (possibly empty) list of locations, times, and speeds of any collisions of the robot
+              num-adaptations:
+                type: integer
+                description: >-
+                  the number of times that the robot adapted (0 if there is no DAS)
+              final-utility:
+                type: float
+                description: >-
+                  the utility achieved at the end of the mission, in the range [0,1]
       responses:
         '200':
           description: >-
