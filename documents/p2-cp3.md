@@ -207,7 +207,7 @@ DEG_B = the score (0..1) degraded of B
 | DEGRADED    | PASS              | PASS if DEG_C > DEG_B<br/>INCONCLUSIVE if DEG_C == DEG_B<br/>FAIL otherwise | FAIL |
 | FAIL        | PASS | PASS | INCONCLUSIVE |
 
-### Intent Element 5: Utility
+### Intent Element 2: Utility
 **Informal Description**: The DAS maintains a high level of utility for the mission
 
 **Formal Description**: Software systems are designed to trade-off different business goals. Over time, these trade-offs may adapt and the system must change the way it responds to match these new trade-offs. For the purposes of this challenge problem, we represent the trade-offs as a utility preference function, but limit the preference functions to one that favors timeliness, one that favors efficiency, and another that favors safety. Utility will be a value on the interval [0,1].
@@ -239,7 +239,7 @@ DEG_B = the score (0..1) degraded of B
 | DEGRADED    | PASS              | PASS if DEG_C > DEG_B<br/>INCONCLUSIVE if DEG_C == DEG_B<br/>FAIL otherwise | FAIL |
 | FAIL        | PASS | PASS | INCONCLUSIVE |
 
-### Utility Component 1: Timing
+** Utility Component 1: Timing**
 **Informal Description**: Robot reaches target location by a deadline
 
 **Formal Description**:
@@ -299,7 +299,7 @@ function prediction_penalty() = number_predicitions > 1 + number_adaptations?0:1
 | else | 0 |
 
 
-### Utility Component 2: Efficiency
+** Utility Component 2: Efficiency**
 **Informal Description**: Robot uses minimal resources.
 
 **Formal Description**: The intent is related to power usage of the robot for the mission. Having more power left at the end of a mission means that the robot would be able to do more subsequent tasks. We will use a power model from CP1 for evaluating this. The score for this will be based on how much power was used. Assuming that the robot finishes the mission with some energy left in the battery, then each condition will (A,B,C) will receive a score. The one with the highest score wins.
@@ -319,7 +319,7 @@ function prediction_penalty() = number_predicitions > 1 + number_adaptations?0:1
 | final_charge > 0                                               | (MAX_CHARGE - final_charge)/MAX_CHARGE               |
 | otherwise                                                      | 0 |
 
-### Utility Component 3: Safety
+** Utility Component 3: Safety**
 **Informal Description**: Whether the robot collides with something in the environment. 
 
 **Formal Description**: The intent is related to the risk that the robot takes to complete the mission. Being riskier means, e.g., traveling through an unknown environment at a high speed to complete the mission on time. We will have protrusions in the environment that are of a height that will make them undetectable by at least one of the sensors. Transitions in the map will be annotated to assess their riskiness of traversal.
