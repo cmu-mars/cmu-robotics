@@ -240,6 +240,7 @@ DEG_B = the score (0..1) degraded of B
 | FAIL        | PASS | PASS | INCONCLUSIVE |
 
 **Utility Component 1: Timing**
+
 **Informal Description**: Robot reaches target location by a deadline
 
 **Formal Description**:
@@ -300,6 +301,7 @@ function prediction_penalty() = number_predicitions > 1 + number_adaptations?0:1
 
 
 **Utility Component 2: Efficiency**
+
 **Informal Description**: Robot uses minimal resources.
 
 **Formal Description**: The intent is related to power usage of the robot for the mission. Having more power left at the end of a mission means that the robot would be able to do more subsequent tasks. We will use a power model from CP1 for evaluating this. The score for this will be based on how much power was used. Assuming that the robot finishes the mission with some energy left in the battery, then each condition will (A,B,C) will receive a score. The one with the highest score wins.
@@ -320,6 +322,7 @@ function prediction_penalty() = number_predicitions > 1 + number_adaptations?0:1
 | otherwise                                                      | 0 |
 
 **Utility Component 3: Safety**
+
 **Informal Description**: Whether the robot collides with something in the environment. 
 
 **Formal Description**: The intent is related to the risk that the robot takes to complete the mission. Being riskier means, e.g., traveling through an unknown environment at a high speed to complete the mission on time. We will have protrusions in the environment that are of a height that will make them undetectable by at least one of the sensors. Transitions in the map will be annotated to assess their riskiness of traversal.
