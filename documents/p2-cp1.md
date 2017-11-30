@@ -105,7 +105,7 @@ training phase, `Tr`, where the model, that is selected from a predefined set of
 
 There are three test stages proposed for the evaluation of this challenge problem. They are defined as follows:
    
-   1. A (no perturbation, no discovery/adaptation, no power model): The robot use a threshold to determine when to go to a charging station. The simulator uses the default power model to discharge and charge.
+   1. A (no perturbation, no discovery/adaptation, predefined power model): The robot use a threshold to determine when to go to a charging station. The simulator uses the default power model to discharge and charge.
 
    2. B (perturbation, no discovery/adaptation, predefined power model): The robot use a threshold to determine when to go to a charging station. The simulator uses a selected power model to discharge and charge. Also, obstacle placement and setting changes as environmental perturbations are considered.
 
