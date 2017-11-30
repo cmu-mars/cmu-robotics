@@ -184,9 +184,8 @@ components of the robot.
 
 #### How the battery will be discharged and charged:
 
-* *Discharge*: $updated_charge = current_charge - P_discharge(s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5)*t$
-* *Charge*: $updated_charge = current_charge + P_charge(k1,k2,k3,k4,k5,l1,l2,l3,l4,l5)*t$
-
+* *Discharge*: `$updated_charge = current_charge - P_discharge(s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5)*t$`
+* *Charge*: `$updated_charge = current_charge + P_charge(k1,k2,k3,k4,k5,l1,l2,l3,l4,l5)*t$`
 
 ## Interface to the Test Harness (API)
 
@@ -240,7 +239,11 @@ no learning, i.e, using an inaccurate model. In CP1, we consider two types of in
 #### Intent Element 1: Success rate
 **Informal Description**: Percentage of tasks in which the robot gets to the target location. 
 
-**Verdict Expression**: Using the information in `/done` message by calculating the proportion of the number of tasks that have successfully been finished (`$tf$`) comparing to the original list of tasks in `/ready` message to calculate the following evaluation function for the number of tasks completed. Note that every time robot accomplishes a task it send a status message to TH. We consider a task accomplished, if it gets within `MAX_DISTANCE` of the target.
+**Test/Capture Method**: For determining whether a task is accomplished successfully, the position of the robot will be read from the simulator. This will be returned in test-ta/action/observed
+
+**Result expression**: `location = (/done/final_x, /done/final_y)`
+
+**Verdict Expression**: Using the information in `/done` message by calculating the proportion of the number of tasks that have successfully been finished (`/done/tasks_finished`) comparing to the original list of tasks in `/ready/target-locs` message to calculate the following evaluation function for the number of tasks completed. Note that every time robot accomplishes a task it send a status message to TH. We consider a task accomplished, if it gets within `MAX_DISTANCE` of the target.
 
 ```
 function distance(loc1, loc2) = sqrt((loc1.x - loc2.x)^2 + (loc1.y - loc2.y)^2))
@@ -261,9 +264,13 @@ For each task:
 In the `DEGRADED` case, the score is proportional to the number of tasks that have been accomplished in baseline A: `$r_c / r_a$`. 
 
 #### Intent Element 2: Timeliness
-**Informal Description**: The total time to complete all tasks completed in both stage B and stage C. Note that this is a secondary criteria and we evaluate it as far as we can retain information for baseline B. 
+**Informal Description**: The total time that all tasks completed in both stage B and stage C. Note that this is a secondary criteria and we evaluate it as far as we can retain information for baseline B. 
 
-**Verdict Expression**: Using the total time that the robot in baseline B has finished the successful tasks (`$T_b = \sum_{t=1}^{lt} t_b(t)$`). Note that every time robot accomplishes a task it send a status message to TH so we will have the status containing the location and timing associated for the last accomplished task even through it may fail to accomplish all the tasks. Also, we can retain the time that robot accomplishes the associated tasks in baseline C (`$T_c = \sum_{t=1}^{lt} t_c(t)$`).
+**Test/Capture Method**: The `/done` message will contain the simulation times when each of the waypoints listed in `target-locs` were reached. 
+
+**Result expression**: `t_x = /done/target-times` 
+
+**Verdict Expression**: Using the total time that the robot in baseline B has finished the successful tasks (`/done/target-times`). Note that every time robot accomplishes a task it send a status message to TH so we will have the status containing the location and timing associated for the last accomplished task even through it may fail to accomplish all the tasks. Therefore, we can retain the time that robot accomplishes the associated tasks in all baselines (`$T_x = \sum_{task=1}^{lt} t_x(task)$, where $x = {a, b, c}$`).
 
 **Challenge Evaluation**:
 `PASS` if `$T_b >= T_c$`, `DEGRADED` if `$T_b < T_c <= 2*T_b$`, `FAIL` if `$T_c > 2*T_b$`. In the `DEGRADED` case, the score is: `$T_c / 2*T_b$`. 
@@ -289,10 +296,10 @@ navigating a simulated corridor, placing 1 obstacle and changing the
 battery level once). Each test case is described by the following:
 
  * Mission schema: Navigation
- * Mission parameters: ``A->T1->T2->...->Tn`` (the way points or tasks that the robot need to accomplish)
+ * Mission parameters: `A->T1->T2->...->Tn` (the way points or tasks that the robot need to accomplish)
  * Charge and discharge functions to be selected from a set of predefined models (most likely 100 pre-specified models).
  * Perturbations: Obstacles + Battery level change
- * Possible adaptations: possible variations for ``Speed, Kinects, Localization algorithms``
+ * Possible adaptations: possible variations for `Speed, Kinects, Localization algorithms`
  * Evaluation metric: Power consumed, Mission accomplish time, Distance to
    target location, Number of tasks accomplished
 
