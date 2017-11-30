@@ -32,6 +32,6 @@ RUN sudo chown -R mars /usr/src/app
 
 ENV PYTHONUNBUFFERED 0
 
-EXPOSE 8080
+EXPOSE 5000
 
 CMD ["python3", "-m", "swagger_server"]
