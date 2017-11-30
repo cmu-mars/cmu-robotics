@@ -7,7 +7,10 @@ from .encoder import JSONEncoder
 import logging
 import traceback
 import rospy
+import actionlib
+#from move_base_msgs.msg import MoveBaseAction
 from urllib.parse import urlparse
+
 
 from gazebo_interface import GazeboInterface
 
@@ -105,10 +108,16 @@ if __name__ == '__main__':
       logger.debug(traceback.format_exc())
 
     rospy.init_node ("cp3_ta")
-
+#    move_base = actionlib.SimpleActionClient("move_base", MoveBaseAction)
+#    move_base_started = move_base.wait_for_server(rospy.Duration(30.0))
+#    if not move_base_started:
+#      logger.error ('Fatal: move_base did not start?')
+#      thApi.error_post(Parameters("MoveBase Error", "Fatal: failed to wait for move_base"))
+    rospy.sleep(30.0)
     print ("Starting up Gazebo interface")
     try:
       gazebo = GazeboInterface()
+      gazebo.set_turtlebot_position(19.8, 58.8, 0);
     except Exception as e:
       logger.error('Fatal: gazebo did not start up: %s' %e)
       thApi.error_post(Parameters("Gazebo Error", "Fatal: failed to connect to gazebo: %s" %e))

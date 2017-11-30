@@ -37,10 +37,12 @@ indicates that the test is completed
 |Name|Description|Schema|
 |---|---|---|
 |**arrival-predictions**  <br>*required*|all the predicted arrival times made by the SUT during<br>     the test, in the order they were made.|< integer > array|
+|**collisions**  <br>*required*|A (possibly empty) list of locations, times, and speeds of any collisions of the robot|< [CollisionData](#collisiondata) > array|
 |**final-charge**  <br>*required*|the charge left in the battery when the test ended|integer|
 |**final-sim-time**  <br>*required*|the simulation time when the mission finished  <br>**Minimum value** : `0`|integer|
 |**final-x**  <br>*required*|the x coordinate of the robot position when the test ended|number (float)|
 |**final-y**  <br>*required*|the y coordinate of the robot position when the test ended|number (float)|
+|**num-adaptations**  <br>*required*|the number of times that the robot adapted (0 if there is no DAS)|integer|
 
 
 #### Responses
@@ -99,9 +101,11 @@ indicates that the SUT is ready to recieve configuration data to continue start 
 
 |Name|Description|Schema|
 |---|---|---|
+|**start-configuration**  <br>*optional*|the label of the starting configuration for the robot|enum (CONFIG1, CONFIG2, CONFIG3)|
 |**start-loc**  <br>*optional*|the name of the start map waypoint. must be a valid way point name from the map data. must not be equal to `target-loc`.|string|
 |**target-loc**  <br>*optional*|the name of the goal map waypoint. must be a valid way point name from the map data. must not be equal to `start-loc`.|string|
 |**use-adaptation**  <br>*optional*|if `true`, then the DAS will use adapative behaiviours; if `false` then the DAS will not use adaptive behaiviours|boolean|
+|**utility-function**  <br>*optional*|the utility function to use for evaluating mission quality|enum (FAVOR_TIMELINESS, FAVOR_SAFETY, FAVOR_EFFICIENCY)|
 
 
 <a name="status-post"></a>
@@ -122,7 +126,10 @@ indicate important state changes in the SUT to the TH. posted periodically as th
 
 |Name|Description|Schema|
 |---|---|---|
+|**config**  <br>*optional*|list of currently active nodes. This will not be sent  with `status == live`.|< string > array|
 |**message**  <br>*optional*|human readable text describing the status, if any|string|
+|**plan**  <br>*optional*|list of waypoints the current plan tends to visit, in order. This will not be sent with `status == live`.|< string > array|
+|**sensors**  <br>*optional*|list of currently active sensors, in order. This will  not be sent with `status == live`.|< string > array|
 |**sim-time**  <br>*required*|the simulation time the status message was produced  <br>**Minimum value** : `0`|integer|
 |**status**  <br>*required*|one of a enumerated set of statuses to report, arise, as follows:<br>  * `live`, the SUT has processed the configuration data<br>     and is ready for initial perturbations (if any) and the<br>     start of the test<br><br>  * `mission-running`, the SUT has processed the initial<br>     perturbations after receiving `/start`, possibly<br>     adapted, and the robot is now actually moving along<br>     its path. it is an error to send any perturbation to<br>     the SUT between sending a message to `/start` and<br>     receiving this status.<br><br>  * `adapting`, the SUT has detected a condition that<br>     requires adaptation and the SUT is adapting. it is<br>     an error to send any perturbation to the SUT after<br>     this message is sent to the TH until the TH gets a<br>     status message with `adapted`.<br><br>  * `adapted`, the SUT has finished adapting after<br>     observing a need to. this means that the robot is<br>     moving along its plan again and it is no longer an<br>     error to send perturbations. if this is the status<br>     code of the message, the fields `plan`, `config` and<br>     `sensors` will also be present, to describe the new<br>     state of the robot.|enum (live, mission-running, adapting, adapted)|
 
@@ -135,6 +142,14 @@ indicate important state changes in the SUT to the TH. posted periodically as th
 |**400**|the TH has encountered an error in processing the status of the SUT|No Content|
 
 
+
+
+<a name="definitions"></a>
+## Definitions
+
+<a name="collisiondata"></a>
+### CollisionData
+*Type* : object
 
 
 
