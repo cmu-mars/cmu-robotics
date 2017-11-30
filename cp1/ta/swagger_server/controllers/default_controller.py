@@ -15,6 +15,7 @@ from typing import List, Dict
 from six import iteritems
 from ..util import deserialize_date, deserialize_datetime
 
+import swagger_server.config as config
 
 def observe_get():
     """
@@ -45,6 +46,11 @@ def perturb_battery_post(Parameters=None):
     if connexion.request.is_json:
         Parameters = Parameters2.from_dict(connexion.request.get_json())
 
+    if Parameters.charge > config.ready_response.max_charge:
+        ret = InlineResponse4002()
+        ret.message = "battery cannot be set to a charge higher than the max charge given in the response to /ready"
+        return ret , 400
+
     ret = InlineResponse2002()
     ret.sim_time = 0
     return ret
@@ -61,6 +67,8 @@ def perturb_place_obstacle_post(Parameters=None):
     """
     if connexion.request.is_json:
         Parameters = Parameters0.from_dict(connexion.request.get_json())
+
+    # todo: dynamic check goes here against parameter x and y
 
     ret = InlineResponse200()
     ret.obstacleid = "obs1"
@@ -83,6 +91,14 @@ def perturb_remove_obstacle_post(Parameters=None):
     """
     if connexion.request.is_json:
         Parameters = Parameters1.from_dict(connexion.request.get_json())
+
+    # this is a bit of a hack for RR1 -- this is the only name we ever give
+    # out so it's the only one we can accept
+    if not Parameters.obstacleid == "obs1":
+        ret = InlineReponse4001()
+        ret.cause = "bad-obstacleid"
+        ret.message = "got an obstacle ID other than 'obs1'"
+        return ret , 400
 
     ret = InlineResponse2001()
     ret.sim_time = 0

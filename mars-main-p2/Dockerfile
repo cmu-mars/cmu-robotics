@@ -11,6 +11,8 @@ RUN apt-get update && \
     usermod -a -G sudo mars && \
     sed -i "s/(ALL:ALL) ALL/(ALL) NOPASSWD: ALL/" "/etc/sudoers" && \
     mkdir -p /home/mars
+ADD llproxy /etc/sudoers.d/llproxy
+RUN chmod 640 /etc/sudoers.d/llproxy
 USER mars
 WORKDIR /home/mars
 
