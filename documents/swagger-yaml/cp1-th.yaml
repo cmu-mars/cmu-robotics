@@ -9,8 +9,8 @@ paths:
   /ready:
     post:
       description: >-
-        indicate to the TH that the TA is ready to recieve configuration data to
-        continue starting up the DAS
+        indicate to the TH that the TA is ready to recieve configuration
+        data to continue starting up the DAS
       responses:
         '200':
           description: TH is ready to produce configuration data
@@ -50,7 +50,7 @@ paths:
                   the names of the waypoints to visit, in the order in
                   which they must be visited. each name must be a valid
                   name of a waypoint on the map. `target-locs` must not be
-                  the empty list. every adjacent pair of elements of
+                  the empty list.  every adjacent pair of elements of
                   `target-locs` must be disequal -- that is to say, it is
                   not permitted to direct the robot to travel to the
                   waypoint where it is already located.
@@ -92,10 +92,13 @@ paths:
               error:
                 description: |-
                   one of a enumerated set of reasons that errors may arise
+
                    * parsing-error - one or more of the function
                                      descriptions failed to parse
+
                    * learning-error - an error was encountered in learning
                                       one or more of the hidden functions
+
                    * other-error - an error was encountered that is not
                                    covered by the other error codees
                 type: string
@@ -104,15 +107,17 @@ paths:
                   - learning-error
                   - other-error
               message:
-                description: |-
+                description: >-
                   human readable text describing the error, if available
                 type: string
       responses:
         '200':
-          description: TH acknowledges the error and is shutting down the test
+          description: >-
+            TH acknowledges the error and is shutting down the test
   /status:
     post:
-      description: used by the TA to periodically indicate its current state to the TH
+      description: >-
+        used by the TA to periodically indicate its current state to the TH
       parameters:
         - in: body
           name: Parameters
@@ -179,7 +184,9 @@ paths:
                 type: integer
                 minimum: 0
               predicted-arrival:
-                description: 'current best prediction of arrival time, in simulation time'
+                description: >-
+                  current best prediction of arrival time, in simulation
+                  time
                 type: integer
                 minimum: 0
               sim-time:
@@ -198,9 +205,9 @@ paths:
       description: >-
         used by the TA to indicate to the TH that the test is over.
 
-        turtlebot has reached the
-        goal and that the mission has been completed. note that incomplete
-        missions will result in an error and not use this end point.
+        turtlebot has reached the goal and that the mission has been
+        completed.  note that incomplete missions will result in an error
+        and not use this end point.
       parameters:
         - in: body
           name: Parameters
@@ -213,8 +220,8 @@ paths:
               - v
               - charge
               - sim-time
-              - predicted-arrival
               - outcome
+              - tasks-finished
             properties:
               x:
                 description: final x-coordinate of the turtlebot
@@ -224,15 +231,6 @@ paths:
                 description: final y-coordinate of the turtlebot
                 type: number
                 format: float
-              tasks-finished:
-                type: array
-                items:
-                  type: string ## TODO make this an object
-                description: >-
-                  the names of the waypoints that the turtlebot visited in
-                  the order that it visited them as well as the x,y
-                  coordinates of the robot and simulation time that it
-                  arrived there
               w:
                 description: final yaw of the turtlebot
                 type: number
@@ -251,38 +249,62 @@ paths:
                 description: the final internal simulation time
                 type: integer
                 minimum: 0
-              predicted-arrival:
-                description: 'final best prediction of arrival time, in simulation time'
-                type: integer
-                minimum: 0
-              target-times:
-                description: >-
-                  the simulation times when each of the waypoints listed in
-                  `target-locs` were reached.
+              tasks-finished:
                 type: array
                 items:
-                  type: integer
-                  minimum: 0
+                  type: object
+                  properties:
+                    x:
+                      description: >-
+                        the x-coordinate of the robot when it reached this
+                        way point
+                      type: number
+                      format: float
+                    'y':
+                      description: >-
+                        the y-coordinate of the robot when it reached this
+                        way point
+                      type: number
+                      format: float
+                    time:
+                      description: >-
+                        the simulation time when the robot reached this way
+                        point
+                      type: integer
+                    name:
+                      description: >-
+                        the name of the way point reached (TODO -- this
+                        will become an enum when we know all the names of
+                        the way points)
+                      type: string
+                description: >-
+                  the names of the waypoints that the turtlebot visited in
+                  the order that it visited them as well as the x,y
+                  coordinates of the robot and simulation time that it
+                  arrived there
               outcome:
                 type: string
                 enum:
                   - at-goal
                   - out-of-battery
                   - other-outcome
-                description: >-
+                description: |-
                   indicates the reason why the test is over
+
                     * at-goal - the turtlebot has reached the goal and
                                 completed the mission objectives
+
                     * out-of-battery - the battery on the turtlebot has run
                                        out, and cannot be charged, so the
                                        turtlebot cannot make progress
+
                     * other-outcome - the test is over for any other
                                       non-error reason
               message:
-                 type: string
-                 description: >-
-                   human-readable text with more information about the end
-                   of the test.
+                type: string
+                description: >-
+                  human-readable text with more information about the end of the
+                  test.
       responses:
         '200':
           description: TH acknowledges the completion of the mission
