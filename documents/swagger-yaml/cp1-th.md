@@ -23,7 +23,7 @@
 
 #### Description
 used by the TA to indicate to the TH that the test is over.
-turtlebot has reached the goal and that the mission has been completed. note that incomplete missions will result in an error and not use this end point.
+turtlebot has reached the goal and that the mission has been completed.  note that incomplete missions will result in an error and not use this end point.
 
 
 #### Parameters
@@ -39,14 +39,23 @@ turtlebot has reached the goal and that the mission has been completed. note tha
 |---|---|---|
 |**charge**  <br>*required*|final charge measure of the turtlebot. cannot be more than the maximum specified in the response from `/ready`.  <br>**Minimum value** : `0`|integer|
 |**message**  <br>*optional*|human-readable text with more information about the end of the test.|string|
-|**outcome**  <br>*required*|indicates the reason why the test is over<br>  * at-goal - the turtlebot has reached the goal and<br>              completed the mission objectives<br>  * out-of-battery - the battery on the turtlebot has run<br>                     out, and cannot be charged, so the<br>                     turtlebot cannot make progress<br>  * other-outcome - the test is over for any other<br>                    non-error reason|enum (at-goal, out-of-battery, other-outcome)|
-|**predicted-arrival**  <br>*required*|final best prediction of arrival time, in simulation time  <br>**Minimum value** : `0`|integer|
+|**outcome**  <br>*required*|indicates the reason why the test is over<br><br>  * at-goal - the turtlebot has reached the goal and<br>              completed the mission objectives<br><br>  * out-of-battery - the battery on the turtlebot has run<br>                     out, and cannot be charged, so the<br>                     turtlebot cannot make progress<br><br>  * other-outcome - the test is over for any other<br>                    non-error reason|enum (at-goal, out-of-battery, other-outcome)|
 |**sim-time**  <br>*required*|the final internal simulation time  <br>**Minimum value** : `0`|integer|
-|**target-times**  <br>*optional*|the simulation times when each of the waypoints listed in `target-locs` were reached.|< integer > array|
+|**tasks-finished**  <br>*required*|the names of the waypoints that the turtlebot visited in the order that it visited them as well as the x,y coordinates of the robot and simulation time that it arrived there|< [tasks-finished](#done-post-tasks-finished) > array|
 |**v**  <br>*required*|final velocity of the turtlebot|number (float)|
 |**w**  <br>*required*|final yaw of the turtlebot|number (float)|
 |**x**  <br>*required*|final x-coordinate of the turtlebot|number (float)|
 |**y**  <br>*required*|final y-coordinate of the turtlebot|number (float)|
+
+<a name="done-post-tasks-finished"></a>
+**tasks-finished**
+
+|Name|Description|Schema|
+|---|---|---|
+|**name**  <br>*optional*|the name of the way point reached (TODO -- this will become an enum when we know all the names of the way points)|string|
+|**time**  <br>*optional*|the simulation time when the robot reached this way point|integer|
+|**x**  <br>*optional*|the x-coordinate of the robot when it reached this way point|number (float)|
+|**y**  <br>*optional*|the y-coordinate of the robot when it reached this way point|number (float)|
 
 
 #### Responses
@@ -75,7 +84,7 @@ used by the TA to indicate to the TH that a non-recoverable error has occurred a
 
 |Name|Description|Schema|
 |---|---|---|
-|**error**  <br>*required*|one of a enumerated set of reasons that errors may arise<br> * parsing-error - one or more of the function<br>                   descriptions failed to parse<br> * learning-error - an error was encountered in learning<br>                    one or more of the hidden functions<br> * other-error - an error was encountered that is not<br>                 covered by the other error codees|enum (parsing-error, learning-error, other-error)|
+|**error**  <br>*required*|one of a enumerated set of reasons that errors may arise<br><br> * parsing-error - one or more of the function<br>                   descriptions failed to parse<br><br> * learning-error - an error was encountered in learning<br>                    one or more of the hidden functions<br><br> * other-error - an error was encountered that is not<br>                 covered by the other error codees|enum (parsing-error, learning-error, other-error)|
 |**message**  <br>*optional*|human readable text describing the error, if available|string|
 
 
@@ -105,14 +114,12 @@ indicate to the TH that the TA is ready to recieve configuration data to continu
 
 |Name|Description|Schema|
 |---|---|---|
-|**charge-budget**  <br>*optional*|if in level d, the maximum number of queries against the target recharging function during learning|integer|
-|**charge-function**  <br>*optional*|if in level d, a description of the function dictating the recharging of the battery, which is what we will learn.|string (function-spec)|
-|**discharge-budget**  <br>*optional*|if in level d, the maximum number of queries against the target function during learning|integer|
-|**discharge-function**  <br>*optional*|if in level d, a description of the function dictating the discharge of the battery, which is what we will learn.|string (function-spec)|
-|**level**  <br>*required*|the level at which the DAS should operate for this test.<br>as given in the CP definition,<br><br>  * a - no perturbations, no adaptation, no power model<br><br>  * b - perturbations, but no adaptation, no power model<br><br>  * bprime - perturbations and adaptation, but a static<br>        power model for discharge/charge, while planner<br>        uses a different static power model<br><br>  * c - perturbations and adaptation, with charge and<br>        discharge power models provided and learned|enum (a, b, bprime, c)|
-|**max-charge**  <br>*optional*|if in level d, the maximum charge the battery can hold, in mWh. implicitly, all batteries have a minimum possible charge of 0 mWh  <br>**Minimum value** : `0`|integer|
+|**charge-budget**  <br>*optional*|if in level c, the maximum number of queries against the target recharging function during learning|integer|
+|**discharge-budget**  <br>*optional*|if in level c, the maximum number of queries against the target function during learning|integer|
+|**level**  <br>*required*|the level at which the DAS should operate for this test.<br>as given in the CP definition,<br><br>  * a - no perturbations, no adaptation, no power model<br><br>  * b - perturbations, but no adaptation, no power model<br><br>  * c - perturbations and adaptation, with charge and<br>        discharge power models provided and learned|enum (a, b, c)|
+|**power-model**  <br>*optional*|if in level c, the name of the power model from the test data to use for this test. each power model includes at least a function describing how the battery charges, discharges, and a maximum possible charge.  <br>**Minimum value** : `0`  <br>**Maximum value** : `99`|integer|
 |**start-loc**  <br>*required*|the name of the start map waypoint. start-loc must not be the same as the first item of `target-locs`.|string|
-|**target-locs**  <br>*required*|the names of the waypoints to visit, in the order in which they must be visited. each name must be a valid name of a waypoint on the map. `target-locs` must not be the empty list. every adjacent pair of elements of `target-locs` must be disequal -- that is to say, it is not permitted to direct the robot to travel to the waypoint where it is already located.|< string > array|
+|**target-locs**  <br>*required*|the names of the waypoints to visit, in the order in which they must be visited. each name must be a valid name of a waypoint on the map. `target-locs` must not be the empty list.  every adjacent pair of elements of `target-locs` must be disequal -- that is to say, it is not permitted to direct the robot to travel to the waypoint where it is already located.|< string > array|
 
 
 <a name="status-post"></a>
