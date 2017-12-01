@@ -55,7 +55,7 @@ paths:
                   not permitted to direct the robot to travel to the
                   waypoint where it is already located.
               power-model:
-                type: int
+                type: integer
                 minimum: 0
                 maximum: 99
                 description: >-
@@ -224,6 +224,15 @@ paths:
                 description: final y-coordinate of the turtlebot
                 type: number
                 format: float
+              tasks-finished:
+                type: array
+                items:
+                  type: string ## TODO make this an object
+                description: >-
+                  the names of the waypoints that the turtlebot visited in
+                  the order that it visited them as well as the x,y
+                  coordinates of the robot and simulation time that it
+                  arrived there
               w:
                 description: final yaw of the turtlebot
                 type: number
