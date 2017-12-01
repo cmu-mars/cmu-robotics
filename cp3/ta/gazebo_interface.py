@@ -4,6 +4,7 @@ import os.path
 from gazebo_msgs.srv import *
 from gazebo_msgs.msg import *
 from geometry_msgs.msg import *
+from std_msgs.msg import ColorRGBA
 import transformations as tf # Note that this is copied in locally because the standard Kinetic version does not work
 import rospy
 import math
@@ -39,6 +40,7 @@ class GazeboInterface:
         # Services to gazebo
         self.get_model_state = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
         self.set_model_state = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
+        self.set_light_properties = rospy.ServiceProxy('/gazebo/set_light_properties', SetLightProperties)
         self.spawn_model = rospy.ServiceProxy('/gazebo/spawn_sdf_model', SpawnModel)
         self.delete_model = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
         try:
@@ -206,6 +208,39 @@ class GazeboInterface:
             rospy.logerr("Could not place obstacle. Message %s"%e)
             return False
 
+    def enable_light(self, light_id, enablement):
+        req = SetLightProperties()
+        req.light_name = light_id
+        diffuse = ColorRGBA()
+        if enablement:
+            diffuse.r = 127
+            diffuse.g = 127
+            diffuse.b = 127
+        else:
+            diffuse.r = 0
+            diffuse.g = 0
+            diffuse.b = 0
+        diffuse.a = 255
+        req.diffuse = diffuse
+        req.attenuation_constant = 0.5
+        req.attenuation_linear = 0.01
+        req.attenuation_quadratic = 0.01
+
+        try:
+            res = self.set_light_properties(light_id, diffuse, 0.5, 0.01, 0.01)
+            if res.success:
+                return True
+            else:
+                rospy.logerr ("Could not enable or disable light. Message: %s" %res.status_message)
+                return False
+        except rospy.ServiceException as e:
+            rospy.logerr("Could not enable or disable light. Merssage: %s" %e)
+            return False
+
+    def enable_headlamp(self, enablement):
+
+
+
 # This is just for testing
 if __name__ == "__main__":
     # In testing
@@ -213,20 +248,27 @@ if __name__ == "__main__":
     gazebo = GazeboInterface()
 
 
-    success = gazebo.set_turtlebot_position(19.8,58.8,0)
+    # success = gazebo.set_turtlebot_position(19.8,58.8,0)
+    # if success:
+    #     print ("set position!")
+    # else:
+    #     print ('did not set position')
+    # x,y,w,v = gazebo.get_turtlebot_state()
+    # print("Turtlebot is at (%s, %s), facing %s and going %s ms" %(str(x),str(y),str(w),str(v)))
+
+
+    # new_obs = gazebo.place_new_obstacle(19.5, 58.5)
+
+    # print("Successfully placed an obstacle called %s" %new_obs)
+
+    # new_obs = gazebo.place_new_obstacle(52, 76)
+    # print("Deleting %s" %new_obs)
+    # success = gazebo.delete_model(new_obs)
+    # print("Added and deleted a model, success=%s" %str(success))
+
+    success = gazebo.enable_light("light0", False)
     if success:
-        print ("set position!")
+        print ("Light0 turned off!")
     else:
-        print ('did not set position')
-    x,y,w,v = gazebo.get_turtlebot_state()
-    print("Turtlebot is at (%s, %s), facing %s and going %s ms" %(str(x),str(y),str(w),str(v)))
+        print ("Light 0 not activated")
 
-
-    new_obs = gazebo.place_new_obstacle(19.5, 58.5)
-
-    print("Successfully placed an obstacle called %s" %new_obs)
-
-    new_obs = gazebo.place_new_obstacle(52, 76)
-    print("Deleting %s" %new_obs)
-    success = gazebo.delete_model(new_obs)
-    print("Added and deleted a model, success=%s" %str(success))
