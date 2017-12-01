@@ -273,6 +273,7 @@ For each task `t` in `/done/tasks-finished`:
 `location = (t{x}, t{y})`
 
 `score = `
+
 | Condition                                                        | Score                                             |
 |------------------------------------------------------------------|---------------------------------------------------|
 | distance(location,target) < MAX_DISTANCE 	                       | 1                                                 |
