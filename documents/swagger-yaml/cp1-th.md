@@ -53,7 +53,7 @@ turtlebot has reached the goal and that the mission has been completed.  note th
 |Name|Description|Schema|
 |---|---|---|
 |**name**  <br>*optional*|the name of the way point reached (TODO -- this will become an enum when we know all the names of the way points)|string|
-|**time**  <br>*optional*|the simulation time when the robot reached this way point|integer|
+|**sim-time**  <br>*optional*|the simulation time when the robot reached this way point|integer|
 |**x**  <br>*optional*|the x-coordinate of the robot when it reached this way point|number (float)|
 |**y**  <br>*optional*|the y-coordinate of the robot when it reached this way point|number (float)|
 

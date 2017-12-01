@@ -266,7 +266,7 @@ paths:
                         way point
                       type: number
                       format: float
-                    time:
+                    sim-time:
                       description: >-
                         the simulation time when the robot reached this way
                         point

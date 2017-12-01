@@ -288,7 +288,7 @@ it as far as we can retain information for baseline B.
 **Test/Capture Method**: The `/done` message will contain the simulation
 times when the robot reached the end of each task that it completed.
 
-**Result expression**: `t_x = /done/tasks-finished{sim}`
+**Result expression**: `t_x = /done/tasks-finished{sim-time}`
 
 **Verdict Expression**: Using the total time that the robot in baseline B
 has finished the successful tasks. Note that every time robot accomplishes
