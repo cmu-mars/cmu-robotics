@@ -251,7 +251,7 @@ the target location.
 successfully, the position of the robot will be read from the
 simulator. This will be returned in test-ta/action/observed
 
-**Result expression**: `location = (/done/x, /done/y)`
+**Result expression**: `location = (/done/x, /done/y)` `total_tasks=size(/ready/target-locs)`
 
 **Verdict Expression**: Using the information in `/done` message by
 calculating the proportion of the number of tasks that have successfully
@@ -266,19 +266,24 @@ target.
 function distance(loc1, loc2) = sqrt((loc1.x - loc2.x)^2 + (loc1.y - loc2.y)^2))
 ```
 
-For each task:
+For each task `t` in `/done/tasks-finished`:
 
+`target = map_location(t{name})`
+
+`location = (t{x}, t{y})`
+
+`score = `
 | Condition                                                        | Score                                             |
 |------------------------------------------------------------------|---------------------------------------------------|
-| eventually(distance(location,target) < MAX_DISTANCE)	           | 1                                                 |
+| distance(location,target) < MAX_DISTANCE 	                       | 1                                                 |
 | else                                                             | 0                                                 |
 
-`$r = sum(score) / total_tasks$`
+`r = sum(score) / total_tasks`
 
 
 **Challenge Evaluation**:
-`PASS` if `$r_c == r_a$`, `DEGRADED` if `$r_b <= r_c < r_a$`, `FAIL` if `$r_c < r_b$`.
-In the `DEGRADED` case, the score is proportional to the number of tasks that have been accomplished in baseline A: `$r_c / r_a$`.
+`PASS` if `r_c == r_a`, `DEGRADED` if `r_b <= r_c < r_a`, `FAIL` if `r_c < r_b`.
+In the `DEGRADED` case, the score is proportional to the number of tasks that have been accomplished in baseline A: `r_c / r_a`.
 
 #### Intent Element 2: Timeliness
 **Informal Description**: The total time that all tasks completed in both
@@ -288,7 +293,7 @@ it as far as we can retain information for baseline B.
 **Test/Capture Method**: The `/done` message will contain the simulation
 times when the robot reached the end of each task that it completed.
 
-**Result expression**: `t_x = /done/tasks-finished{sim-time}`
+**Result expression**: `t_x(i) = /done/tasks-finished[i]{sim-time}` where `sim-time` is the total amount of simulation time needed to complete `i` in test stage `x`. `lt_B = size(/done/tasks-finished)` in B, `lt_C = size(/done/tasks-finished)` in C, and `lt = min(lt_B, lt_C)`.
 
 **Verdict Expression**: Using the total time that the robot in baseline B
 has finished the successful tasks. Note that every time robot accomplishes
@@ -297,7 +302,7 @@ status containing the location and timing associated for the last
 accomplished task even through it may fail to accomplish all the
 tasks. Therefore, we can retain the time that robot accomplishes the
 associated tasks in all baselines (`$T_x = \sum_{task=1}^{lt} t_x(task)$,
-where $x = {a, b, c}$`).
+where $x = {b, c}$`). For example, `T_b` is the total time spent to accomplish all tasks that were completed up to `lt` in test stage B (baseline B).
 
 **Challenge Evaluation**:
 `PASS` if `$T_b >= T_c$`, `DEGRADED` if `$T_b < T_c <= 2*T_b$`, `FAIL` if `$T_c > 2*T_b$`. In the `DEGRADED` case, the score is: `$T_c / 2*T_b$`.
