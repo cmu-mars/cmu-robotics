@@ -260,7 +260,7 @@ tasks in `/ready/target-locs` message to calculate the following evaluation
 function for the number of tasks completed. Note that every time robot
 accomplishes a task it send an `at-waypoint` status message to TH. We
 consider a task accomplished, if it gets within `MAX_DISTANCE` of the
-target.
+target. Also, `/ready/target-locs` is an ordered list of locations, so each tasks will be accomplished in order and if for accomplishing an specific task another way-points were met, we do not consider their associated tasks as accomplished.
 
 ```
 function distance(loc1, loc2) = sqrt((loc1.x - loc2.x)^2 + (loc1.y - loc2.y)^2))
