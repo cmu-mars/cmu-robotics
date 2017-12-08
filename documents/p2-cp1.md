@@ -258,7 +258,7 @@ tasks in `/ready/target-locs` message to calculate the following evaluation
 function for the number of tasks completed. Note that every time robot
 accomplishes a task it send an `at-waypoint` status message to TH. We
 consider a task accomplished, if it gets within `MAX_DISTANCE` of the
-target. Also, `/ready/target-locs` is a list of locations, so we get the tasks in order and the robot issues the messages to `TH` in order, and if for accomplishing an specific task, accidentally another way-points were met, we do not consider their associated tasks as accomplished. Also, `/ready/target-locs` is an ordered list of locations, so each task will be accomplished in order and if for accomplishing a specific task other way-points are met, we do not consider their associated tasks as accomplished. Therefore, `/done/tasks-finished` will be the tasks finished in the same order as `/ready/target-locs`.
+target. Also, `/ready/target-locs` is an ordered list of locations: each task will be accomplished in order specified in the list and if for accomplishing a specific task other way-points are encountered, we do not consider their associated tasks as accomplished. Therefore,  `/done/tasks-finished` will be the tasks finished in the same order as `/ready/target-locs`.
 
 
 ```
