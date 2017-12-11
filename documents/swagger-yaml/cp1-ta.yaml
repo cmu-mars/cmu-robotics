@@ -164,8 +164,8 @@ paths:
                 minimum: 0
                 description: >-
                   the level to which the battery should be set, in
-                  mWh. cannot be more than the maximum given in the TH
-                  response to `/ready`.
+                  mWh. cannot be more than the maximum charge for the power
+                  model specified in the THs response to `/ready`.
       responses:
         '200':
           description: the battery has been set to the requested level

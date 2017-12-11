@@ -2,7 +2,8 @@
 
 ## Overview
 
-### Executive Summary
+This challenge problem will demonstrate major advances in our capability to learn power models efficiently under budget constraints to adapt to perturbations such as environmental changes or changes in the internal resources (Battery).
+
 
 Modern software-intensive systems are typically composed of components that
 are likely to change their behavior over time. For software to continue to operate under such changes, the assumptions about parts of the system made at design time may not hold at runtime after some point. Therefore, mechanisms must be put in place that can dynamically learn new models of these assumptions and use them to make decisions about missions, configurations, and in general, how to adapt the software systems at runtime for more optimal performance. The use of power in robotics systems is one of the characteristics of cyber-physical systems that
@@ -28,7 +29,7 @@ to determine the power model, the MARS DAS will learn the model by querying
 it within a predetermined number of times (note the learning budget is specified by Lincoln Labs). This learned power model is then used during robotic missions to improve the the quality (and better satisfy the intents) of the mission.
 
 
-### Technical Summary
+### Exploring the Research Questions through the Test
 
 Mobile robotic systems are expected to perform a wide variety of long range, long term and complex missions, inherently with different characteristics. By contrast to industrial robotics where energy can be supposed to be infinite, the management of autonomous mobile robot missions requires to be able predicting the energy consumption of the robot with an acceptable accuracy. Moreover, the mission complexity and the environment versatility imposes to be able managing the embedded energy according to different robot configurations (sensors, actuators, computation intensive control algorithms, etc.), making the energy management a central issue for autonomous robotic missions.
 
@@ -41,8 +42,7 @@ severe changes that might be caused by unanticipated and yet-unknown
 future environment changes. This challenge problem tests whether we can
 adapt our robotic platform successfully to such situations.
 
-Lincoln Labs will select a secret power model which is a function of robot's configuration (speed, Kinect sensors, localization) and outputs energy consumption. That is, Lincoln Labs can provide drastic differences for energy consumption of hardware and software components that may not reflect
-current but possibly distant-future hardware and software. The MARS DAS
+Lincoln Labs will select a secret power model which is a function of robot's configuration (speed, Kinect sensors, localization) and outputs energy consumption. That is, Lincoln Labs can provide drastic differences for energy consumption of hardware and software components that may not reflect current but possibly distant-future hardware and software. The MARS DAS
 will be able to query the model by providing inputs and receiving back
 the output from the power model. In addition, the power model is used
 during the evaluation to compute the battery level during simulation.
@@ -59,7 +59,7 @@ In the second phase, the robot will be asked to complete `n` tasks (part of a mi
 
 ### Research Questions
 
-**RQ1**: Can adaptations that reason using *models that have been learned under budget constraint* improve the quality of missions (in terms of evaluation criteria including timeliness, success rate) compared to reactive adaptations?
+**RQ1**: How adaptations that reason using *models that have been learned under budget constraint* improve the quality of missions (in terms of evaluation criteria including timeliness, success rate) compared to reactive adaptations?
 
 + We assume the learning is *under limited budget constraints*. Also, power models are assumed to be *polynomial models parameterized over robot's configuration options*.
 + There might be some cases where using an accurate model might tell us that we can finish a mission without going to the charge station and, therefore, we finish the the mission earlier (i.e., better in terms of timeliness).
@@ -67,7 +67,7 @@ In the second phase, the robot will be asked to complete `n` tasks (part of a mi
 + There might be some cases where reactive planner force the robot to the charging station, but we could finish the mission without going to the station.
 + We would also explore how the learning budget would affect the quality of the mission. For this we will do sensitivity analysis where we learn the power model under different budgets form extremely low (e.g., 1) to a high budget (e.g., 1000).
 
-**RQ2**: Can learning generate better adaptation strategies that impact the satisfaction of mission goals and qualities?
+**RQ2**: How learning generate better adaptation strategies that impact the satisfaction of mission goals and qualities?
 
 + One of the limitation of using model checking for generating the adaptations is that the number of potential states generated by adaptation strategies will explore. In this challenge problem, we use learning to enable to prone ineffective adaptation strategies and extract effective ones. More specifically, we learn the power model and we use the model for finding the strategies that lie on the Pareto front. We expect that if we learn more accurately, the Pareto front strategies are more effective with respect to the inaccurate estimation of power consumptions.
 
@@ -82,13 +82,12 @@ There are pieces of information that will be defined before the execution of a t
 * The map, including way point locations and locations of charging stations.
 * The set of Kinect sensors that the robot can use.
 * The set of software components (localization) that can be used by the robot.
-* A set of predefined power models that are inherently different from each other and they simulate different power consumptions of the robot.
+* A power model from a set of predefined power models that are inherently different from each other and they simulate different power consumptions of the robot.
 
 This is not the full robot configuration, just the parts that are necessarily visible to adapt during test.
 
 We will provide a baseline power model that describes the power consumption
-of the system depending on a number of configuration options. The model is
-a linear model over the inputs (including interactions).
+of the system depending on a number of configuration options for the baseline `A, B` that uses reactive planning. The model is a linear model over the inputs (including interactions).
 
 Possible secondary perturbations that corresponds to the robot's environment:
 * Placement or removal of one or multiple obstacles once or multiple times
@@ -101,7 +100,7 @@ The start location, target locations, initial battery, ..., are all defined in t
 ## Test Procedure
 
 See overview above. In particular, this challenge problem will require a
-training phase, `Tr`, where the model, that is selected from a predefined set of power models by Lincoln Labs, is learned. This requires a budget (number of times the hidden function will be queried) that will be given by LL. We learn the function once during the `Tr` phase, and then consume the learned model during the missions.
+training phase, `Tr`, where the model, provided by Lincoln Labs, is learned. This requires a budget (number of times the hidden function will be queried) that will be given by LL. We learn the function once during the `Tr` phase, and then use the learned model during the missions.
 
 There are three test stages proposed for the evaluation of this challenge problem. They are defined as follows:
 
@@ -114,8 +113,7 @@ There are three test stages proposed for the evaluation of this challenge proble
 
 ### Adaptation space and power model selection
 
-In this challenge problem, the possible variations (and possible adaptation
-actions) determining the configuration of the robot is as follows:
+In this challenge problem, we will provide a (feature) model that describe the space of adaptation (configuration options and their values). To describe the model via an example, the possible variations (and possible adaptation actions) determining the configuration of the robot is as follows:
 
 1. *Robot's motion actuator*: Two levels of speed: s1 (half speed), s2
    (full speed)
@@ -260,7 +258,8 @@ tasks in `/ready/target-locs` message to calculate the following evaluation
 function for the number of tasks completed. Note that every time robot
 accomplishes a task it send an `at-waypoint` status message to TH. We
 consider a task accomplished, if it gets within `MAX_DISTANCE` of the
-target.
+target. Also, `/ready/target-locs` is an ordered list of locations: each task will be accomplished in order specified in the list and if for accomplishing a specific task other way-points are encountered, we do not consider their associated tasks as accomplished. Therefore,  `/done/tasks-finished` will be the tasks finished in the same order as `/ready/target-locs`.
+
 
 ```
 function distance(loc1, loc2) = sqrt((loc1.x - loc2.x)^2 + (loc1.y - loc2.y)^2))
@@ -280,6 +279,16 @@ For each task `t` in `/done/tasks-finished`:
 | else                                                             | 0                                                 |
 
 `r = sum(score) / total_tasks`
+
+Note that the ordered list of tasks that are reported to be finished by the bot and can be retrieved in `/done/tasks-finished` should be a subset of the tasks in the ordered set tasks in `/ready/target-locs`, otherwise the final score is zero, `r=0`. 
+
+```python
+>>> A = (a, b, g)
+>>> B = (a, c, b, e, g)
+>>> b_iter = iter(B)
+>>> all(a in b_iter for a in A)
+True
+```
 
 
 **Challenge Evaluation**:
@@ -329,7 +338,7 @@ navigating a simulated corridor, placing 1 obstacle and changing the
 battery level once). Each test case is described by the following:
 
  * Mission schema: Navigation
- * Mission parameters: `A->T1->T2->...->Tn` (the way points or tasks that the robot need to accomplish)
+ * Mission parameters: `A->T1->T2->...->Tn` (the way points or tasks that the robot need to accomplish provided by LL)
  * Charge and discharge functions to be selected from a set of predefined models (most likely 100 pre-specified models).
  * Perturbations: Obstacles + Battery level change
  * Possible adaptations: possible variations for `Speed, Kinects, Localization algorithms`
