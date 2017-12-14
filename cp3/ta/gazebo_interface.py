@@ -4,11 +4,12 @@ import os.path
 from gazebo_msgs.srv import *
 from gazebo_msgs.msg import *
 from geometry_msgs.msg import *
-from std_msgs.msg import ColorRGBA
+from std_msgs.msg import ColorRGBA, Bool
 import transformations as tf # Note that this is copied in locally because the standard Kinetic version does not work
 import rospy
 import math
 import traceback
+import argparse
 
 # This is the model for the obstacle
 OBS_MODEL = os.path.expanduser('~/catkin_ws/src/cp-models-p15/models/box.sdf')
@@ -43,6 +44,12 @@ class GazeboInterface:
         self.set_light_properties = rospy.ServiceProxy('/gazebo/set_light_properties', SetLightProperties)
         self.spawn_model = rospy.ServiceProxy('/gazebo/spawn_sdf_model', SpawnModel)
         self.delete_model = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
+
+
+        self.headlamp = rospy.Publisher('/mobile_base/headlamp')
+        self.kinect_onoff = rospy.Publisher('/sensor/kinect/onoff')
+        self.kinect_image_onoff = rospy.Publisher('/sensor/kinect/depth/onoff')
+
         try:
             rospy.wait_for_service('/gazebo/get_model_state', timeout=30)
             #rospy.wait_for_service('/gazebo/spawn_gazebo_model')
@@ -238,37 +245,136 @@ class GazeboInterface:
             return False
 
     def enable_headlamp(self, enablement):
+        msg = Bool(enablement)
+        self.headlamp.publish(msg)
 
 
 
 # This is just for testing
 if __name__ == "__main__":
     # In testing
-    rospy.init_node("gazebo_interface_test")
-    gazebo = GazeboInterface()
+    
 
+    parser = argparse.ArgumentParser()
+    commands = ['help', 'enable_light', 'enable_headlamp', 'list_obstacles', 
+        'place_obstacle', 'remove_obstacle', 'set_pose', 'kinect', 'lidar', 'where']
+    parser.add_argument('command', choices=commands, help='The command to issue to Gazebo')
+    parser.add_argument('carg', nargs='*', help='The arguments for the particular command. Use help command to find out more information')
 
-    # success = gazebo.set_turtlebot_position(19.8,58.8,0)
-    # if success:
-    #     print ("set position!")
-    # else:
-    #     print ('did not set position')
-    # x,y,w,v = gazebo.get_turtlebot_state()
-    # print("Turtlebot is at (%s, %s), facing %s and going %s ms" %(str(x),str(y),str(w),str(v)))
+    el_parser = argparse.ArgumentParser(prog=parser.prog + " enable_light")
+    el_parser.add_argument('light-id', help='The light id of the light to enable')
+    el_parser.add_argument('enablement', choices=['on', 'off'], help='Whether to turn the lights on or off')
 
+    eh_parser = argparse.ArgumentParser(prog=parser.prog + " enable_headlamp")
+    eh_parser.add_argument('enablement', choices=['on', 'off'], help='Whether to turn the headlamp on or off')
 
-    # new_obs = gazebo.place_new_obstacle(19.5, 58.5)
+    po_parser = argparse.ArgumentParser(prog=parser.prog + " place_obstacle")
+    po_parser.add_argument('x', type=float, help='The x location relative to the map to place the obstacle')
+    po_parser.add_argument('y', type=float, help='The y location relative to the map to place the obstacle')
 
-    # print("Successfully placed an obstacle called %s" %new_obs)
+    do_parser = argparse.ArgumentParser(prog=parser.prog + " remove_obstacle")
+    do_parser.add_argument('obstacle-id', help='The id of the obstacle to remove')
 
-    # new_obs = gazebo.place_new_obstacle(52, 76)
-    # print("Deleting %s" %new_obs)
-    # success = gazebo.delete_model(new_obs)
-    # print("Added and deleted a model, success=%s" %str(success))
+    sp_parser = argparse.ArgumentParser(prog=parser.prog + " set_pose")
+    sp_parser.add_argument('x', type=float, help='The x location relative to the map to place the robot')
+    sp_parser.add_argument('y', type=float, help='The y location relative to the map to place the robot')
+    sp_parser.add_argument('w', type=int, help='The rotation (in degrees) that the robot is facing')
 
-    success = gazebo.enable_light("light0", False)
-    if success:
-        print ("Light0 turned off!")
+    k_parser = argparse.ArgumentParser(prog=parser.prog + "kinect");
+    k_parser.add_argument('enablement', choices=['on', 'off', 'image-only'], help='Turn the kinect on or off, or make it only emit rgb image')
+
+    l_parser = argparse.ArgumentParser(prog=parser.prog + " lidar");
+    l_parser.add_argument('enablement', choices=['on', 'off'], help='Turn the lidar on or off')
+
+    h_parser = argparse.ArgumentParser ()
+    h_parser.add_argument('command', choices = commands[1:], help='The commands where help is available')
+
+    args = parser.parse_args()
+
+    if args.command == 'help':
+        hargs = h_parser.parse_args(args.carg)
+        if hargs.command == 'enable_light':
+            el_parser.print_help()
+        elif hargs.command ==  'enable_headlamp':
+            print('Turns the headlamp on the TurtleBot on or off')
+            eh_parser.print_help()
+        elif hargs.command == 'list_obstacles':
+            print('Takes no arguments; returns a list of known obstacle ids')
+        elif hargs.command == 'place_obstacle':
+            print('Places an obstacle in the world')
+            po_parser.print_help()
+        elif hargs.command == 'remove_obstacle':
+            print('Removes an obstacle from the world')
+            do_parser.print_help()
+        elif hargs.command == 'set_pose':
+            print('Sets the pose of the TurtleBot in the world (and optionally the localization)')
+            sp_parser.print_help()
+        elif hargs.command == 'kinect':
+            print('Configures the kinect sensor')
+            k_parser.print_help()
+        elif hargs.command == 'lidar':
+            print('Configures the LIDAR')
+            l_parser.print_help()
+        elif hargs == 'where':
+            print ('Prints where the turtlebot is and its velocity')
+        else:
+            h_parser.print_help()
+        sys.exit()
     else:
-        print ("Light 0 not activated")
+        rospy.init_node("gazebo_interface_test")
+        gazebo = GazeboInterface()
+
+    if args.command == 'enable_light':
+        eargs = el_parser.parse_args(parser.carg)
+        if eargs.enablement=='on':
+            eargs.enablement = True
+        elif eargs.enablement=='off':
+            eargs.enablement = False
+        else:
+            el_parser.print_help()
+            sys.exit()
+        result = gazebo.enable_light(eargs.light_id, eargs.enablement)
+        print ('Light was enabled %s' %'successfully' if result else 'unsuccessfully')
+    elif args.command == 'enable_headlamp':
+        eargs = eh_parser.parse_args(parser.carg)
+        if eargs.enablement=='on':
+            eargs.enablement = True
+        elif eargs.enablement=='off':
+            eargs.enablement = False
+        else:
+            eh_parser.print_help()
+            sys.exit()
+        result = gazebo.enable_headlamp(eargs.enablement)
+        print ('Headlamp was enabled %s' %'successfully' if result else 'unsuccessfully')
+    elif args.command == 'list_obstacles':
+        print(gazebo.obstacle_names)
+    elif args.command == 'place_obstacle':
+        pargs = po_parser.parse_args(parser.carg)
+        id = gazebo.place_new_obstacle(pargs.x, pargs.y)
+        if id is None:
+            print ('Could not place an obstacle')
+        else:
+            print ('Obstacle "%s" placed in the world.'%id)
+    elif args.command == 'remove_obstacle':
+        rargs = do_parser.parse_args(parser.carg)
+        result = gazebo.delete_obstacle(rargs.obstacle_id)
+        print ('Obstacle was removed %s' %'successfully' if result else 'unsuccessfully')
+    elif args.command == 'set_pose':
+        pargs = sp_parser.parse_args(parser.carg)
+        pargs.w = math.radians(pargs.w)
+        result = gazebo.set_turtlebot_position(pargs.x, pargs.y, pargs.w)
+        print ('Turtlebot was placed %s' %'successfully' if result else 'unsuccessfully')
+    elif args.command == 'kinect':
+        kargs = k_parser.parse_args(parser.carg)
+        raise Exception('kinect command not implemented!')
+    elif args.command == 'lidar':
+        largs = l_parser.parse_args(parser.carg)
+        raise Exception ('lidar command not implemented!')
+    elif args.command == 'where':
+        x, y, w, v = gazebo.get_turtlebot_state()
+        print("Turtlebot is at (%s, %s), facing %s and going %s ms" %(str(x),str(y),str(w),str(v)))
+
+
+
+  
 
