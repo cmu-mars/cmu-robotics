@@ -46,9 +46,9 @@ class GazeboInterface:
         self.delete_model = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
 
 
-        self.headlamp = rospy.Publisher('/mobile_base/headlamp')
-        self.kinect_onoff = rospy.Publisher('/sensor/kinect/onoff')
-        self.kinect_image_onoff = rospy.Publisher('/sensor/kinect/depth/onoff')
+        self.headlamp = rospy.Publisher('/mobile_base/headlamp', Bool, queue_size=10)
+        self.kinect_onoff = rospy.Publisher('/sensor/kinect/onoff', Bool, queue_size=10)
+        self.kinect_image_onoff = rospy.Publisher('/sensor/kinect/depth/onoff', Bool, queue_size=10)
 
         try:
             rospy.wait_for_service('/gazebo/get_model_state', timeout=30)
@@ -247,6 +247,7 @@ class GazeboInterface:
     def enable_headlamp(self, enablement):
         msg = Bool(enablement)
         self.headlamp.publish(msg)
+        return True
 
 
 
@@ -262,7 +263,7 @@ if __name__ == "__main__":
     parser.add_argument('carg', nargs='*', help='The arguments for the particular command. Use help command to find out more information')
 
     el_parser = argparse.ArgumentParser(prog=parser.prog + " enable_light")
-    el_parser.add_argument('light-id', help='The light id of the light to enable')
+    el_parser.add_argument('light_id', help='The light id of the light to enable')
     el_parser.add_argument('enablement', choices=['on', 'off'], help='Whether to turn the lights on or off')
 
     eh_parser = argparse.ArgumentParser(prog=parser.prog + " enable_headlamp")
@@ -273,7 +274,7 @@ if __name__ == "__main__":
     po_parser.add_argument('y', type=float, help='The y location relative to the map to place the obstacle')
 
     do_parser = argparse.ArgumentParser(prog=parser.prog + " remove_obstacle")
-    do_parser.add_argument('obstacle-id', help='The id of the obstacle to remove')
+    do_parser.add_argument('obstacle_id', help='The id of the obstacle to remove')
 
     sp_parser = argparse.ArgumentParser(prog=parser.prog + " set_pose")
     sp_parser.add_argument('x', type=float, help='The x location relative to the map to place the robot')
@@ -325,7 +326,7 @@ if __name__ == "__main__":
         gazebo = GazeboInterface()
 
     if args.command == 'enable_light':
-        eargs = el_parser.parse_args(parser.carg)
+        eargs = el_parser.parse_args(args.carg)
         if eargs.enablement=='on':
             eargs.enablement = True
         elif eargs.enablement=='off':
@@ -334,9 +335,9 @@ if __name__ == "__main__":
             el_parser.print_help()
             sys.exit()
         result = gazebo.enable_light(eargs.light_id, eargs.enablement)
-        print ('Light was enabled %s' %'successfully' if result else 'unsuccessfully')
+        print ('Light was enabled %s' %('successfully' if result else 'unsuccessfully'))
     elif args.command == 'enable_headlamp':
-        eargs = eh_parser.parse_args(parser.carg)
+        eargs = eh_parser.parse_args(args.carg)
         if eargs.enablement=='on':
             eargs.enablement = True
         elif eargs.enablement=='off':
@@ -345,30 +346,30 @@ if __name__ == "__main__":
             eh_parser.print_help()
             sys.exit()
         result = gazebo.enable_headlamp(eargs.enablement)
-        print ('Headlamp was enabled %s' %'successfully' if result else 'unsuccessfully')
+        print ('Headlamp was enabled %s' %('successfully' if result else 'unsuccessfully'))
     elif args.command == 'list_obstacles':
         print(gazebo.obstacle_names)
     elif args.command == 'place_obstacle':
-        pargs = po_parser.parse_args(parser.carg)
+        pargs = po_parser.parse_args(args.carg)
         id = gazebo.place_new_obstacle(pargs.x, pargs.y)
         if id is None:
             print ('Could not place an obstacle')
         else:
             print ('Obstacle "%s" placed in the world.'%id)
     elif args.command == 'remove_obstacle':
-        rargs = do_parser.parse_args(parser.carg)
+        rargs = do_parser.parse_args(args.carg)
         result = gazebo.delete_obstacle(rargs.obstacle_id)
-        print ('Obstacle was removed %s' %'successfully' if result else 'unsuccessfully')
+        print ('Obstacle was removed %s' %('successfully' if result else 'unsuccessfully'))
     elif args.command == 'set_pose':
-        pargs = sp_parser.parse_args(parser.carg)
+        pargs = sp_parser.parse_args(args.carg)
         pargs.w = math.radians(pargs.w)
         result = gazebo.set_turtlebot_position(pargs.x, pargs.y, pargs.w)
-        print ('Turtlebot was placed %s' %'successfully' if result else 'unsuccessfully')
+        print ('Turtlebot was placed %s' %('successfully' if result else 'unsuccessfully'))
     elif args.command == 'kinect':
-        kargs = k_parser.parse_args(parser.carg)
+        kargs = k_parser.parse_args(args.carg)
         raise Exception('kinect command not implemented!')
     elif args.command == 'lidar':
-        largs = l_parser.parse_args(parser.carg)
+        largs = l_parser.parse_args(args.carg)
         raise Exception ('lidar command not implemented!')
     elif args.command == 'where':
         x, y, w, v = gazebo.get_turtlebot_state()
