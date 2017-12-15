@@ -12,7 +12,8 @@ DEFAULT_MAP_FILE = os.path.expandvars("~/catkin_ws/src/cp_maps/maps/cp3.json")
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     commands = ['help', 'enable_light', 'enable_headlamp', 'list_obstacles', 
-        'place_obstacle', 'remove_obstacle', 'set_pose', 'kinect', 'lidar', 'where', 'go']
+        'place_obstacle', 'remove_obstacle', 'set_pose', 'kinect', 'lidar', 'where', 'go',
+        'voltage', 'charging']
     parser.add_argument('-c', '--challenge', choices={'cp1','cp2','cp3'}, default='cp3', help='The challenge problem context')
     parser.add_argument('command', choices=commands, help='The command to issue to Gazebo')
     parser.add_argument('carg', nargs='*', help='The arguments for the particular command. Use help command to find out more information')
@@ -45,9 +46,15 @@ if __name__ == "__main__":
     h_parser = argparse.ArgumentParser ()
     h_parser.add_argument('command', choices = commands[1:], help='The commands where help is available')
 
-    go_parser = argparse.ArgumentParser()
+    go_parser = argparse.ArgumentParser(prog=parser.prog + " go")
     go_parser.add_argument('start', nargs='?', help='The waypoint label of the start')
     go_parser.add_argument('target', help='The wapoint lable of the target')
+
+    sc_parser = argparse.ArgumentParser(prog=parser.prog + " charging")
+    sc_parser.add_argument('enablement', choices=['on', 'off'], help='Turn on/off charging')
+
+    sv_parser = argparse.ArgumentParser(prog=parser.prog + " voltage")
+    sv_parser.add_argument('voltage', type=int, help='The voltage to set the charge to')
 
     args = parser.parse_args()
 
@@ -87,6 +94,9 @@ if __name__ == "__main__":
         elif hargs == 'go':
             print ('Execute a path. If start is unspecified, then use default navigation')
             go_parser.print_help()
+        elif hargs == 'charging':
+            print ('Set whether the turtlebot is charging')
+            sc_parser.print_help()
         else:
             h_parser.print_help()
         sys.exit()
@@ -136,7 +146,7 @@ if __name__ == "__main__":
         print ('Turtlebot was placed %s' %('successfully' if result else 'unsuccessfully'))
     elif args.command == 'kinect':
         kargs = k_parser.parse_args(args.carg)
-        raise Exception('kinect command not implemented!')
+        gazebo.set_kinect_mode(kargs.enablement)
     elif args.command == 'lidar':
         largs = l_parser.parse_args(args.carg)
         raise Exception ('lidar command not implemented!')
@@ -149,10 +159,21 @@ if __name__ == "__main__":
         cp3 = CP3(maps)
         result = cp3.go(gargs.target)
         print('%s moved Turtlebot to %s' %(("Successfully" if result else "Unsuccessfully"), gargs.target))
+    elif args.command == 'charging':
+        result = gazebo.set_charging(args.enablement is 'on')
+        print ("%s set charging" %("Successfully" if result else "Unsuccessfully"))
+    elif args.gommand == 'voltage':
+        result = gazebo.set_voltage(args.voltage)
+        print ("%s set voltage" %("Successfully" if result else "Unsuccessfully"))
 
 
 #TODO:
 # [x] Test CLI to do what we did with GazeboInterface
-# Develop map for cp3 and generate worlds, lights, etc
+# [x] Develop map for cp3 and generate worlds, lights, etc
+# [x]    Test map and world
 # Verify commands in that context
+# [x]    Test enable_light
+# [x]    Tesst enable_headlamp
+# [ ]    Test place_obstacle (place at l1)
+# [ ]    Test kinect
 # Test go

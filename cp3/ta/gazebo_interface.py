@@ -5,6 +5,7 @@ from gazebo_msgs.srv import *
 from gazebo_msgs.msg import *
 from geometry_msgs.msg import *
 from std_msgs.msg import ColorRGBA, Bool
+from brass_gazebo_plugins.srv import *
 import transformations as tf # Note that this is copied in locally because the standard Kinetic version does not work
 import rospy
 import math
@@ -46,9 +47,14 @@ class GazeboInterface:
         self.delete_model = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
 
 
-        self.headlamp = rospy.Publisher('/mobile_base/toggle_headlamp', Bool, queue_size=10)
-        self.kinect_onoff = rospy.Publisher('/sensor/kinect/onoff', Bool, queue_size=10)
-        self.kinect_image_onoff = rospy.Publisher('/sensor/kinect/depth/onoff', Bool, queue_size=10)
+        # self.headlamp = rospy.Publisher('/mobile_base/toggle_headlamp', Bool, queue_size=10)
+        self.headlamp = rospy.ServiceProxy('/mobile_base/headlamp', ToggleHeadlamp)
+        self.set_kinect_mode_srv = rospy.ServiceProxy("/mobile_base/kinect/mode", SetKinectMode)
+        self.set_charging_srv = rospy.ServiceProxy("/mobile_base/set_charging", SetCharging)
+        self.set_voltage_srv = rospy.ServiceProxy("/mobile_base/set_voltage", SetVoltage)
+       
+        self.X_MAP_TO_GAZEBO_TRANSLATION = xtrans
+        self.Y_MAP_TO_GAZEBO_TRANSLATION = ytrans
 
         try:
             rospy.wait_for_service('/gazebo/get_model_state', timeout=30)
@@ -61,14 +67,14 @@ class GazeboInterface:
         # :param mx: x coordinate in map
         # :param my: y coordinate in map
         # :return x, y in gazebo
-        return mx - X_MAP_TO_GAZEBO_TRANSLATION, my - Y_MAP_TO_GAZEBO_TRANSLATION
+        return mx - self.X_MAP_TO_GAZEBO_TRANSLATION, my - self.Y_MAP_TO_GAZEBO_TRANSLATION
 
     def translateGazeboToMap(self, gx, gy):
         # Translate from gazebo coordinates to map coordinates
         # :param mx: x coordinate in gazebo
         # :param my: y coordinate in gazebo
         # :return x, y in map
-        return gx + X_MAP_TO_GAZEBO_TRANSLATION, gy + Y_MAP_TO_GAZEBO_TRANSLATION
+        return gx + self.X_MAP_TO_GAZEBO_TRANSLATION, gy + self.Y_MAP_TO_GAZEBO_TRANSLATION
 
     def set_turtlebot_position(self, mx, my, w):
         # Sets the position of the turtlebot in gazebo and AMCL
@@ -245,11 +251,26 @@ class GazeboInterface:
             return False
 
     def enable_headlamp(self, enablement):
-        msg = Bool(enablement)
-        self.headlamp.publish(msg)
-        return True
+        resp = self.headlamp(enablement)
+        return resp.result
 
+    def set_kinect_mode(self, mode):
+        if mode == 'on':
+            mode = 1
+        elif mode == 'off':
+            mode = 0
+        elif mode == 'image-only':
+            mode = 2
+        resp = self.set_kinect_mode_srv(mode)
+        return resp.result
 
+    def set_charging(self, enablement):
+        resp = self.set_charging_srv(enablement)
+        return resp.result
+
+    def set_voltage(self, voltage):
+        resp = self.set_voltage_srv(voltage)
+        return resp.result
 
 
 
