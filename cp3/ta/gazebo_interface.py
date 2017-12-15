@@ -81,7 +81,7 @@ class GazeboInterface:
             q = (tb.pose.orientation.x,
                 tb.pose.orientation.y,
                 tb.pose.orientation.z,
-                tb.pose.orientation.w)
+                tb.pose.orientation.w) 
             # Set the angular rotation
             eu = tf.euler_from_quaternion(q)
             eu = eu[0], eu[1], w
