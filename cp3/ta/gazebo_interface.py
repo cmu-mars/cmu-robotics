@@ -4,6 +4,7 @@ import os.path
 from gazebo_msgs.srv import *
 from gazebo_msgs.msg import *
 from geometry_msgs.msg import *
+from brass_gazebo_plugins.srv import *
 import transformations as tf # Note that this is copied in locally because the standard Kinetic version does not work
 import rospy
 import math
@@ -28,10 +29,10 @@ class GazeboInterface:
     lock = None # A lock to manage multiple threads
     zero_q = None # A quarternion for zero twist
 
-    def __init__(self):
+    def __init__(self, xtrans=X_MAP_TO_GAZEBO_TRANSLATION, ytrans=Y_MAP_TO_GAZEBO_TRANSLATION):
         self.obstacle_names = []
         self.obstacle_sequence = 0
-        self.lock = Lock ()
+        self.lock = Lock () 
         self.zero_q = tf.quaternion_from_euler(0, 0, 0) # Zero twist obstacle
         file_xml = open(OBS_MODEL)
         self.obs_xml = file_xml.read()
@@ -41,6 +42,18 @@ class GazeboInterface:
         self.set_model_state = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
         self.spawn_model = rospy.ServiceProxy('/gazebo/spawn_sdf_model', SpawnModel)
         self.delete_model = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
+
+        self.set_kinect_srv = rospy.ServiceProxy("/mobile_base/kinect/mode", SetKinectMode)
+        self.set_lidar_srv = rospy.ServiceProxy("/mobile_base/lidar/mode", SetLidarMode)
+        self.set_headlamp_srv = rospy.ServiceProxy("/mobile_base/headlamp", ToggleHeadlamp)
+
+
+        self.set_charging_srv = rospy.ServiceProxy("/mobile_base/set_charging", SetCharging)
+        self.set_voltage_srv = rospy.ServiceProxy("/mobile_base/set_voltage", SetVoltage)
+
+        self.X_MAP_TO_GAZEBO_TRANSLATION = xtrans
+        self.Y_MAP_TO_GAZEBO_TRANSLATION = ytrans
+
         try:
             rospy.wait_for_service('/gazebo/get_model_state', timeout=30)
             #rospy.wait_for_service('/gazebo/spawn_gazebo_model')
@@ -52,14 +65,14 @@ class GazeboInterface:
         # :param mx: x coordinate in map
         # :param my: y coordinate in map
         # :return x, y in gazebo
-        return mx - X_MAP_TO_GAZEBO_TRANSLATION, my - Y_MAP_TO_GAZEBO_TRANSLATION
+        return mx - self.X_MAP_TO_GAZEBO_TRANSLATION, my - self.Y_MAP_TO_GAZEBO_TRANSLATION
 
     def translateGazeboToMap(self, gx, gy):
         # Translate from gazebo coordinates to map coordinates
         # :param mx: x coordinate in gazebo
         # :param my: y coordinate in gazebo
         # :return x, y in map
-        return gx + X_MAP_TO_GAZEBO_TRANSLATION, gy + Y_MAP_TO_GAZEBO_TRANSLATION
+        return gx + self.X_MAP_TO_GAZEBO_TRANSLATION, gy + self.Y_MAP_TO_GAZEBO_TRANSLATION
 
     def set_turtlebot_position(self, mx, my, w):
         # Sets the position of the turtlebot in gazebo and AMCL
@@ -206,27 +219,31 @@ class GazeboInterface:
             rospy.logerr("Could not place obstacle. Message %s"%e)
             return False
 
-# This is just for testing
-if __name__ == "__main__":
-    # In testing
-    rospy.init_node("gazebo_interface_test")
-    gazebo = GazeboInterface()
+    def enable_headlamp(self, enablement):
+        return self.set_headlamp_srv(enablement)
 
+    def set_kinect_mode(self, mode):
+        if mode == 'on':
+            mode  = 1
+        elif mode == 'off':
+            mode = 0
+        elif mode == 'image-only':
+            mode = 2
+        return self.set_kinect_srv(mode)
 
-    success = gazebo.set_turtlebot_position(19.8,58.8,0)
-    if success:
-        print ("set position!")
-    else:
-        print ('did not set position')
-    x,y,w,v = gazebo.get_turtlebot_state()
-    print("Turtlebot is at (%s, %s), facing %s and going %s ms" %(str(x),str(y),str(w),str(v)))
+    def set_lidar_mode(self, mode):
+        if mode == 'on':
+            mode = True
+        elif mode == 'off':
+            mode = False
+        return self.set_lidar_srv(mode)
 
+    def set_charging(self, charging):
+        if mode == 'on':
+            mode = True
+        elif mode == 'off':
+            mode = False
+        return self.set_charging_srv(charging)
 
-    new_obs = gazebo.place_new_obstacle(19.5, 58.5)
-
-    print("Successfully placed an obstacle called %s" %new_obs)
-
-    new_obs = gazebo.place_new_obstacle(52, 76)
-    print("Deleting %s" %new_obs)
-    success = gazebo.delete_model(new_obs)
-    print("Added and deleted a model, success=%s" %str(success))
+    def set_voltage(self, voltage):
+        return self.set_voltage_srv(voltage)

@@ -149,7 +149,7 @@ if __name__ == "__main__":
         gazebo.set_kinect_mode(kargs.enablement)
     elif args.command == 'lidar':
         largs = l_parser.parse_args(args.carg)
-        raise Exception ('lidar command not implemented!')
+        gazebo.set_lidar_mode(largs.enablement)
     elif args.command == 'where':
         x, y, w, v = gazebo.get_turtlebot_state()
         print("Turtlebot is at (%s, %s), facing %s and going %s ms" %(str(x),str(y),str(w),str(v)))
@@ -173,7 +173,11 @@ if __name__ == "__main__":
 # [x]    Test map and world
 # Verify commands in that context
 # [x]    Test enable_light
-# [x]    Tesst enable_headlamp
-# [ ]    Test place_obstacle (place at l1)
-# [ ]    Test kinect 
-# Test go
+# [x]    Test enable_headlamp
+# [x]    Test place_obstacle (place at l1)
+# [x]    Test kinect
+# [ ]    Test set_pose
+# [ ]    Write and test lidar
+# [ ]    Test go
+# [ ]    Test charging and voltage
+# [ ]    Write go with instructions 
