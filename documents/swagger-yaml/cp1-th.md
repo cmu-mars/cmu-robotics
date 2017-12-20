@@ -114,8 +114,8 @@ indicate to the TH that the TA is ready to recieve configuration data to continu
 
 |Name|Description|Schema|
 |---|---|---|
-|**charge-budget**  <br>*optional*|if in level c, the maximum number of queries against the target recharging function during learning|integer|
-|**discharge-budget**  <br>*optional*|if in level c, the maximum number of queries against the target function during learning|integer|
+|**charge-budget**  <br>*optional*|if in level c, the maximum number of queries against the target recharging function during learning  <br>**Minimum value** : `0`|integer|
+|**discharge-budget**  <br>*optional*|if in level c, the maximum number of queries against the target function during learning  <br>**Minimum value** : `0`|integer|
 |**level**  <br>*required*|the level at which the DAS should operate for this test.<br>as given in the CP definition,<br><br>  * a - no perturbations, no adaptation, no power model<br><br>  * b - perturbations, but no adaptation, no power model<br><br>  * c - perturbations and adaptation, with charge and<br>        discharge power models provided and learned|enum (a, b, c)|
 |**power-model**  <br>*optional*|if in level c, the name of the power model from the test data to use for this test. each power model includes at least a function describing how the battery charges, discharges, and a maximum possible charge.  <br>**Minimum value** : `0`  <br>**Maximum value** : `99`|integer|
 |**start-loc**  <br>*required*|the name of the start map waypoint. start-loc must not be the same as the first item of `target-locs`.|string|
