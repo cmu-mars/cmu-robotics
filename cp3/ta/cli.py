@@ -177,7 +177,7 @@ if __name__ == "__main__":
 # [x]    Test place_obstacle (place at l1)
 # [x]    Test kinect
 # [ ]    Test set_pose
-# [ ]    Write and test lidar
+# [x]    Write and test lidar
 # [ ]    Test go
 # [ ]    Test charging and voltage
 # [ ]    Write go with instructions 

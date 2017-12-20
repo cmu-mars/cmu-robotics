@@ -1,6 +1,7 @@
 from __future__ import with_statement
 from threading import Lock
 import os.path
+from std_msgs.msg import ColorRGBA
 from gazebo_msgs.srv import *
 from gazebo_msgs.msg import *
 from geometry_msgs.msg import *
@@ -42,7 +43,7 @@ class GazeboInterface:
         self.set_model_state = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
         self.spawn_model = rospy.ServiceProxy('/gazebo/spawn_sdf_model', SpawnModel)
         self.delete_model = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
-
+        self.enable_lights = rospy.ServiceProxy('/gazebo/set_light_properties', SetLightProperties)
         self.set_kinect_srv = rospy.ServiceProxy("/mobile_base/kinect/mode", SetKinectMode)
         self.set_lidar_srv = rospy.ServiceProxy("/mobile_base/lidar/mode", SetLidarMode)
         self.set_headlamp_srv = rospy.ServiceProxy("/mobile_base/headlamp", ToggleHeadlamp)
@@ -218,6 +219,22 @@ class GazeboInterface:
         except rospy.ServiceException as e:
             rospy.logerr("Could not place obstacle. Message %s"%e)
             return False
+
+    def enable_light(self, light, enablement):
+        color = ColorRGBA()
+        if enablement:
+            color.r = 127
+            color.g = 127
+            color.b = 127
+        else:
+            color.r = 0
+            color.g = 0
+            color.b = 0
+        color.a = 255
+        resp = self.enable_lights(light, color, 0.5, 0.01, 0.01)
+        return resp.success
+
+
 
     def enable_headlamp(self, enablement):
         return self.set_headlamp_srv(enablement)
