@@ -61,7 +61,7 @@ set the level of the battery in a currently running test. consistent with the mo
 
 |Name|Description|Schema|
 |---|---|---|
-|**charge**  <br>*required*|the level to which the battery should be set, in mWh. cannot be more than the maximum given in the TH response to `/ready`.  <br>**Minimum value** : `0`|number|
+|**charge**  <br>*required*|the level to which the battery should be set, in mWh. cannot be more than the maximum charge for the power model specified in the THs response to `/ready`.  <br>**Minimum value** : `0`|number|
 
 
 #### Responses
