@@ -19,7 +19,7 @@ if __name__ == "__main__":
     parser.add_argument('carg', nargs='*', help='The arguments for the particular command. Use help command to find out more information')
 
     el_parser = argparse.ArgumentParser(prog=parser.prog + " enable_light")
-    el_parser.add_argument('light_id', help='The light id of the light to enable')
+    el_parser.add_argument('light_id', nargs='+', help='The light id of the light to enable')
     el_parser.add_argument('enablement', choices=['on', 'off'], help='Whether to turn the lights on or off')
 
     eh_parser = argparse.ArgumentParser(prog=parser.prog + " enable_headlamp")
@@ -113,8 +113,9 @@ if __name__ == "__main__":
         else:
             el_parser.print_help()
             sys.exit()
-        result = gazebo.enable_light(eargs.light_id, eargs.enablement)
-        print ('Light was enabled %s' %('successfully' if result else 'unsuccessfully'))
+        for id in eargs.light_id:
+            result = gazebo.enable_light(id, eargs.enablement)
+            print ('Light was enabled %s' %('successfully' if result else 'unsuccessfully'))
     elif args.command == 'enable_headlamp':
         eargs = eh_parser.parse_args(args.carg)
         if eargs.enablement=='on':
