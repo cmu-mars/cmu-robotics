@@ -12,7 +12,7 @@ import math
 import traceback
 
 # This is the model for the obstacle
-OBS_MODEL = os.path.expanduser('~/catkin_ws/src/cp-models-p15/models/box.sdf')
+OBS_MODEL = os.path.expanduser('~/catkin_ws/src/cp-models-p15/models/box')
 
 # These are translation coordinates between the map and gazebo
 # The two things should really be syncrhonized
@@ -35,8 +35,10 @@ class GazeboInterface:
         self.obstacle_sequence = 0
         self.lock = Lock () 
         self.zero_q = tf.quaternion_from_euler(0, 0, 0) # Zero twist obstacle
-        file_xml = open(OBS_MODEL)
+       
+        file_xml = open(OBS_MODEL + ".sdf")
         self.obs_xml = file_xml.read()
+        self.obs_xmls = {}
 
         # Services to gazebo
         self.get_model_state = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
@@ -155,7 +157,7 @@ class GazeboInterface:
             rospy.logerr("Could not get state of robot: %s"%e)
             return None, None, None, None
 
-    def place_new_obstacle(self,x,y):
+    def place_new_obstacle(self,x,y, height=None):
         # Place a new obstacl at te map coordinates indicated. The obstacles is
         # given an automatic naming that is returned
         # :param x: x coordinated indicating center of obstacle in the map
@@ -181,7 +183,13 @@ class GazeboInterface:
         # Create gazebo request and call
         req = SpawnModelRequest()
         req.model_name = obs_name
-        req.model_xml = self.obs_xml
+        if height is None:
+            req.model_xml = self.obs_xml
+        else:
+            if not height in self.obs_xmls:
+                file_xml = open(OBS_MODEL + height + ".sdf")
+                self.obs_xmls[height] = file_xml.read()
+            req.model_xml = self.obs_xmls[height]
         req.initial_pose = pose
         try:
             res = self.spawn_model(req)
@@ -197,11 +205,11 @@ class GazeboInterface:
             rospy.logerr("Could not place obstacle. Message %s" %e)
             return None
 
-    def delete_obstacle(self, obs_name):
+    def delete_obstacle(self, obs_name, check=True):
         # Deletes a model (obstacle) from gazebo. The obs_name must exist
 
         with self.lock:
-            if obs_name not in self.obstacle_names:
+            if check and obs_name not in self.obstacle_names:
                 rospy.logerr("Nonexistent obstacle [%s]"%obs_name)
                 return False
         req = DeleteModelRequest()
@@ -210,14 +218,15 @@ class GazeboInterface:
             res = self.delete_model(req)
 
             if res.success:
-                with self.lock:
-                    self.obstacle_names.remove(obs_name)
+                if check:
+                    with self.lock:
+                        self.obstacle_names.remove(obs_name)
                 return True
             else:
-                rospy.logerr("Could not place obstacle. Message: %s" %res.status_message)
+                rospy.logerr("Could not remove obstacle. Message: %s" %res.status_message)
                 return False
         except rospy.ServiceException as e:
-            rospy.logerr("Could not place obstacle. Message %s"%e)
+            rospy.logerr("Could not removes obstacle. Message %s"%e)
             return False
 
     def enable_light(self, light, enablement):

@@ -26,6 +26,7 @@ if __name__ == "__main__":
     eh_parser.add_argument('enablement', choices=['on', 'off'], help='Whether to turn the headlamp on or off')
 
     po_parser = argparse.ArgumentParser(prog=parser.prog + " place_obstacle")
+    po_parser.add_argument('height', nargs='?', type=str, help="The height of the obstacle (must match one of the models)")
     po_parser.add_argument('x', type=float, help='The x location relative to the map to place the obstacle')
     po_parser.add_argument('y', type=float, help='The y location relative to the map to place the obstacle')
 
@@ -131,14 +132,14 @@ if __name__ == "__main__":
         print(gazebo.obstacle_names)
     elif args.command == 'place_obstacle':
         pargs = po_parser.parse_args(args.carg)
-        id = gazebo.place_new_obstacle(pargs.x, pargs.y)
+        id = gazebo.place_new_obstacle(pargs.x, pargs.y, pargs.height)
         if id is None:
             print ('Could not place an obstacle')
         else:
             print ('Obstacle "%s" placed in the world.'%id)
     elif args.command == 'remove_obstacle':
         rargs = do_parser.parse_args(args.carg)
-        result = gazebo.delete_obstacle(rargs.obstacle_id)
+        result = gazebo.delete_obstacle(rargs.obstacle_id, False)
         print ('Obstacle was removed %s' %('successfully' if result else 'unsuccessfully'))
     elif args.command == 'set_pose':
         pargs = sp_parser.parse_args(args.carg)
