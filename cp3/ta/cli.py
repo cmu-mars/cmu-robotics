@@ -6,6 +6,7 @@ from map_server import MapServer
 import math
 import os
 import sys
+import json
 
 DEFAULT_MAP_FILE = os.path.expandvars("~/catkin_ws/src/cp_maps/maps/cp3.json")
 
@@ -13,7 +14,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     commands = ['help', 'enable_light', 'enable_headlamp', 'list_obstacles', 
         'place_obstacle', 'remove_obstacle', 'set_pose', 'kinect', 'lidar', 'where', 'go',
-        'voltage', 'charging']
+        'voltage', 'charging', "place_markers"]
     parser.add_argument('-c', '--challenge', choices={'cp1','cp2','cp3'}, default='cp3', help='The challenge problem context')
     parser.add_argument('command', choices=commands, help='The command to issue to Gazebo')
     parser.add_argument('carg', nargs='*', help='The arguments for the particular command. Use help command to find out more information')
@@ -57,6 +58,9 @@ if __name__ == "__main__":
     sv_parser = argparse.ArgumentParser(prog=parser.prog + " voltage")
     sv_parser.add_argument('voltage', type=int, help='The voltage to set the charge to')
 
+    pm_parser = argparse.ArgumentParser(prog=parser.prog + " place_markers")
+    pm_parser.add_argument("marker_file", type=str, help="To file containing JSON definition of markers")
+
     args = parser.parse_args()
 
     map_file = DEFAULT_MAP_FILE
@@ -98,6 +102,9 @@ if __name__ == "__main__":
         elif hargs == 'charging':
             print ('Set whether the turtlebot is charging')
             sc_parser.print_help()
+        elif hargs=="place_markers":
+            print('Place markers from a file')
+            pm_parser.print_help()
         else:
             h_parser.print_help()
         sys.exit()
@@ -164,10 +171,17 @@ if __name__ == "__main__":
     elif args.command == 'charging':
         result = gazebo.set_charging(args.enablement is 'on')
         print ("%s set charging" %("Successfully" if result else "Unsuccessfully"))
-    elif args.gommand == 'voltage':
+    elif args.command == 'voltage':
         result = gazebo.set_voltage(args.voltage)
         print ("%s set voltage" %("Successfully" if result else "Unsuccessfully"))
-
+    elif args.command == "place_markers":
+        pargs = pm_parser.parse_args(args.carg)
+        pargs.marker_file = os.path.expandvars(pargs.marker_file)
+        f = open(pargs.marker_file)
+        s = f.read()
+        markers = json.loads(s)
+        result = gazebo.place_markers(markers)
+        print ("Created markers")
 
 #TODO:
 # [x] Test CLI to do what we did with GazeboInterface

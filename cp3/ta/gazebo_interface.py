@@ -1,4 +1,5 @@
 from __future__ import with_statement
+from __future__ import print_function
 from threading import Lock
 import os.path
 from std_msgs.msg import ColorRGBA
@@ -18,6 +19,25 @@ OBS_MODEL = os.path.expanduser('~/catkin_ws/src/cp-models-p15/models/box')
 # The two things should really be syncrhonized
 X_MAP_TO_GAZEBO_TRANSLATION = 56
 Y_MAP_TO_GAZEBO_TRANSLATION = 42
+
+MARKER_TEMPLATE = '''
+<sdf version='1.4'>
+<model name="Marker$ID">
+  <static>1</static>
+  <link name="link">
+    <visual name="visual">
+      <geometry>
+        <mesh>
+          <uri>model://marker$ID/meshes/Marker$ID.dae</uri>
+        </mesh>
+      </geometry>
+    </visual>
+    <self_collide>0</self_collide>
+    <kinematic>0</kinematic>
+  </link>
+</model>
+</sdf>'''
+
 
 class GazeboExcpetion(Exception):
     pass
@@ -273,3 +293,67 @@ class GazeboInterface:
 
     def set_voltage(self, voltage):
         return self.set_voltage_srv(voltage)
+
+    def place_markers(self, markers):
+        mid = 0
+        for marker in markers:
+            if not self.place_marker(mid, marker):
+                print("Could not place Marker%s"% mid)
+            mid = mid + 1
+
+    def place_marker(self, id, marker):
+        x = marker["x"]
+        y = marker["y"]
+        on_wall = marker["wall"]
+        w = 0;
+        translate = "translated" not in marker.keys or not marker["translated"]
+        if on_wall == "north":
+            if translate:
+                y = y + 0.1
+            w = -math.pi / 2
+        elif on_wall == "south":
+            if translate:
+                y = y - 0.1
+            w = math.pi / 2
+        elif on_wall == "east":
+            if translate:
+                x = x - 0.125
+            w = math.pi
+        elif on_wall == "west":
+            if translate:
+                x = x + 0.05
+            w = 0
+        else:
+            print("Marker is not on a wall!?")
+         # set up position of the obstacle
+        gx, gy = self.translateMapToGazebo(x,y)
+        pose = Pose ()
+        pose.position.x = gx
+        pose.position.y = gy
+        pose.position.z = 0.75
+        
+        q = tf.quaternion_from_euler(0, 0, w)
+            
+
+        pose.orientation.x = q[0]
+        pose.orientation.y = q[1]
+        pose.orientation.z = q[2]
+        pose.orientation.w = q[3]
+
+        # Generate obstacles name (in threadsafe manner)
+
+        # Create gazebo request and call
+        req = SpawnModelRequest()
+        req.model_name = "Marker%s" %id
+        req.model_xml = MARKER_TEMPLATE.replace("$ID", str(id))
+        req.initial_pose = pose
+        try:
+            res = self.spawn_model(req)
+            if res.success:
+                return True
+            else:
+                rospy.logerr("Could not place obstacle. Message: %s" %res.status_message)
+                return False
+        except rospy.ServiceException as e:
+            rospy.logerr("Could not place obstacle. Message %s" %e)
+            return False
