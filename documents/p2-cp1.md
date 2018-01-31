@@ -64,7 +64,7 @@ In the second phase, the robot will be asked to complete `n` tasks (part of a mi
 + We assume the learning is *under limited budget constraints*. Also, power models are assumed to be *polynomial models parameterized over robot's configuration options and their interactions*.
 + In some cases an accurate model might tell us that we can finish a mission without going to the charge station. As a result, we will finish the mission earlier (i.e., better in terms of timeliness). In other cases, a reactive (i.e., non-learning) planner would force the robot to the charging station, but instead we could finish the mission without going to the station.
 + We will explore corner cases that adaptation using a learned model can provide us benefit by saving time, saving energy, or both, and therefore getting a better score in total.
-+ We would also explore how the learning budget affects the quality of the mission. For this we will do sensitivity analysis where we learn the power model under different budgets form extremely low (e.g., 1 attempt) to a high budget (e.g., 1000 attempts).
++ We would also explore how the learning budget affects the quality of the mission. For this we will do sensitivity analysis where we learn the power model under different budgets from extremely low (2 attempts, to determine power consumption in the minimal (no components on) and maximal (all components on) configurations) to a high budget (e.g., 1000 attempts).
 
 **RQ2**: How can learning generate better adaptation strategies that impact the satisfaction of mission goals and qualities?
 
