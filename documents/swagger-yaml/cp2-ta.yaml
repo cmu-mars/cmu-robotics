@@ -53,69 +53,36 @@ definitions:
         description: >-
           The location that marks the end of this source range.
 
+  PerturbationKind:
+    type: string
+    enum:
+      - DeleteVoidFunctionCall
+      - FlipArithmeticOperator
+      - FlipBooleanOperator
+      - FlipRelationalOperator
+      - UndoTransformation
+      - DeleteConditionalControlFlow
+      - FlipSignedness
+    description: >-
+      A description of the kind of the perturbation.
+
   Perturbation:
     type: object
-    discriminator: kind
     required:
       - kind
+      - at
     properties:
       kind:
-        type: string
-        enum:
-          - InsertStatementPerturbation
-          - ReplaceStatementPerturbation
-          - DeleteStatementPerturbation
+        $ref: '#/definitions/PerturbationKind'
+      at:
+        $ref: '#/definitions/SourceRange'
         description: >-
-          Used to discriminate between different kinds of perturbation.
-
-  DeleteStatementPerturbation:
-    type: object
-    allOf:
-      - $ref: '#/definitions/Perturbation'
-      - required:
-          - kind
-          - locationRange
-      - properties:
-          locationRange:
-            $ref: '#/definitions/SourceRange'
-            description: >-
-              The range of code that is deleted by the perturbation.
-
-  ReplaceStatementPerturbation:
-    type: object
-    allOf:
-      - $ref: '#/definitions/Perturbation'
-      - required:
-          - kind
-          - locationRange
-      - properties:
-          locationRange:
-            $ref: '#/definitions/SourceRange'
-            description: >-
-              The range of code that is replaced by the perturbation.
-          statement:
-            type: string
-            description:
-              The source code for the replacement statement.
-
-  InsertStatementPerturbation:
-    type: object
-    allOf:
-      - $ref: '#/definitions/Perturbation'
-      - required:
-          - kind
-          - location
-          - statement
-      - properties:
-          location:
-            $ref: '#/definitions/SourceRange'
-            description: >-
-              The location immediately before the location at which the
-              statement will be inserted.
-          statement:
-            type: string
-            description:
-              The source code for the inserted statement.
+          The range of code that is deleted or replaced by the perturbation.
+      replacement:
+        type: string
+        description: >-
+          The body of the source code that should replaced the source code
+          given by the location range associated with this perturbation.
 
 paths:
   /perturbations:
@@ -140,18 +107,7 @@ paths:
                 description: >-
                   The file at which the perturbation should be injected.
               shape:
-                type: string
-                enum:
-                  - DeleteVoidFunctionCall
-                  - FlipArithmeticOperator
-                  - FlipBooleanOperator
-                  - FlipRelationalOperator
-                  - UndoTransformation
-                  - DeleteConditionalControlFlow
-                  - FlipSignedness
-                description: >-
-                  The shape of the fault (e.g., incorrect conditional,
-                  missing control flow).
+                $ref: '#/definitions/PerturbationKind'
               line:
                 type: integer
                 description: >-
