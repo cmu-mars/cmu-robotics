@@ -61,6 +61,10 @@ definitions:
     properties:
       kind:
         type: string
+        enum:
+          - InsertStatementPerturbation
+          - ReplaceStatementPerturbation
+          - DeleteStatementPerturbation
         description: >-
           Used to discriminate between different kinds of perturbation.
 
@@ -138,9 +142,13 @@ paths:
               shape:
                 type: string
                 enum:
-                  - DeleteStatement
-                  - ReplaceStatement
-                  - InsertStatement
+                  - DeleteVoidFunctionCall
+                  - FlipArithmeticOperator
+                  - FlipBooleanOperator
+                  - FlipRelationalOperator
+                  - UndoTransformation
+                  - DeleteConditionalControlFlow
+                  - FlipSignedness
                 description: >-
                   The shape of the fault (e.g., incorrect conditional,
                   missing control flow).
@@ -196,25 +204,26 @@ paths:
   /adapt:
     post:
       description: Used to trigger the code adaptation process.
+      consumes:
+        - application/json
       parameters:
         - in: body
-          required: true
           name: Parameters
+          required: true
           schema:
             type: object
+            required:
             properties:
               time-limit:
                 type: number
                 format: float
                 minimum: 1.0
-                required: false
                 description: >-
                   An (optional) time limit for the adaptation process,
                   specified in minutes.
               attempt-limit:
                 type: integer
                 minimum: 1
-                required: false
                 description: >-
                   An (optional) limit on the number of adaptations that may be
                   attempted.
