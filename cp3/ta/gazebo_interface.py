@@ -74,6 +74,9 @@ class GazeboInterface:
         self.set_charging_srv = rospy.ServiceProxy("/mobile_base/set_charging", SetCharging)
         self.set_voltage_srv = rospy.ServiceProxy("/mobile_base/set_voltage", SetVoltage)
 
+        self.amcl = rospy.Publisher('initialpose', PoseWithCovarianceStamped, queue_size=10, latch=True)
+
+
         self.X_MAP_TO_GAZEBO_TRANSLATION = xtrans
         self.Y_MAP_TO_GAZEBO_TRANSLATION = ytrans
 
@@ -135,7 +138,6 @@ class GazeboInterface:
             res = self.set_model_state(ms)
             if (res.success):
                 # Tell the map where it is
-                amcl = rospy.Publisher('initialpose', PoseWithCovarianceStamped, queue_size=1, latch=True)
                 ip = PoseWithCovarianceStamped()
                 ip.header.stamp = rospy.Time.now()
                 ip.header.frame_id = 'map'
@@ -148,7 +150,8 @@ class GazeboInterface:
                 ip.pose.pose.orientation.w = tb.pose.orientation.w
                 ip.pose.covariance = [0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.06853891945200942]
                 print ('Publishing amcl location')
-                amcl.publish(ip)
+                self.amcl.publish(ip)
+                rospy.sleep(2)
                 return True
             else:
                 rospy.logerr("Failed to set gazebo robot position")
