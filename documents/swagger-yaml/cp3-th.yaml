@@ -64,9 +64,11 @@ paths:
                 description: >-
                   the label of the starting configuration for the robot
                 enum:
-                  - CONFIG1
-                  - CONFIG2
-                  - CONFIG3
+                  - AMCL_KINECT
+                  - AMCL_LIDAR
+                  - MPRT_KINECT
+                  - MPRT_LIDAR
+                  - ARUCO_CAMERA
               utility-function:
                 type: string
                 description: >-
