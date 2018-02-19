@@ -10,7 +10,6 @@
 #       container to the wider internal network (i.e., not the host machine).
 #       Ports may be forwarded to the host network using the "ports" command.
 #
-      # - "TH_PORT=`echo ${TH_URI} | awk -F ':' '{print $NF}'`"
 version: '2'
 services:
   roscore:
@@ -21,30 +20,34 @@ services:
       - 11311
     command: roscore
 
-  cp1_th:
-    image: docker.darpa-brass.com/ll/cmur-harness
-    container_name: cp1_th
-    hostname: cp1_th
-    environment:
-      - "TA_PORT=${TA_PORT}"
-      - "TH_PORT=${TH_PORT}"
+  gazebo:
+    image: cmu-mars/gazebo
+    container_name: gazebo
+    hostname: gazebo
+    # expose the Gazebo server to the host machine
     ports:
-      - ${TH_PORT}:${TH_PORT}
-    command: --cp CP1 --thPort ${TH_PORT} --taHost cp1_ta --taPort 5000
-
-  cp1_ta:
-    image: cmu-mars/cp1
-    container_name: cp1_ta
-    hostname: cp1_ta
+      - 11345:11345
     environment:
-      - "ROS_HOSTNAME=cp1_ta"
+      - "ROS_HOSTNAME=gazebo"
+      - "ROS_MASTER_URI=http://roscore:11311"
+      - "GAZEBO_MASTER_URI=http://localhost:11345"
+    depends_on:
+      - roscore
+    command: roslaunch --wait /home/mars/catkin_ws/src/cp_gazebo/launch/cp1.launch
+
+  cp3_ta:
+    image: cmu-mars/cp3
+    container_name: cp3_ta
+    hostname: cp3_ta
+    environment:
+      - "ROS_HOSTNAME=cp3_ta"
       - "ROS_MASTER_URI=http://roscore:11311"
       - "TA_PORT=${TA_PORT}"
     ports:
       - ${TA_PORT}:5000
     depends_on:
       - roscore
-      - cp1_th
+      - gazebo
     expose:
       - 5000
-    command: bash -c "cd /usr/src/app && python3 -u -m swagger_server http://cp1_th:${TH_PORT}"
+    command: bash -c "cd /usr/src/app && python3 -u -m swagger_server http://${TH_HOST}:${TH_PORT}"

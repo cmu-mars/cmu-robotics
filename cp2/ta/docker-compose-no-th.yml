@@ -10,7 +10,6 @@
 #       container to the wider internal network (i.e., not the host machine).
 #       Ports may be forwarded to the host network using the "ports" command.
 #
-      # - "TH_PORT=`echo ${TH_URI} | awk -F ':' '{print $NF}'`"
 version: '2'
 services:
   roscore:
@@ -21,30 +20,19 @@ services:
       - 11311
     command: roscore
 
-  cp1_th:
-    image: docker.darpa-brass.com/ll/cmur-harness
-    container_name: cp1_th
-    hostname: cp1_th
+  cp2_ta:
+    image: cmu-mars/cp2
+    container_name: cp2_ta
+    hostname: cp2_ta
     environment:
-      - "TA_PORT=${TA_PORT}"
-      - "TH_PORT=${TH_PORT}"
-    ports:
-      - ${TH_PORT}:${TH_PORT}
-    command: --cp CP1 --thPort ${TH_PORT} --taHost cp1_ta --taPort 5000
-
-  cp1_ta:
-    image: cmu-mars/cp1
-    container_name: cp1_ta
-    hostname: cp1_ta
-    environment:
-      - "ROS_HOSTNAME=cp1_ta"
+      - "ROS_HOSTNAME=cp2_ta"
       - "ROS_MASTER_URI=http://roscore:11311"
       - "TA_PORT=${TA_PORT}"
+      - "TH_HOST=${TH_HOST}"
     ports:
       - ${TA_PORT}:5000
     depends_on:
       - roscore
-      - cp1_th
     expose:
       - 5000
-    command: bash -c "cd /usr/src/app && python3 -u -m swagger_server http://cp1_th:${TH_PORT}"
+    command: bash -c "cd /usr/src/app && python3 -u -m swagger_server http://${TH_HOST}:${TH_PORT}"
