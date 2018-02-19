@@ -63,6 +63,7 @@ class GazeboInterface:
         # Services to gazebo
         self.get_model_state = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
         self.set_model_state = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
+        self.set_light_properties = rospy.ServiceProxy('/gazebo/set_light_properties', SetLightProperties)
         self.spawn_model = rospy.ServiceProxy('/gazebo/spawn_sdf_model', SpawnModel)
         self.delete_model = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
         self.enable_lights = rospy.ServiceProxy('/gazebo/set_light_properties', SetLightProperties)
@@ -271,6 +272,7 @@ class GazeboInterface:
     def enable_headlamp(self, enablement):
         return self.set_headlamp_srv(enablement)
 
+
     def set_kinect_mode(self, mode):
         if mode == 'on':
             mode  = 1
@@ -360,3 +362,4 @@ class GazeboInterface:
         except rospy.ServiceException as e:
             rospy.logerr("Could not place obstacle. Message %s" %e)
             return False
+
