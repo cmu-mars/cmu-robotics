@@ -138,10 +138,9 @@ paths:
               id:
                 type: string
                 enum:
-                  - movebase
                   - amcl
                   - mrpt
-                  - cb-base
+                  - aruco
                 description: >-
                   cause the named node to fail
       responses:
