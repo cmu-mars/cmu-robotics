@@ -12,10 +12,14 @@ import ig_action_msgs.msg
 from actionlib_msgs.msg import *
 from map_server import MapServer
 from instruction_db import InstructionDB
+from kobuki_msgs.msg import BumperEvent
 
 import psutil
 
 import transformations as t
+import roslaunch
+from gazebo_interface import GazeboInterface
+import time
 
 class BaseSystem:
 
@@ -115,8 +119,30 @@ class CP3(ConverterMixin,BaseSystem):
 				"amcl" : ["amcl"],
 				"mrpt" : ["mrpt_localization_node"]}
 
+	launch_configs = {'aruco' : 'cp3-aruco-kinect.launch',
+             'amcl-kinect' : 'cp3-amcl-kinect.launch',
+             'amcl-lidar' : 'cp3-amcl-lidar.launch',
+             'mrpt-kinect' : 'cp3-mrpt-kinect.launch',
+             'mrpt-lidar' : 'cp3-mrpt-lidar.launch'}
+
 	def __init__(self, gazebo):
 		BaseSystem.__init__(self, MapServer(self.DEFAULT_MAP_FILE), InstructionDB(self.DEFAULT_INSTRUCTION_FULE), gazebo)
+		self.bump_subscriber = rospy.Subscriber("/mobile_base/events/bumper", BumperEvent, self.bumped)
+
+	def track_bumps(self):
+		self.was_bumped = False
+		self.bump_subscriber = rospy.Subscriber("/mobile_base/events/bumper", BumperEvent, self.bumped)
+
+	def did_bump(self):
+		return self.was_bumped;
+
+	def reset_bumps(self):
+		self.was_bumped = False
+
+	def bumped(self, be):
+		if be.state == BumperEvent.PRESSED:
+			self.was_bumped = True
+			print("Bumped")
 
 	def kill_node(self,node):
 		if node not in ['amcl', 'mrpt', 'aruco']:
@@ -154,6 +180,38 @@ class CP3(ConverterMixin,BaseSystem):
 			lights.extend(l)
 		return lights, None
 
+	def launch(self, config, init_node='cp3'):
+
+		launch_file = self.launch_configs[config]
+		uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
+		roslaunch.configure_logging(uuid)
+		launch = roslaunch.parent.ROSLaunchParent(uuid, [os.path.expanduser("~/catkin_ws/src/cp3_base/launch/%s" %launch_file)])
+		launch.start ()
+
+		if init_node is not None:
+			rospy.init_node(init_node)
+
+		self.gazebo = GazeboInterface(0,0)
+		time.sleep(10)
+
+		# Check to see if Gazebo came up
+		gazebo = False
+		for proc in psutil.process_iter():
+			if proc.name() == "gzserver":
+				gazebo = True
+
+		return launch, gazebo
+
+	def stop(self, launch):
+		launch.shutdown()
+
+		# Gotta kill gazebo really
+		for proc in psutil.process_iter():
+			if proc.name() == "gzserver":
+				proc.kill()
+		self.move_base = None
+		self.ig = None
+		self.gazebo = None
 
 if (__name__ == "__main__"):
 	for proc in psutil.process_iter():

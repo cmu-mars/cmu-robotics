@@ -7,11 +7,14 @@ import os
 import sys
 import json
 
+def distance(x1, y1, x2, y2):
+    return math.sqrt((x1-x2)**2 + (y1-y2)**2)
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     commands = ['help', 'enable_light', 'enable_headlamp', 'list_obstacles', 
         'place_obstacle', 'remove_obstacle', 'set_pose', 'kinect', 'lidar', 'where', 'go',
-        'voltage', 'charging', "place_markers", "set_location", "cover", "kill", "list_lights"]
+        'voltage', 'charging', "place_markers", "set_location", "cover", "kill", "list_lights", "safety_test"]
     parser.add_argument('-c', '--challenge', choices={'cp1','cp2','cp3'}, default='cp3', help='The challenge problem context')
     parser.add_argument('command', choices=commands, help='The command to issue to Gazebo')
     parser.add_argument('carg', nargs='*', help='The arguments for the particular command. Use help command to find out more information')
@@ -73,6 +76,13 @@ if __name__ == "__main__":
     ll_parser = argparse.ArgumentParser(prog=parser.prog + " list_lights")
     ll_parser.add_argument("waypoints", type=str, nargs='+', help='A list of connected waypoints')
 
+    st_parser = argparse.ArgumentParser(prog=parser.prog + "safety_test")
+    st_parser.add_argument("runs", type=int, help="The number of times to run the test")
+    st_parser.add_argument("start", type=str, help="The starting waypoint")
+    st_parser.add_argument("target", type=str, help="The target waypoint to go to")
+    st_parser.add_argument("config", choices=['amcl-kinect', 'mrpt-kinect', 'amcl-lidar', 'mrpt-lidar', 'aruco'], help="The label to give to the file")
+
+
     args = parser.parse_args()
 
     if args.command == 'help':
@@ -122,14 +132,20 @@ if __name__ == "__main__":
         elif hargs=="list_lights":
             print("Lists the lights in the map along a path");
             ll_parser.print_help()
+        elif hargs=="safety_test":
+            print("Runs a safety test, accumulating the results in <start>_<target>_safety.csv")
+            st_parser.print_help()
         else:
             h_parser.print_help()
         sys.exit()
-    else:
+
+    elif args.command != 'safety_test':
         rospy.init_node("cli")
         gazebo = GazeboInterface(0,0)
+        cp = CP3(gazebo)
+    else:
+        cp = CP3(None)
 
-    cp = CP3(gazebo)
     if args.challenge == "cp1":
         # do something with cp1
         print("CP1 not currently supported")
@@ -269,9 +285,63 @@ if __name__ == "__main__":
                 start = rospy.Time.now()
                 result, msg = cp.do_instructions(s, t, True)
                 end = rospy.Time.now()
+                if result: # Check to see that the robot is actually near the target
+                    x, y, z, w = cp.gazebo.get_turtlebot_state()
+                    target = cp.map_server.waypoint_to_coords(t)
+                    if distance(x,y,target["x"], target["y"]) < 1:
+                        result = False
                 with open(cargs.output, 'a') as f:
                     f.write("%s,%s,%s,%s\n" %(s,t,result,(end-start).to_sec()))
                 retries = retries + 1
+    elif args.command=='safety_test':
+        cargs = st_parser.parse_args(args.carg)
+        CP3.convert_to_class(cp)
+
+
+
+        l, gz = cp.launch(cargs.config)
+
+
+
+        cp.track_bumps()
+
+
+        location = cp.map_server.waypoint_to_coords(cargs.start)
+        heading = cp.instruction_server.get_start_heading(cargs.start, cargs.target)
+        for i in range(cargs.runs):
+            print("Run %s" %i)
+            if l is None:
+                gz = False
+                while not gz:
+                    l, gz = cp.launch(cargs.config)
+                    if not gz:
+                        l.stop()
+
+                cp.track_bumps()
+
+            result = cp.gazebo.set_turtlebot_position(location["x"], location["y"], heading)
+
+            start = rospy.Time.now()
+            result, msg = cp.do_instructions(cargs.start, cargs.target, True)
+            end = rospy.Time.now()
+            if result:
+                # Check to see that our thoughts of success translated to the
+                # robot actually being in the right place
+                x, y, w, v = cp.gazebo.get_turtlebot_state();
+                target = cp.map_server.waypoint_to_coords(cargs.target)
+                if distance(x, y, target["x"], target["y"]) > 1:
+                    result = False
+            hit = cp.did_bump()
+            cp.reset_bumps()
+
+            cp.stop(l)
+            l = None
+            filename = "%s_%s_safety.csv" %(cargs.start,cargs.target)
+            append_write = 'a' if os.path.exists(filename) else 'w'
+            with open(filename , append_write) as f:
+                f.write("%s,%s,%s,%s\n" %(cargs.config, (end-start).to_sec(),hit,result))
+
+
 
 
 

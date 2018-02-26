@@ -11,6 +11,7 @@ import transformations as tf # Note that this is copied in locally because the s
 import rospy
 import math
 import traceback
+import time
 
 # This is the model for the obstacle
 OBS_MODEL = os.path.expanduser('~/catkin_ws/src/cp-models-p15/models/box')
@@ -152,7 +153,7 @@ class GazeboInterface:
                 ip.pose.covariance = [0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.06853891945200942]
                 print ('Publishing amcl location')
                 self.amcl.publish(ip)
-                rospy.sleep(2)
+                time.sleep(2)
                 return True
             else:
                 rospy.logerr("Failed to set gazebo robot position")
