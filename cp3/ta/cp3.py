@@ -13,6 +13,9 @@ from actionlib_msgs.msg import *
 from map_server import MapServer
 from instruction_db import InstructionDB
 from kobuki_msgs.msg import BumperEvent
+from sensor_msgs.msg import Illuminance
+from std_msgs.msg import UInt32MultiArray
+
 
 import psutil
 
@@ -144,6 +147,46 @@ class CP3(ConverterMixin,BaseSystem):
 			self.was_bumped = True
 			print("Bumped")
 
+	def track_aruco(track):
+		self.track_aruco = track
+
+	def start_aruco_tracking():
+		self.min_illuminance = 100000
+		self.lost_marker = False
+		self.marker_last_seen = rospy.Time.now()
+		self.marker_subscriber = rospy.Subscriber("aruco_marker_publisher_front/markers_list", UInt32MultiArray, self.report_marker)
+		self.illuminance_subscriber = rospy.Subscriber("mobile_base/sensors/light_sensor", Illuminance, self.report_illuminance)
+
+	def report_illuminance(i):
+		if (i.ill < self.min_illuminance):
+			self.min_illuminance = i.ill
+
+	def report_marker(marker_list):
+		if len(marker_list.data) > 0:
+			now = rospy.Time.now()
+			if (now-self.marker_last_seen).to_sec() > 1.5:
+				self.lost_marker = True
+
+	def teardown_aruco():
+		if self.marker_subscriber is not None:
+			self.marker_subscriber.unregister()
+		if self.illuminance_subscriber is not None:
+			self.illuminance_subscriber.unregister()
+
+	def go_instructions(self, start, target, wait, active_cb = None, done_cb = None):
+
+		if !wait and self.track_aruco:
+			self.start_aruco_tracking()
+		ret = None
+		try:
+			ret = BaseSystem.go_instructions(self, start, target, wait, active_cb, done_cb)
+		except:
+			ret = False, "Some weird exception";
+		if !wait and self.track_aruco:
+			self.teardown_aruco()
+
+		return ret
+
 	def kill_node(self,node):
 		if node not in ['amcl', 'mrpt', 'aruco']:
 			return False, "Illegal node passed in for killing."
@@ -202,8 +245,45 @@ class CP3(ConverterMixin,BaseSystem):
 
 		return launch, gazebo
 
+	def launch_in_parts(self, config, init_node='cp3', start_base=False, additional=[]):
+
+		launch_files = []
+		if start_base:
+			launch_files.append("cp3-base.launch")
+
+		launch_files.append(self.launch_configs[config])
+		launch_files.expand(additional)
+
+		launches = []
+		for l in launches:
+			uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
+			roslaunch.configure_logging(uuid)
+			launch = roslaunch.parent.ROSLaunchParent(uuid, [os.path.expanduser("~/catkin_ws/src/cp3_base/launch/%s" %l)])
+			launch.start ()
+			launches.append(launch)
+
+		if init_node is not None:
+			rospy.init_node(init_node)
+
+		self.gazebo = GazeboInterface(0,0)
+		time.sleep(5)
+
+		gazebo=False
+		for proc in psutil.process_iter():
+			if proc.name() == "gzserver":
+				gazebo=True
+
+		return launches, gazebo
+
 	def stop(self, launch):
-		launch.shutdown()
+		launches = []
+		if isinstance(launch, list):
+			launches.expand(launch)
+		else
+			launches.appen(launch)
+
+		for l in launches:
+			l.shutdown()
 
 		# Gotta kill gazebo really
 		for proc in psutil.process_iter():
