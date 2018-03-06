@@ -40,7 +40,7 @@ class BaseSystem:
 
 		
 
-	def go_directly(start, target=None):
+	def go_directly(self, start, target=None):
 		if self.move_base is None:
 			self.move_base = actionlib.SimpleActionClient("move_base", MoveBaseAction)
 			self.move_base.wait_for_server()
@@ -68,7 +68,7 @@ class BaseSystem:
 		else:
 			return False
 	
-	def go_instructions(self, start, target, wait, active_cb = None, done_cb = None):
+	def go_instructions(self, start, target, wait, active_cb = None, done_cb = None, sleep_time=None):
 		
 		if not wait and (active_cb is None or done_cb is None):
 			print("Cannot pass wait=False and no callbacks")
@@ -85,6 +85,8 @@ class BaseSystem:
 		start_coords = self.map_server.waypoint_to_coords(start)
 
 		self.gazebo.set_turtlebot_position(start_coords["x"], start_coords["y"], heading)
+		if sleep_time is not None:
+			rospy.sleep(sleep_time)
 		return self.do_instructions(start, target, wait, active_cb, done_cb)
 
 	def do_instructions(self, start, target, wait, active_cb=None, done_cb = None):
@@ -122,15 +124,19 @@ class CP3(ConverterMixin,BaseSystem):
 				"amcl" : ["amcl"],
 				"mrpt" : ["mrpt_localization_node"]}
 
-	launch_configs = {'aruco' : 'cp3-aruco-kinect.launch',
-             'amcl-kinect' : 'cp3-amcl-kinect.launch',
-             'amcl-lidar' : 'cp3-amcl-lidar.launch',
-             'mrpt-kinect' : 'cp3-mrpt-kinect.launch',
-             'mrpt-lidar' : 'cp3-mrpt-lidar.launch'}
+	launch_configs = {'aruco' : ['cp3-kinect.launch','cp3-aruco.launch'],
+             'amcl-kinect' : ['cp3-kinect.launch','cp3-amcl.launch'],
+             'amcl-lidar' : ['cp3-lidar.launch', 'cp3-amcl.launch'],
+             'mrpt-kinect' : ['cp3-kinect.launch','cp3-mrpt.launch'],
+             'mrpt-lidar' : ['cp3-lidar.launch', 'cp3-mrpt.launch']}
 
 	def __init__(self, gazebo):
 		BaseSystem.__init__(self, MapServer(self.DEFAULT_MAP_FILE), InstructionDB(self.DEFAULT_INSTRUCTION_FULE), gazebo)
 		self.bump_subscriber = rospy.Subscriber("/mobile_base/events/bumper", BumperEvent, self.bumped)
+		self.track_aruco = False
+		self.track_illuminance = False
+		self.marker_subscriber = None
+		self.illuminance_subscriber = None
 
 	def track_bumps(self):
 		self.was_bumped = False
@@ -147,42 +153,50 @@ class CP3(ConverterMixin,BaseSystem):
 			self.was_bumped = True
 			print("Bumped")
 
-	def track_aruco(track):
-		self.track_aruco = track
+	def track(self, track_aruco, track_illuminance):
+		self.track_aruco = track_aruco
+		self.track_illuminance = track_illuminance
 
-	def start_aruco_tracking():
+	def start_aruco_tracking(self):
 		self.min_illuminance = 100000
+		self.max_illuminance = -10000
 		self.lost_marker = False
 		self.marker_last_seen = rospy.Time.now()
-		self.marker_subscriber = rospy.Subscriber("aruco_marker_publisher_front/markers_list", UInt32MultiArray, self.report_marker)
-		self.illuminance_subscriber = rospy.Subscriber("mobile_base/sensors/light_sensor", Illuminance, self.report_illuminance)
+		if self.track_aruco:
+			self.marker_subscriber = rospy.Subscriber("aruco_marker_publisher_front/markers_list", UInt32MultiArray, self.report_marker)
+		if self.track_illuminance:
+			self.illuminance_subscriber = rospy.Subscriber("mobile_base/sensors/light_sensor", Illuminance, self.report_illuminance)
 
-	def report_illuminance(i):
-		if (i.ill < self.min_illuminance):
-			self.min_illuminance = i.ill
+	def report_illuminance(self, i):
+		if (i.illuminance < self.min_illuminance):
+			self.min_illuminance = i.illuminance
+		if (i.illuminance > self.max_illuminance):
+			self.max_illuminance = i.illuminance
 
-	def report_marker(marker_list):
+	def report_marker(self, marker_list):
 		if len(marker_list.data) > 0:
 			now = rospy.Time.now()
 			if (now-self.marker_last_seen).to_sec() > 1.5:
 				self.lost_marker = True
+				print('Lost the marker')
 
-	def teardown_aruco():
+	def teardown_aruco(self):
 		if self.marker_subscriber is not None:
 			self.marker_subscriber.unregister()
 		if self.illuminance_subscriber is not None:
 			self.illuminance_subscriber.unregister()
+		
 
-	def go_instructions(self, start, target, wait, active_cb = None, done_cb = None):
+	def do_instructions(self, start, target, wait, active_cb = None, done_cb = None):
 
-		if !wait and self.track_aruco:
+		if wait and (self.track_aruco or self.track_illuminance):
 			self.start_aruco_tracking()
 		ret = None
 		try:
-			ret = BaseSystem.go_instructions(self, start, target, wait, active_cb, done_cb)
+			ret = BaseSystem.do_instructions(self, start, target, wait, active_cb, done_cb)
 		except:
 			ret = False, "Some weird exception";
-		if !wait and self.track_aruco:
+		if wait and (self.track_aruco or self.track_illuminance):
 			self.teardown_aruco()
 
 		return ret
@@ -223,39 +237,20 @@ class CP3(ConverterMixin,BaseSystem):
 			lights.extend(l)
 		return lights, None
 
-	def launch(self, config, init_node='cp3'):
+	def launch(self, config, init_node='cp3', start_base=True):
+		return self.launch_in_parts(config, init_node, start_base)
 
-		launch_file = self.launch_configs[config]
-		uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
-		roslaunch.configure_logging(uuid)
-		launch = roslaunch.parent.ROSLaunchParent(uuid, [os.path.expanduser("~/catkin_ws/src/cp3_base/launch/%s" %launch_file)])
-		launch.start ()
-
-		if init_node is not None:
-			rospy.init_node(init_node)
-
-		self.gazebo = GazeboInterface(0,0)
-		time.sleep(10)
-
-		# Check to see if Gazebo came up
-		gazebo = False
-		for proc in psutil.process_iter():
-			if proc.name() == "gzserver":
-				gazebo = True
-
-		return launch, gazebo
-
-	def launch_in_parts(self, config, init_node='cp3', start_base=False, additional=[]):
+	def launch_in_parts(self, config, init_node='cp3', start_base=True, additional=[]):
 
 		launch_files = []
 		if start_base:
 			launch_files.append("cp3-base.launch")
 
-		launch_files.append(self.launch_configs[config])
-		launch_files.expand(additional)
+		launch_files.extend(self.launch_configs[config])
+		launch_files.extend(additional)
 
 		launches = []
-		for l in launches:
+		for l in launch_files:
 			uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
 			roslaunch.configure_logging(uuid)
 			launch = roslaunch.parent.ROSLaunchParent(uuid, [os.path.expanduser("~/catkin_ws/src/cp3_base/launch/%s" %l)])
@@ -278,9 +273,9 @@ class CP3(ConverterMixin,BaseSystem):
 	def stop(self, launch):
 		launches = []
 		if isinstance(launch, list):
-			launches.expand(launch)
-		else
-			launches.appen(launch)
+			launches.extend(launch)
+		else:
+			launches.append(launch)
 
 		for l in launches:
 			l.shutdown()

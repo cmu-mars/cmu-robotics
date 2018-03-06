@@ -7,17 +7,33 @@ import os
 import sys
 import json
 import subprocess
+import time
+import psutil
+import os
+import signal
+
+def kill_launch(cmd):
+    for proc in psutil.process_iter():
+        s = [str(item) for item in proc.cmdline()]
+        j = " ".join(s)
+        if len(proc.cmdline()) > 0 and j.endswith(cmd):
+            proc.terminate()
+        elif proc.name() == "gzserver":
+            proc.terminate()
+
 
 def distance(x1, y1, x2, y2):
     return math.sqrt((x1-x2)**2 + (y1-y2)**2)
 
 if __name__ == "__main__":
+
+
     parser = argparse.ArgumentParser()
     commands = ['help', 'enable_light', 'enable_headlamp', 'list_obstacles', 
         'place_obstacle', 'remove_obstacle', 'set_pose', 'kinect', 'lidar', 'where', 'go',
         'voltage', 'charging', "place_markers", "set_location", "cover", "kill", "list_lights", "safety_test"]
     configs = ['amcl-kinect', 'mrpt-kinect', 'amcl-lidar', 'mrpt-lidar', 'aruco']
-    parser.add_argument('-c', '--challenge', choices={'cp1','cp2','cp3'}, default='cp3', help='The challenge problem context')
+    parser.add_argument('--challenge', choices={'cp1','cp2','cp3'}, default='cp3', help='The challenge problem context')
     parser.add_argument('command', choices=commands, help='The command to issue to Gazebo')
     #parser.add_argument('carg', nargs='*', help='The arguments for the particular command. Use help command to find out more information')
 
@@ -53,9 +69,10 @@ if __name__ == "__main__":
     go_parser = argparse.ArgumentParser(prog=parser.prog + " go")
     go_parser.add_argument("-d", "--direct", action='store_true', help='Go directly there, rather than using instructions')
     go_parser.add_argument("-c", "--config", choices=configs, help="The configuration to start")
-    go_parser.add_argument("-a", "--aruco", action="store_true", "Track illuminance and visual marker visibility")
+    go_parser.add_argument("-a", "--aruco", action="store_true", help="Track visual marker visibility")
     go_parser.add_argument('-w', "--write", type=str, help="Where to write information to")
     go_parser.add_argument('-l', '--lights', type=str, help="Comma separated list of lights to turn off")
+    go_parser.add_argument('-i', '--illuminance', action='store_true', help="Track illuminance and report max and min")
     go_parser.add_argument('start', nargs='?', help='The waypoint label of the start')
     go_parser.add_argument('target', help='The wapoint lable of the target')
 
@@ -73,10 +90,11 @@ if __name__ == "__main__":
 
     co_parser = argparse.ArgumentParser(prog=parser.prog + " cover")
     co_parser.add_argument("-s", "--start_pair", type=str, help='The comma separated pair of waypoints to start with')
-    co_parser.add_argument('-a', '--aruco', action='store_true', help='Track Aruco marker and illuminance')
+    co_parser.add_argument('-a', '--aruco', action='store_true', help='Track Aruco marker visibility')
     co_parser.add_argument('-l', '--lights', type=str, help="The comma separated list of lights to turn off")
     co_parser.add_argument('-c', '--config', choices=configs, help="The configuration to start")
     co_parser.add_argument('-r', '--restart', action='store_true', help='Restart robot after each segment')
+    co_parser.add_argument('-i', '--illuminance', action='store_true', help='Track illuminance and report max and min')
     co_parser.add_argument("waypoint_order", type=str, help='File containing the list of waypoints to visit in order')
     co_parser.add_argument('output', type=str, help='File to print statistics for each leg')
     
@@ -119,30 +137,30 @@ if __name__ == "__main__":
         elif hargs.command == 'lidar':
             print('Configures the LIDAR')
             l_parser.print_help()
-        elif hargs == 'where':
+        elif hargs.command == 'where':
             print ('Prints where the turtlebot is and its velocity')
-        elif hargs == 'go':
+        elif hargs.command == 'go':
             print ('Execute a path. If start is unspecified, then use default navigation')
             go_parser.print_help()
-        elif hargs == 'charging':
+        elif hargs.command == 'charging':
             print ('Set whether the turtlebot is charging')
             sc_parser.print_help()
-        elif hargs=="place_markers":
+        elif hargs.command=="place_markers":
             print('Place markers from a file')
             pm_parser.print_help()
-        elif hargs=="set_location":
+        elif hargs.command=="set_location":
             print("Sets the location of the turtlebot to the named waypoint")
             sl_parser.print_help()
-        elif hargs=="cover":
+        elif hargs.command=="cover":
             print("Visits the map in order of waypoints")
-            co_praser.print_help()
-        elif hargs=="kill":
+            co_parser.print_help()
+        elif harg.commands=="kill":
             print("Kills the provided node")
             ki_parser.print_help()
-        elif hargs=="list_lights":
+        elif hargs.command=="list_lights":
             print("Lists the lights in the map along a path");
             ll_parser.print_help()
-        elif hargs=="safety_test":
+        elif hargs.command=="safety_test":
             print("Runs a safety test, accumulating the results in <start>_<target>_safety.csv")
             st_parser.print_help()
         else:
@@ -218,37 +236,68 @@ if __name__ == "__main__":
     elif args.command == 'go':
         gargs = go_parser.parse_args(extras)
         if gargs.direct or gargs.start is None:
+            cp.gazebo = GazeboInterface(0,0)
+            rospy.init_node("cp3")
+            cp.track(False, gargs.illuminance)
             result = cp.go_directly(gargs.target)
             print('%s moved Turtlebot to %s' %(("Successfully" if result else "Unsuccessfully"), gargs.target))
         elif gargs.direct:
+            cp.gazebo = GazeboInterface(0,0)
+            rospy.init_node("cp3")
+            cp.track(False, gargs.illuminance)
             result = cp.go_directly(gargs.start, gargs.target)
             print('%s moved Turtlebot to %s' %(("Successfully" if result else "Unsuccessfully"), gargs.target))
         else:
-            if cargs.config is not None:
+            launches = []
+            if gargs.config is not None:
                 additional = []
-                if cargs.aruco:
-                    additional = ["cp3-amcl-front.launch"]
-                    cp.track_aruco(True)
-                cp.launch_in_parts(cargs.config, additional=additional)
+                if gargs.aruco:
+                    additional = ["cp3-aruco-front.launch"]
+                cp.track(gargs.aruco, gargs.illuminance)
+                launches, gz = cp.launch_in_parts(gargs.config, additional=additional)
+                rospy.sleep(10)
+                if not gz:
+                    print("Gazebo did not start")
+                    cp.stop(launches)
+                    sys.exit(1)
+            else:
+                cp.gazebo = GazeboInterface(0,0)
+                rospy.init_node("cp3")
+                cp.track(False, gargs.illuminance)
+            #rospy.sleep(20)
+            if gargs.lights is not None:
+                for id in gargs.lights.split(','):
+                    result = cp.gazebo.enable_light(id, False) 
 
+            location = cp.map_server.waypoint_to_coords(gargs.start)
+            heading = cp.instruction_server.get_start_heading(gargs.start, gargs.target)
+            result = cp.gazebo.set_turtlebot_position(location["x"], location["y"], 0)
+            rospy.sleep(10)
             start = rospy.Time.now()
-            result, message = cp.go_instructions(gargs.start, gargs.target, wait=True)
+            result, message = cp.do_instructions(gargs.start, gargs.target, True)
             end = rospy.Time.now()
-            print('%s moved Turtlebot from %s to %s%s' %(("Successfully" if result else "Unsuccessfully"), 
-                        gargs.start, 
-                        gargs.target, ((": %s" %reason) if not result else "")))
+            
             if result: # Check to see that the robot is actually near the target
                 x, y, z, w = cp.gazebo.get_turtlebot_state()
-                target = cp.map_server.waypoint_to_coords(garts.target)
-                if distance(x,y,target["x"], target["y"]) < 1:
+                target = cp.map_server.waypoint_to_coords(gargs.target)
+                if distance(x,y,target["x"], target["y"]) > 1:
                     result = False
-                if cargs.write is not None:
-                    cargs.write = os.path.expanduser(cargs.write)
-                    with open(cargs.write, 'a') as f:
-                        if (cargs.aruco):
-                            f.write("%s,%s,%s,%s,min_illuminance=%s,lost_marker=%s" %(s,t,result,(end-start).to_sec(), cp.min_illuminance, str(cp.lost_marker)))
-                        else:
-                            f.write("%s,%s,%s,%s\n" %(s,t,result,(end-start).to_sec()))
+                    message = "%s from target is too far, am at (%s,%s) expecting to be at (%s,%s)" %(str(distance(x,y,target["x"], target["y"])), str(x), str(y), target["x"], target["y"])
+            print('%s moved Turtlebot from %s to %s%s' %(("Successfully" if result else "Unsuccessfully"), 
+                        gargs.start, 
+                        gargs.target, ((": %s" %message) if not result else "")))
+            if (gargs.illuminance):
+                print("Min illuminance=%s, Max illuminance=%s" %(cp.min_illuminance,cp.max_illuminance))
+            if gargs.write is not None:
+                gargs.write = os.path.expanduser(gargs.write)
+                with open(gargs.write, 'a') as f:
+                    if gargs.aruco or gargs.illuminance:
+                        f.write("%s,%s,%s,%s,max_illuminance=%s,min_illuminance=%s,lost_marker=%s\n" 
+                            %(gargs.start,gargs.target,result,(end-start).to_sec(), cp.max_illuminance, cp.min_illuminance, str(cp.lost_marker)))
+                    else:
+                        f.write("%s,%s,%s,%s\n" %(s,t,result,(end-start).to_sec()))
+            if gargs.config is not None:
+                cp.stop(launches)
     elif args.command == 'charging':
         result = gazebo.set_charging(args.enablement is 'on')
         print ("%s set charging" %("Successfully" if result else "Unsuccessfully"))
@@ -275,8 +324,9 @@ if __name__ == "__main__":
         print result
     elif args.command == "cover":
         cargs = co_parser.parse_args(extras)
-        if !cargs.restart:
-            cp.gazebo = GazeboInterface()
+        if not cargs.restart:
+            cp.gazebo = GazeboInterface(0,0)
+            rospy.init_node("cp3")
 
         with open(cargs.waypoint_order) as f:
             waypoints = f.readlines()
@@ -300,9 +350,9 @@ if __name__ == "__main__":
         
         CP3.convert_to_class(cp)
 
-        if !cargs.restart:
-            if cargs.aruco:
-                cp.track_aruco(True)
+        if not cargs.restart:
+            cp.track(cargs.aruco, cargs.illuminance)
+            
 
 
             if cargs.lights is not None:
@@ -317,7 +367,7 @@ if __name__ == "__main__":
                 sys.exit()
 
         for i in range(start_wp,len(waypoints)-1):
-            if !cargs.restart:
+            if not cargs.restart:
                 s = waypoints[i-1]
                 t = waypoints[i]
                 print ("Going from %s to %s" %(s,t))
@@ -336,11 +386,13 @@ if __name__ == "__main__":
                     if result: # Check to see that the robot is actually near the target
                         x, y, z, w = cp.gazebo.get_turtlebot_state()
                         target = cp.map_server.waypoint_to_coords(t)
-                        if distance(x,y,target["x"], target["y"]) < 1:
+                        if distance(x,y,target["x"], target["y"]) > 1:
                             result = False
+                            print("%s -> %s Failed. %s from target is too far, am at (%s,%s) expecting to be at (%s,%s)" %(s,t,str(distance(x,y,target["x"], target["y"])), str(x), str(y), target["x"], target["y"]))
+
                     with open(cargs.output, 'a') as f:
-                        if (cargs.aruco):
-                            f.write("%s,%s,%s,%s,min_illuminance=%s,lost_marker=%s" %(s,t,result,(end-start).to_sec(), cp.min_illuminance, str(cp.lost_marker)))
+                        if cargs.illuminance or cargs.aruco:
+                            f.write("%s,%s,%s,%s,max_illuminance=%s,min_illuminance=%s,lost_marker=%s\n" %(s,t,result,(end-start).to_sec(), cp.max_illuminance, cp.min_illuminance, str(cp.lost_marker)))
                         else:
                             f.write("%s,%s,%s,%s\n" %(s,t,result,(end-start).to_sec()))
                     retries = retries + 1
@@ -352,18 +404,43 @@ if __name__ == "__main__":
                 # go_parser.add_argument('-l', '--lights', type=str, help="Comma separated list of lights to turn off")
                 # go_parser.add_argument('start', nargs='?', help='The waypoint label of the start')
                 # go_parser.add_argument('target', help='The wapoint lable of the target')
+                launch_cmd = "roslaunch cp3_base ";
+                if cargs.config is None:
+                    print('Error: Cannot specify --restart and not pass a --config')
+                    sys.exit(1)
 
-                command = "python cli.py go -c %s -w %s" %(cargs.config,cargs.output)
-                if cargs.aruco:
-                    command = "%s -a" %command
-
-                if cargs.lights is not None:
-                    command = "%s -l %s " %(command, cargs.lights)
+                if cargs.config == 'amcl-kinect':
+                    launch_cmd = launch_cmd + "cp3-amcl-kinect.launch"
+                elif cargs.config == 'amcl-lidar':
+                    launch_cmd = launch_cmd + "cp3-amcl-lidar.launch"
+                elif cargs.config == 'aruco':
+                    launch_cmd = launch_cmd + "cp3-aruco-kinect.launch"
+                elif cargs.config == 'mrpt-kinect':
+                    launch_cmd = launch_cmd + "cp3-mrpt-kinect.launch"
+                elif cargs.config == 'mrpt-lidar':
+                    launch_cmd = launch_cmd + "cp3-mrpt-lidar.launch"
                 s = waypoints[i-1]
                 t = waypoints[i]
-                command = "%s %s %s" %(command,s,t)
+                with open("%s_%s_out.txt" %(s,t), "wb") as so, open("%s_%s_err.txt" %(s,t), "wb") as se:
+                    roslaunch = subprocess.Popen(launch_cmd, shell=True, stdout=so, stderr=se)
+                    time.sleep(30) # Wait some time for the process to come up
 
-                subprocess.call(command, shell=True)
+                    command = "python cli.py go -w %s" %(cargs.output)
+                    if cargs.aruco:
+                        command = "%s -a" %command
+                    if cargs.illuminance:
+                        command = "%s -i" %command
+
+                    if cargs.lights is not None:
+                        command = "%s -l %s " %(command, cargs.lights)
+                   
+                    command = "%s %s %s" %(command,s,t)
+                    print("Calling: %s " %command)
+                    subprocess.call(command, shell=True)
+                    kill_launch(launch_cmd)
+                
+               
+
             
 
     elif args.command=='safety_test':
@@ -388,9 +465,10 @@ if __name__ == "__main__":
                 while not gz:
                     l, gz = cp.launch(cargs.config)
                     if not gz:
-                        l.stop()
+                        cp.stop(l)
 
-                cp.track_bumps()
+
+            cp.track_bumps()
 
             result = cp.gazebo.set_turtlebot_position(location["x"], location["y"], heading)
 
@@ -407,8 +485,6 @@ if __name__ == "__main__":
             hit = cp.did_bump()
             cp.reset_bumps()
 
-            cp.stop(l)
-            l = None
             filename = "%s_%s_safety.csv" %(cargs.start,cargs.target)
             append_write = 'a' if os.path.exists(filename) else 'w'
             with open(filename , append_write) as f:
