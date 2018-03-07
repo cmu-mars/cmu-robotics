@@ -73,7 +73,7 @@ if __name__ == "__main__":
     go_parser.add_argument('-w', "--write", type=str, help="Where to write information to")
     go_parser.add_argument('-l', '--lights', type=str, help="Comma separated list of lights to turn off")
     go_parser.add_argument('-i', '--illuminance', action='store_true', help="Track illuminance and report max and min")
-    go_parser.add_argument('-a', '--launch', action='store_true', help="Attempt to launch the ros configuration as well")
+    go_parser.add_argument('-u', '--launch', action='store_true', help="Attempt to launch the ros configuration as well")
     go_parser.add_argument('-b', '--bumps', action="store_true", help="Track robot bumping into something")
     go_parser.add_argument('start', nargs='?', help='The waypoint label of the start')
     go_parser.add_argument('target', help='The wapoint lable of the target')
@@ -286,7 +286,8 @@ if __name__ == "__main__":
             except e:
                 result = False
                 message = e.message
-            
+            hit = cp.did_bump()
+
             if result: # Check to see that the robot is actually near the target
                 x, y, z, w = cp.gazebo.get_turtlebot_state()
                 target = cp.map_server.waypoint_to_coords(gargs.target)
@@ -302,7 +303,7 @@ if __name__ == "__main__":
                 if gargs.aruco:
                     s = s + ",lost_marker=%s" %cp.lost_marker
                 if gargs.bumps:
-                    s = s + ",hit_obstacle=%s" %hit.result
+                    s = s + ",hit_obstacle=%s" %hit
                 if message is not None:
                     s = s + ",message='%s'" %message
             if gargs.write is not None:
@@ -438,6 +439,7 @@ if __name__ == "__main__":
                 t = waypoints[i]
                 with open("%s_%s_out.txt" %(s,t), "wb") as so, open("%s_%s_err.txt" %(s,t), "wb") as se:
                     try:
+                        print("Launching: %s" %launch_cmd)
                         roslaunch = subprocess.Popen(launch_cmd, shell=True, stdout=so, stderr=se)
                         time.sleep(30) # Wait some time for the process to come up
 
@@ -470,7 +472,7 @@ if __name__ == "__main__":
         launch_cmd = "roslaunch cp3_base ";
         if cargs.config is None:
             print('Error: Cannot specify --restart and not pass a --config')
-                sys.exit(1)
+            sys.exit(1)
 
         if cargs.config == 'amcl-kinect':
             launch_cmd = launch_cmd + "cp3-amcl-kinect.launch"
