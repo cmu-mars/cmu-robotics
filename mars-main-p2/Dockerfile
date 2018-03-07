@@ -37,7 +37,7 @@ ENV CP_MAPS_REV 80afb8f
 RUN git clone https://github.com/cmu-mars/cp-maps-p15 src/maps && \
     cd src/maps && \
     git reset --hard "${CP_MAPS_REV}"
-    
+
 # install shared "models" module
 ENV MARS_MODELS_REVISION 5dd3542
 RUN git clone https://github.com/cmu-mars/cp-models-p15 \
@@ -53,8 +53,8 @@ RUN git clone https://github.com/cmu-mars/notifications-p15 \
 
 ENV IG_INTERPRETER_REV 8955f42
 RUN git clone https://github.com/cmu-mars/ig-action-server-p15.git \
-            src/ig-interpreter
-    cd src/ig-interpreter
+            src/ig-interpreter \
+    cd src/ig-interpreter \
     git checkout "${IG_INTERPRETER_REV}"
 
 # add the entrypoint script
