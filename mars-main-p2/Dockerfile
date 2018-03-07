@@ -53,8 +53,8 @@ RUN git clone https://github.com/cmu-mars/notifications-p15 \
 
 ENV IG_INTERPRETER_REV 8955f42
 RUN git clone https://github.com/cmu-mars/ig-action-server-p15.git \
-            src/ig-interpreter \
-    cd src/ig-interpreter \
+            src/ig-interpreter
+    cd src/ig-interpreter
     git checkout "${IG_INTERPRETER_REV}"
 
 # add the entrypoint script
