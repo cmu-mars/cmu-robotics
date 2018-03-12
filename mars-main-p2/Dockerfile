@@ -51,10 +51,21 @@ RUN git clone https://github.com/cmu-mars/notifications-p15 \
       src/notifications
 
 
-ENV IG_INTERPRETER_REV 8955f42
+ENV IG_INTERPRETER_REV fe5da82
 RUN git clone https://github.com/cmu-mars/ig-action-server-p15.git   src/ig-interpreter  &&\
          cd src/ig-interpreter  &&\
          git checkout "${IG_INTERPRETER_REV}"
+
+
+# Install Python Libraries etc
+RUN sudo apt-get install -y python-flask python-ply
+
+ENV TF_REV  4ee2cff  
+RUN git clone https://github.com/ros/geometry.git src/geometry && \
+    cd src/geometry && \
+    git checkout "${TF_REV}"
+   
+
 
 # add the entrypoint script
 ADD entrypoint.sh entrypoint.sh
