@@ -137,6 +137,7 @@ class CP3(ConverterMixin,BaseSystem):
 		self.track_illuminance = False
 		self.marker_subscriber = None
 		self.illuminance_subscriber = None
+		self.was_bumped = False
 
 	def track_bumps(self):
 		self.was_bumped = False

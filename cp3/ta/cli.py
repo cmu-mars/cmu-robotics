@@ -282,10 +282,11 @@ if __name__ == "__main__":
                 rospy.sleep(10)
                 start = rospy.Time.now()
                 result, message = cp.do_instructions(gargs.start, gargs.target, True)
-                end = rospy.Time.now()
-            except e:
+            except Exception as e:
                 result = False
                 message = e.message
+                print ("Threw exception %s" %message)
+            end = rospy.Time.now()
             hit = cp.did_bump()
 
             if result: # Check to see that the robot is actually near the target
