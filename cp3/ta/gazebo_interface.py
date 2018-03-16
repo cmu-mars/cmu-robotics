@@ -265,7 +265,7 @@ class GazeboInterface:
             color.g = 0
             color.b = 0
         color.a = 255
-        resp = self.enable_lights(light, color, 0.5, 0.01, 0.01)
+        resp = self.enable_lights(light, color, 0.25, 0.0, 0.0)
         return resp.success
 
 
