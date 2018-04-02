@@ -65,11 +65,13 @@ paths:
                   discharges, and a maximum possible charge.
               discharge-budget:
                 type: integer
+                minimum: 2
                 description: >-
                   if in level c, the maximum number of queries against the
                   target function during learning
               charge-budget:
                 type: integer
+                minimum: 2
                 description: >-
                   if in level c, the maximum number of queries against the
                   target recharging function during learning
