@@ -1,4 +1,4 @@
-# cmu mars brass ta: phase 2, cp2
+# CMU MARS BRASS TA: Phase II, CP2
 
 
 <a name="overview"></a>
@@ -53,6 +53,11 @@ Used to trigger the code adaptation process.
 |Name|Description|Schema|
 |---|---|---|
 |**message**  <br>*optional*|Human-readable information about the error, if any can be provided|string|
+
+
+#### Consumes
+
+* `application/json`
 
 
 <a name="lines-get"></a>
@@ -158,7 +163,7 @@ Returns a list of possible perturbations of an (optionally) specified shape and 
 |---|---|---|
 |**file**  <br>*required*|The file at which the perturbation should be injected.|string|
 |**line**  <br>*optional*|The number of the line at which the perturbation should be injected.|integer|
-|**shape**  <br>*required*|The shape of the fault (e.g., incorrect conditional, missing control flow).|enum (DeleteStatement, ReplaceStatement, InsertStatement)|
+|**shape**  <br>*required*||[PerturbationKind](#perturbationkind)|
 
 
 #### Responses
@@ -207,50 +212,21 @@ Returns a list of possible perturbations of an (optionally) specified shape and 
 |**time-taken**  <br>*required*|The number of seconds taken to compile this adaptation.  <br>**Minimum value** : `0`|number (float)|
 
 
-<a name="deletestatementperturbation"></a>
-### DeleteStatementPerturbation
-*Polymorphism* : Inheritance  
-*Discriminator* : kind
-
-
-|Name|Description|Schema|
-|---|---|---|
-|**kind**  <br>*required*|Used to discriminate between different kinds of perturbation.|string|
-|**locationRange**  <br>*optional*|The range of code that is deleted by the perturbation.|[SourceRange](#sourcerange)|
-
-
-<a name="insertstatementperturbation"></a>
-### InsertStatementPerturbation
-*Polymorphism* : Inheritance  
-*Discriminator* : kind
-
-
-|Name|Description|Schema|
-|---|---|---|
-|**kind**  <br>*required*|Used to discriminate between different kinds of perturbation.|string|
-|**location**  <br>*optional*|The location immediately before the location at which the statement will be inserted.|[SourceRange](#sourcerange)|
-|**statement**  <br>*optional*|The source code for the inserted statement.|string|
-
-
 <a name="perturbation"></a>
 ### Perturbation
 
 |Name|Description|Schema|
 |---|---|---|
-|**kind**  <br>*required*|Used to discriminate between different kinds of perturbation.|string|
+|**at**  <br>*required*|The range of code that is deleted or replaced by the perturbation.|[SourceRange](#sourcerange)|
+|**kind**  <br>*required*||[PerturbationKind](#perturbationkind)|
+|**replacement**  <br>*optional*|The body of the source code that should replaced the source code given by the location range associated with this perturbation.|string|
 
 
-<a name="replacestatementperturbation"></a>
-### ReplaceStatementPerturbation
-*Polymorphism* : Inheritance  
-*Discriminator* : kind
+<a name="perturbationkind"></a>
+### PerturbationKind
+A description of the kind of the perturbation.
 
-
-|Name|Description|Schema|
-|---|---|---|
-|**kind**  <br>*required*|Used to discriminate between different kinds of perturbation.|string|
-|**locationRange**  <br>*optional*|The range of code that is replaced by the perturbation.|[SourceRange](#sourcerange)|
-|**statement**  <br>*optional*|The source code for the replacement statement.|string|
+*Type* : enum (DeleteVoidFunctionCall, FlipArithmeticOperator, FlipBooleanOperator, FlipRelationalOperator, UndoTransformation, DeleteConditionalControlFlow, FlipSignedness)
 
 
 <a name="sourceline"></a>
