@@ -107,7 +107,7 @@ cause one of the software nodes to fail
 
 |Name|Description|Schema|
 |---|---|---|
-|**id**  <br>*required*|cause the named node to fail|enum (movebase, amcl, mrpt, cb-base)|
+|**id**  <br>*required*|cause the named node to fail|enum (amcl, mrpt, aruco)|
 
 
 #### Responses

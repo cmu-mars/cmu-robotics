@@ -101,7 +101,7 @@ indicates that the SUT is ready to recieve configuration data to continue start 
 
 |Name|Description|Schema|
 |---|---|---|
-|**start-configuration**  <br>*optional*|the label of the starting configuration for the robot|enum (CONFIG1, CONFIG2, CONFIG3)|
+|**start-configuration**  <br>*optional*|the label of the starting configuration for the robot|enum (AMCL_KINECT, AMCL_LIDAR, MPRT_KINECT, MPRT_LIDAR, ARUCO_CAMERA)|
 |**start-loc**  <br>*optional*|the name of the start map waypoint. must be a valid way point name from the map data. must not be equal to `target-loc`.|string|
 |**target-loc**  <br>*optional*|the name of the goal map waypoint. must be a valid way point name from the map data. must not be equal to `start-loc`.|string|
 |**use-adaptation**  <br>*optional*|if `true`, then the DAS will use adapative behaiviours; if `false` then the DAS will not use adaptive behaiviours|boolean|
