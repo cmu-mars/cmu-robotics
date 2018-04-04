@@ -99,12 +99,15 @@ class BaseSystem:
 			self.ig.send_goal(goal = goal, done_cb=done_cb, active_cb=active_cb)
 		else:
 			self.ig.send_goal(goal)
-			result = self.ig.wait_for_result()
+			result = self.ig.wait_for_result(timeout=rospy.Duration(60*15))
 			state = self.ig.get_state()
-			if self.ig.get_result().succeeded and state == GoalStatus.SUCCEEDED:
+			if result and self.ig.get_result().succeeded and state == GoalStatus.SUCCEEDED:
 				return True, None
 			else:
-				return False, self.ig.get_result().sequence
+				if (self.ig.get_result() is not None):
+					return False, self.ig.get_result().sequence
+				else:
+					return False, "IG Failed perhaps because of timeout"
 
 
 class ConverterMixin:
