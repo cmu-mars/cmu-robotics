@@ -18,8 +18,8 @@ OBS_MODEL = os.path.expanduser('~/catkin_ws/src/cp-models-p15/models/box')
 
 # These are translation coordinates between the map and gazebo
 # The two things should really be syncrhonized
-X_MAP_TO_GAZEBO_TRANSLATION = 56
-Y_MAP_TO_GAZEBO_TRANSLATION = 42
+X_MAP_TO_GAZEBO_TRANSLATION = 0
+Y_MAP_TO_GAZEBO_TRANSLATION = 0
 
 MARKER_TEMPLATE = '''
 <sdf version='1.4'>
@@ -51,7 +51,7 @@ class GazeboInterface:
     lock = None # A lock to manage multiple threads
     zero_q = None # A quarternion for zero twist
 
-    def __init__(self, xtrans=X_MAP_TO_GAZEBO_TRANSLATION, ytrans=Y_MAP_TO_GAZEBO_TRANSLATION):
+    def __init__(self, xtrans=X_MAP_TO_GAZEBO_TRANSLATION, ytrans=Y_MAP_TO_GAZEBO_TRANSLATION, timeout=30):
         self.obstacle_names = []
         self.obstacle_sequence = 0
         self.lock = Lock () 
@@ -83,7 +83,7 @@ class GazeboInterface:
         self.Y_MAP_TO_GAZEBO_TRANSLATION = ytrans
 
         try:
-            rospy.wait_for_service('/gazebo/get_model_state', timeout=30)
+            rospy.wait_for_service('/gazebo/get_model_state', timeout=timeout)
             #rospy.wait_for_service('/gazebo/spawn_gazebo_model')
         except rospy.ROSException as e:
             raise GazeboExcpetion("Could not connect to gazebo", e)
@@ -265,7 +265,7 @@ class GazeboInterface:
             color.g = 0
             color.b = 0
         color.a = 255
-        resp = self.enable_lights(light, color, 0.5, 0.01, 0.01)
+        resp = self.enable_lights(light, color, 0.25, 0.0, 0.0)
         return resp.success
 
 
