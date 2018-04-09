@@ -1,6 +1,7 @@
 import os
 
 import rospy
+import rosnode
 import actionlib
 #import ig_action_msgs.msg
 import move_base_msgs.msg
@@ -59,6 +60,7 @@ class BaseSystem:
 		quarternion = t.quarternion_from_euler(0,0,0)
 		goal.target_pose.pose = Pose(Point(target_coords.x, target_coords.y, 0),
 			Quaternion(quarternion[0], quarternion[1], quarternion[2], quarternion[4]))
+		self.gazebo.set_charging_srv(False)
 		self.move_base.send_goal(goal)
 
 		result = self.move_base.wait_for_result()
@@ -95,6 +97,7 @@ class BaseSystem:
 			self.ig.wait_for_server()
 		igcode = self.instruction_server.get_instructions(start, target)
 		goal = ig_action_msgs.msg.InstructionGraphGoal(order=igcode)
+		self.gazebo.set_charging_srv(False)
 		if not wait:
 			self.ig.send_goal(goal = goal, done_cb=done_cb, active_cb=active_cb)
 		else:
@@ -123,7 +126,7 @@ class CP3(ConverterMixin,BaseSystem):
 	DEFAULT_MAP_FILE = os.path.expanduser("~/catkin_ws/src/cp3_base/maps/cp3.json")
 	DEFAULT_INSTRUCTION_FULE = os.path.expanduser("~/catkin_ws/src/cp3_base/instructions/instructions-all.json")
 
-	NODE_MAP = {"aruco" : ["marker_publisher", "marker_manager.py", "marker_pose_publisher.py"],
+	NODE_MAP = {"aruco" : ["aruco_marker_publisher_front", "aruco_marker_publisher_back", "marker_manager", "marker_pose_publisher"],
 				"amcl" : ["amcl"],
 				"mrpt" : ["mrpt_localization_node"]}
 
@@ -205,7 +208,7 @@ class CP3(ConverterMixin,BaseSystem):
 
 		return ret
 
-	def kill_node(self,node):
+	def kill_node(self,node,specific_node=None):
 		if node not in ['amcl', 'mrpt', 'aruco']:
 			return False, "Illegal node passed in for killing."
 
@@ -214,21 +217,15 @@ class CP3(ConverterMixin,BaseSystem):
 		if nodes is None or len(nodes) == 0:
 			return False, "Nothing to kill"
 
-		killed = False
+		if specific_node is None:
+			rosnode.kill_nodes(nodes)
+			return True, None
+		elif specific_node in nodes:
+			rosnode.kill_nodes(specific_node)
+			return True, None
+		else:
+			return False, "Could not kill %s" %specific_node
 
-		for proc in psutil.process_iter():
-			if proc.name() in nodes:
-				proc.kill()
-				killed = True
-			elif proc.name() == "python":
-				pynodes = [x for x in nodes if x.endswith("py")]
-				for py in pynodes:
-					if len(proc.cmdline()) > 1 and proc.cmdline()[1].endswith(py):
-						proc.kill()
-						killed = True
-
-
-		return killed, "Could not find a process to kill" if not killed else None
 
 	def get_lights_between_waypoints(self, wp1, wp2):
 		return self.map_server.lights_between_waypoints(wp1, wp2);
