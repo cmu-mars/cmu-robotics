@@ -11,6 +11,7 @@ import time
 import psutil
 import os
 import signal
+import traceback
 
 def kill_launch(cmd):
     for proc in psutil.process_iter():
@@ -156,7 +157,7 @@ if __name__ == "__main__":
         elif hargs.command=="cover":
             print("Visits the map in order of waypoints")
             co_parser.print_help()
-        elif harg.commands=="kill":
+        elif hargs.command=="kill":
             print("Kills the provided node")
             ki_parser.print_help()
         elif hargs.command=="list_lights":
@@ -286,6 +287,8 @@ if __name__ == "__main__":
                 result = False
                 message = e.message
                 print ("Threw exception %s" %message)
+                traceback.print_exc();
+
             end = rospy.Time.now()
             hit = cp.did_bump()
 
