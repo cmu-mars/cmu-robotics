@@ -168,7 +168,6 @@ paths:
           required: true
           schema:
             type: object
-            required:
             properties:
               time-limit:
                 type: number
