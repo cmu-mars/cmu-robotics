@@ -36,7 +36,6 @@ indicates that the test is completed
 
 |Name|Description|Schema|
 |---|---|---|
-|**arrival-predictions**  <br>*required*|all the predicted arrival times made by the SUT during<br>     the test, in the order they were made.|< integer > array|
 |**collisions**  <br>*required*|A (possibly empty) list of locations, times, and speeds of any collisions of the robot|< [CollisionData](#collisiondata) > array|
 |**final-charge**  <br>*required*|the charge left in the battery when the test ended  <br>**Minimum value** : `0`|integer|
 |**final-sim-time**  <br>*required*|the simulation time when the mission finished  <br>**Minimum value** : `0`|integer|
@@ -127,10 +126,10 @@ indicate important state changes in the SUT to the TH. posted periodically as th
 
 |Name|Description|Schema|
 |---|---|---|
-|**config**  <br>*optional*|list of currently active nodes. This will not be sent with `status == live`.|< string > array|
+|**config**  <br>*optional*|list of currently active nodes. This will not be sent with `status == live`.|< enum (AMCL_KINECT, AMCL_LIDAR, MPRT_KINECT, MPRT_LIDAR, ARUCO_CAMERA) > array|
 |**message**  <br>*optional*|human readable text describing the status, if any|string|
 |**plan**  <br>*optional*|list of waypoints the current plan tends to visit, in order. This will not be sent with `status == live`.|< string > array|
-|**sensors**  <br>*optional*|list of currently active sensors, in order. This will not be sent with `status == live`.|< string > array|
+|**sensors**  <br>*optional*|list of currently active sensors, in order. This will not be sent with `status == live`.|< enum (kinect, lidar, camera, headlamp) > array|
 |**sim-time**  <br>*required*|the simulation time the status message was produced  <br>**Minimum value** : `0`|integer|
 |**status**  <br>*required*|one of a enumerated set of statuses to report, arise, as follows:<br>  * `live`, the SUT has processed the configuration data<br>     and is ready for initial perturbations (if any) and the<br>     start of the test<br><br>  * `mission-running`, the SUT has processed the initial<br>     perturbations after receiving `/start`, possibly<br>     adapted, and the robot is now actually moving along<br>     its path. it is an error to send any perturbation to<br>     the SUT between sending a message to `/start` and<br>     receiving this status.<br><br>  * `adapting`, the SUT has detected a condition that<br>     requires adaptation and the SUT is adapting. it is<br>     an error to send any perturbation to the SUT after<br>     this message is sent to the TH until the TH gets a<br>     status message with `adapted`.<br><br>  * `adapted`, the SUT has finished adapting after<br>     observing a need to. this means that the robot is<br>     moving along its plan again and it is no longer an<br>     error to send perturbations. if this is the status<br>     code of the message, the fields `plan`, `config` and<br>     `sensors` will also be present, to describe the new<br>     state of the robot.|enum (live, mission-running, adapting, adapted)|
 
