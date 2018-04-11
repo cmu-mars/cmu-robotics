@@ -240,62 +240,39 @@ DEG_B = the score (0..1) degraded of B
 
 **Utility Component 1: Timing**
 
-**Informal Description**: Robot reaches target location by a deadline
+**Informal Description**: Robot reaches target location close to how fast Baseline A does
 
 **Formal Description**:
 
 Scoring requirements:
 
-1. Account for some inaccuracy (can’t be right on the deadline). Call this BUFFER
-2. Being early is better than being late, but don’t want to encourage inaccurate over predictions. We can be early by 2 x BUFFER or late by BUFFER
-3. Want to penalize too many deadline predictions (so we don’t predict just before getting there). If there is no adaptation, then we can make one prediction. In Phase II, we will allow ourselves only the number of predicitions for the times we adapt. If we adapt one more than allowed, then the prediction penalty is 0, otherwise it is 1.
+1. Account for some inaccuracy (can’t be right on the time). Call this BUFFER
+2. Being quicker is better
 
-![Timing diagram](img/cp3-timing-intent.png "Timing Intent")
-
-The above diagram gives the intent of the base score. If inDeadlineWindow, then we get 1. If too early, then we get less score, but at a slower rate (½) than if we are too late.
-We’re allowed one prediction at the beginning of the test. So if there is one adaptation, then we expect two predictions.
-
-
-**Test/Capture Method**: The running time of the test will be calculated starting when the test begins to when the mission is complete. The predicted deadline will be sent in the observations.
+**Test/Capture Method**: The running time of the test will be calculated starting when the test begins to when the mission is complete. 
 
 **Result Expression**: 
 ```
 location=(/done/final_x,/done/final_y)
-deadline=(/done/arrival-predictions[size(/done/arrival-prediction)]
 arrival=/done/final-sim-time
-number_of_predictions=size(/done/arrival-predictions)
-number_of_adaptations=/done/num-adaptations
+
+arrival_C = arrival for Challenge 
+arrival_A = arrival for Baseline A
 ```
 
 **Verdict Expressions**:
 
-| Constant | likely value | meaning |
-|----------|--------------|---------|
-| BUFFER   | 10 seconds   | TODO    |
-| PENALTY  | 120 seconds  | TODO    |
-
 ```
+BUFFER = 30s, the amount of time we can be slower than A and still get a score
+
 function close_enough (loc1, loc2) = distance (loc1, loc2) <= MAX_DISTANCE
 
-
-// can be one minute late or two minutes early
-function inDeadlineWindow(deadline, arrival) = arrival <= deadline + BUFFER and arrival > deadline-2*BUFFER
-
-// 6 minutes early is ok, but more than two minutes gives us a degraded score
-function tooEarly(deadline, arrival) = arrival <= deadline - 2*BUFFER
-
-// 3 minutes late is ok, but later than one minutes gives us a degraded score
-function tooLate(deadline, arrival) = arrival > deadline + BUFFER
-
-function prediction_penalty() = number_predicitions > 1 + number_adaptations?0:1
 ```
 
 | Condition                                                      | Score                                                |
 |---|---|
-| prediction_penalty == 0                                        | 0 |
-| eventually(close(location,target)  and inDeadlineWindow(deadline, arrival)) | 	1 |
-| eventually(close(location,target)  and  tooEarly (deadline, arrival)) | (arrival -  (deadline - 2 * (PENALTY+BUFFER)) /(2*PENALTY)) |
-| eventually(close(location,target)  and tooLate(deadline, arrival)) | ((arrival -  (deadline + PENALTY+BUFFER))  / (-PENALTY)) |
+| arrival_A < arrival_C | 	1 |
+| arrival_A - BUFFER <= arrival_C | (arrival_C - arrival_A - BUFFER) / (arrival_A - BUFFER) |
 | else | 0 |
 
 
