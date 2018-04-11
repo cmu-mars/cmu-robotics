@@ -127,6 +127,12 @@ Secondly, it excludes bug fixes that simply delete code, which are trivial
 to find -- we keep the *truly challenging* bugs whose fixes require the
 insertion of code.
 
+To ensure that a representative set of faults is produced using these
+operators, we intend to supply Lincoln Labs with a probability distribution
+describing the likely shape and composition of faults. We intend to construct
+this probability distribution through observation of real-world bugs from our
+ArduPilot dataset.
+
 ## Interface to the Test Harness (API)
 
 ### Sequence Diagram for Interaction Pattern

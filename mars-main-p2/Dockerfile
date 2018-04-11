@@ -34,7 +34,7 @@ RUN sudo apt-get install -y ros-kinetic-kobuki ros-kinetic-kobuki-core
 
 # install the maps -- BRS Does this need to be here? CP3 uses different maps
 ENV CP_MAPS_REV 80afb8f
-RUN git clone https://github.com/cmu-mars/cp-maps-p15 src/maps && \
+RUN git clone https://github.com/cmu-mars/cp-maps src/maps && \
     cd src/maps && \
     git reset --hard "${CP_MAPS_REV}"
 

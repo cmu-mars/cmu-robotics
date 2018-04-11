@@ -131,8 +131,8 @@ paths:
               err-code:
                 type: string
                 enum:
-                  - NeutralPerturbation
-                  - PertubationFailedToCompile
+                  - neutral-perturbation
+                  - pertubation-failed-to-compile
                 description: >-
                   Used to indicate the type of error that has occurred.
               err-description:
@@ -217,9 +217,9 @@ paths:
               outcome:
                 type: string
                 enum:
-                  - CompleteRepair
-                  - PartialRepair
-                  - NoRepair
+                  - complete-repair
+                  - partial-repair
+                  - no-repair
                 description: >-
                   A short description of the success of the repair process.
                   A complete repair is one which fully restores the intent of

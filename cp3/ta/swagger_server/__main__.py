@@ -102,18 +102,20 @@ if __name__ == '__main__':
     thApi = DefaultApi()
     thApi.api_client.host = th_uri
     try:
-      thApi.error_post(Parameters("Test Error", "This is a test error post to th"))
+        resp = thApi.ready_post() ## i think this takes no args; could be wrong
+        if(resp.start_configuration() == "AMCL_KINECT"):
+            ## popen roslauch cp3_base cp3-amcl-kinect.launch
+
     except Exception as e:
       logger.debug("Failed to connect with th")
       logger.debug(traceback.format_exc())
+      ## can't send an error here since the TH is apparently down; just sys.exit?
 
     rospy.init_node ("cp3_ta")
-#    move_base = actionlib.SimpleActionClient("move_base", MoveBaseAction)
-#    move_base_started = move_base.wait_for_server(rospy.Duration(30.0))
-#    if not move_base_started:
-#      logger.error ('Fatal: move_base did not start?')
-#      thApi.error_post(Parameters("MoveBase Error", "Fatal: failed to wait for move_base"))
     rospy.sleep(30.0)
+
+    ## instead of sleeping, listen to a topic for whatever indicated "odom recieved"
+
     print ("Starting up Gazebo interface")
     try:
       gazebo = GazeboInterface()
@@ -124,7 +126,35 @@ if __name__ == '__main__':
       raise
     print ("Started Gazebo Interface")
 
-    fake_semantics(thApi,5000)
+    ## process rest of reply from /ready -- put the robot where it
+    ## goes, etc.. for integration assume that use adaptation is false
+    ## and ignore utility function but stub it in
+
+
+    ## send status live after gazebo interface comes up
 
     logger.debug("Starting TA")
-    app.run(port=5000, host='0.0.0.0')
+    app.run(port=5000, host='0.0.0.0') ## todo: check to see if this
+                                       ## takes a callback for
+                                       ## something to do right after
+                                       ## it launches
+
+
+
+
+
+
+
+
+
+
+
+    ## todo: remove the fake semantics function above
+##    fake_semantics(thApi,5000)
+
+
+#    move_base = actionlib.SimpleActionClient("move_base", MoveBaseAction)
+#    move_base_started = move_base.wait_for_server(rospy.Duration(30.0))
+#    if not move_base_started:
+#      logger.error ('Fatal: move_base did not start?')
+#      thApi.error_post(Parameters("MoveBase Error", "Fatal: failed to wait for move_base"))

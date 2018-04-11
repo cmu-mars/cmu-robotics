@@ -57,7 +57,7 @@ Where,
 - `node-id` is a string indicating the label for the waypoint (it will probably be of the form l1, l2, l3, but this should not be assumed).
 - `coord` is composed of floats, significant to one decimal, indicating the coordinate of the waypoint, in meters from some origin point
 - `connected-to` is the set of labels that a node is connected to, and should be drawn from the set of node-id's defined in the map
-- `lights` are the ids and locations of each of the lights in the map (the coordinates being meters from the the same origin as the waypoints.
+- `lights` are the ids and locations of each of the lights in the map (the coordinates being meters from the same origin as the waypoints).
 
 The set of all "node-ids" will be referred to as WAYPOINT_SET; the set of all light "light-ids" will be referred to as LIGHT_SET.
 

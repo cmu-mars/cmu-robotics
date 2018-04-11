@@ -8,26 +8,29 @@ host: brass-th
 definitions:
   CollisionData:
     type: object
-    required: 
+    required:
       - robot-x
       - robot-y
       - robot-speed
       - sime-time
     properties:
       robot-x:
-        type: float
+        type: number
+        format: float
         description: >-
           The x location of the robot center when collision occured
       robot-y:
-        type: float
+        type: number
+        format: float
         description: >-
           The y lcoation of the robot center when collision occured
       robot-speed:
-        type: float
+        type: number
+        format: float
         description: >-
           The speed of the robot (m/s) at the time the collision occured
       sim-time:
-        type: float
+        type: integer
         description: >-
           The (simulation) time at which the collision occurred (seconds from start of simulator)
 paths:
@@ -64,19 +67,19 @@ paths:
                 description: >-
                   the label of the starting configuration for the robot
                 enum:
-                  - AMCL_KINECT
-                  - AMCL_LIDAR
-                  - MPRT_KINECT
-                  - MPRT_LIDAR
-                  - ARUCO_CAMERA
+                  - amcl-kinect
+                  - amcl-lidar
+                  - mprt-kinect
+                  - mprt-lidar
+                  - aruco-camera
               utility-function:
                 type: string
                 description: >-
                   the utility function to use for evaluating mission quality
                 enum:
-                  - FAVOR_TIMELINESS
-                  - FAVOR_SAFETY
-                  - FAVOR_EFFICIENCY
+                  - favor-timeliness
+                  - favor-safety
+                  - favor-efficiency
         '400':
           description: TH encountered an error producing configuration data
   /error:
@@ -169,22 +172,33 @@ paths:
                   list of waypoints the current plan tends to visit, in
                   order. This will not be sent with `status == live`.
                 type: array
-                items: 
+                items:
                   type: string
               config:
                 description: >-
-                  list of currently active nodes. This will not be sent 
+                  list of currently active nodes. This will not be sent
                   with `status == live`.
                 type: array
                 items:
                   type: string
+                  enum:
+                    - amcl-kinect
+                    - amcl-lidar
+                    - mprt-kinect
+                    - mprt-lidar
+                    - aruco-camera
               sensors:
                 description: >-
-                  list of currently active sensors, in order. This will 
+                  list of currently active sensors, in order. This will
                   not be sent with `status == live`.
                 type: array
                 items:
-                  type: string  
+                  type: string
+                  enum:
+                    - kinect
+                    - lidar
+                    - camera
+                    - headlamp
       responses:
         '200':
           description: the TH acknowledges the status of the SUT
@@ -203,7 +217,6 @@ paths:
               - final-x
               - final-y
               - final-sim-time
-              - arrival-predictions
               - final-charge
               - collisions
               - num-adaptations
@@ -223,30 +236,27 @@ paths:
                 type: integer
                 minimum: 0
                 description: the simulation time when the mission finished
-              arrival-predictions:
-                type: array
-                items:
-                  type: integer
-                  minimum: 0
-                description: >-
-                  all the predicted arrival times made by the SUT during
-                       the test, in the order they were made.
               final-charge:
                 type: integer
+                minimum: 0
                 description: >-
                   the charge left in the battery when the test ended
               collisions:
                 type: array
-                items: 
+                items:
                   $ref: "#/definitions/CollisionData"
                 description: >-
                   A (possibly empty) list of locations, times, and speeds of any collisions of the robot
               num-adaptations:
                 type: integer
+                minimum: 0
                 description: >-
                   the number of times that the robot adapted (0 if there is no DAS)
               final-utility:
-                type: float
+                type: number
+                format: float
+                minimum: 0.0
+                maximum: 1.0
                 description: >-
                   the utility achieved at the end of the mission, in the range [0,1]
       responses:
