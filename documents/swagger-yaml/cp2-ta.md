@@ -226,7 +226,7 @@ Returns a list of possible perturbations of an (optionally) specified shape and 
 ### PerturbationKind
 A description of the kind of the perturbation.
 
-*Type* : enum (DeleteVoidFunctionCall, FlipArithmeticOperator, FlipBooleanOperator, FlipRelationalOperator, UndoTransformation, DeleteConditionalControlFlow, FlipSignedness)
+*Type* : enum (delete-void-function-call, flip-arithmetic-operator, flip-boolean-operator, flip-relational-operator, undo-transformation, delete-conditional-control-flow, flip-signedness)
 
 
 <a name="sourceline"></a>

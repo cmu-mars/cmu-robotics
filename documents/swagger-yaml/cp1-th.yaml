@@ -66,15 +66,10 @@ paths:
               discharge-budget:
                 type: integer
                 minimum: 2
+                maximum: 1048576
                 description: >-
                   if in level c, the maximum number of queries against the
                   target function during learning
-              charge-budget:
-                type: integer
-                minimum: 2
-                description: >-
-                  if in level c, the maximum number of queries against the
-                  target recharging function during learning
         '400':
           description: TH encountered an error producing configuration data
   /error:
@@ -130,10 +125,7 @@ paths:
               - sim-time
               - x
               - 'y'
-              - v
-              - w
               - charge
-              - predicted-arrival
             properties:
               status:
                 description: |-
@@ -171,24 +163,10 @@ paths:
                 description: current y-coordinate of the turtlebot
                 type: number
                 format: float
-              w:
-                description: current yaw of the turtlebot
-                type: number
-                format: float
-              v:
-                description: current velocity of the turtlebot
-                type: number
-                format: float
               charge:
                 description: >-
                   current turtlebot battery charge in mWh. cannot be more
                   than the maximum specified in the response from `/ready`.
-                type: integer
-                minimum: 0
-              predicted-arrival:
-                description: >-
-                  current best prediction of arrival time, in simulation
-                  time
                 type: integer
                 minimum: 0
               sim-time:
@@ -218,8 +196,6 @@ paths:
             required:
               - x
               - 'y'
-              - w
-              - v
               - charge
               - sim-time
               - outcome
@@ -231,14 +207,6 @@ paths:
                 format: float
               'y':
                 description: final y-coordinate of the turtlebot
-                type: number
-                format: float
-              w:
-                description: final yaw of the turtlebot
-                type: number
-                format: float
-              v:
-                description: final velocity of the turtlebot
                 type: number
                 format: float
               charge:
