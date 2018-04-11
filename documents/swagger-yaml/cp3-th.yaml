@@ -67,19 +67,19 @@ paths:
                 description: >-
                   the label of the starting configuration for the robot
                 enum:
-                  - AMCL_KINECT
-                  - AMCL_LIDAR
-                  - MPRT_KINECT
-                  - MPRT_LIDAR
-                  - ARUCO_CAMERA
+                  - amcl-kinect
+                  - amcl-lidar
+                  - mprt-kinect
+                  - mprt-lidar
+                  - aruco-camera
               utility-function:
                 type: string
                 description: >-
                   the utility function to use for evaluating mission quality
                 enum:
-                  - FAVOR_TIMELINESS
-                  - FAVOR_SAFETY
-                  - FAVOR_EFFICIENCY
+                  - favor-timeliness
+                  - favor-safety
+                  - favor-efficiency
         '400':
           description: TH encountered an error producing configuration data
   /error:
@@ -182,11 +182,11 @@ paths:
                 items:
                   type: string
                   enum:
-                    - AMCL_KINECT
-                    - AMCL_LIDAR
-                    - MPRT_KINECT
-                    - MPRT_LIDAR
-                    - ARUCO_CAMERA
+                    - amcl-kinect
+                    - amcl-lidar
+                    - mprt-kinect
+                    - mprt-lidar
+                    - aruco-camera
               sensors:
                 description: >-
                   list of currently active sensors, in order. This will

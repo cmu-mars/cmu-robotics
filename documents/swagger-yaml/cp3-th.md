@@ -101,11 +101,11 @@ indicates that the SUT is ready to recieve configuration data to continue start 
 
 |Name|Description|Schema|
 |---|---|---|
-|**start-configuration**  <br>*optional*|the label of the starting configuration for the robot|enum (AMCL_KINECT, AMCL_LIDAR, MPRT_KINECT, MPRT_LIDAR, ARUCO_CAMERA)|
+|**start-configuration**  <br>*optional*|the label of the starting configuration for the robot|enum (amcl-kinect, amcl-lidar, mprt-kinect, mprt-lidar, aruco-camera)|
 |**start-loc**  <br>*optional*|the name of the start map waypoint. must be a valid way point name from the map data. must not be equal to `target-loc`.|string|
 |**target-loc**  <br>*optional*|the name of the goal map waypoint. must be a valid way point name from the map data. must not be equal to `start-loc`.|string|
 |**use-adaptation**  <br>*optional*|if `true`, then the DAS will use adapative behaiviours; if `false` then the DAS will not use adaptive behaiviours|boolean|
-|**utility-function**  <br>*optional*|the utility function to use for evaluating mission quality|enum (FAVOR_TIMELINESS, FAVOR_SAFETY, FAVOR_EFFICIENCY)|
+|**utility-function**  <br>*optional*|the utility function to use for evaluating mission quality|enum (favor-timeliness, favor-safety, favor-efficiency)|
 
 
 <a name="status-post"></a>
@@ -126,7 +126,7 @@ indicate important state changes in the SUT to the TH. posted periodically as th
 
 |Name|Description|Schema|
 |---|---|---|
-|**config**  <br>*optional*|list of currently active nodes. This will not be sent with `status == live`.|< enum (AMCL_KINECT, AMCL_LIDAR, MPRT_KINECT, MPRT_LIDAR, ARUCO_CAMERA) > array|
+|**config**  <br>*optional*|list of currently active nodes. This will not be sent with `status == live`.|< enum (amcl-kinect, amcl-lidar, mprt-kinect, mprt-lidar, aruco-camera) > array|
 |**message**  <br>*optional*|human readable text describing the status, if any|string|
 |**plan**  <br>*optional*|list of waypoints the current plan tends to visit, in order. This will not be sent with `status == live`.|< string > array|
 |**sensors**  <br>*optional*|list of currently active sensors, in order. This will not be sent with `status == live`.|< enum (kinect, lidar, camera, headlamp) > array|

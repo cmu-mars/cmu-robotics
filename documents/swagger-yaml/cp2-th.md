@@ -38,7 +38,7 @@ Used to indicate that evaluation of the test scenario has been completed. A summ
 |---|---|---|
 |**log**  <br>*required*|A list containing details of each of the attempted repairs.|< [CandidateAdaptation](#candidateadaptation) > array|
 |**num-attempts**  <br>*required*|The number of code adaptations attempted.  <br>**Minimum value** : `0`|integer|
-|**outcome**  <br>*required*|A short description of the success of the repair process. A complete repair is one which fully restores the intent of the system (i.e., system degradation is reduced to zero). A partial repair reduces the degradation of the system from its initial value to a value greater than zero. If the level of degradation remains unchanged, no (partial) repair has been found.|enum (CompleteRepair, PartialRepair, NoRepair)|
+|**outcome**  <br>*required*|A short description of the success of the repair process. A complete repair is one which fully restores the intent of the system (i.e., system degradation is reduced to zero). A partial repair reduces the degradation of the system from its initial value to a value greater than zero. If the level of degradation remains unchanged, no (partial) repair has been found.|enum (complete-repair, partial-repair, no-repair)|
 |**pareto-set**  <br>*required*|A list containing details of all adaptations within the pareto set.|< [CandidateAdaptation](#candidateadaptation) > array|
 |**running-time**  <br>*required*|The number of minutes taken to complete the repair process.  <br>**Minimum value** : `0`|number (float)|
 
@@ -78,7 +78,7 @@ system under test.
 
 |Name|Description|Schema|
 |---|---|---|
-|**err-code**  <br>*required*|Used to indicate the type of error that has occurred.|enum (NeutralPerturbation, PertubationFailedToCompile)|
+|**err-code**  <br>*required*|Used to indicate the type of error that has occurred.|enum (neutral-perturbation, pertubation-failed-to-compile)|
 |**err-description**  <br>*optional*|An optional description of the error.|string|
 
 
