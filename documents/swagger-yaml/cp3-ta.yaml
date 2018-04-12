@@ -87,9 +87,9 @@ paths:
               id:
                 type: string
                 enum:
-                  - kinect-ir
+                  - kinect
                   - lidar
-                  - kinect-all
+                  - camera
                 description: >-
                   which sensor of SENSORSET to set
               state:

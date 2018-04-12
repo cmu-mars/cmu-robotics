@@ -49,7 +49,7 @@ The JSON format for these pieces of information are:
 
 ```
 {"map" : [ {"node-id" : STRING, "coord" : { "x" : FLOAT, "y" : FLOAT}, "connected-to" : [ STRING, ...] }, ...],
- "lights" : [{"light-id" : STRING, "coord" : {"x" : FLOAT, "y" : FLOAT}]
+ "lights" : [{"light-id" : STRING, "coord" : {"x" : FLOAT, "y" : FLOAT}, "status" : ONOFF]
 }
 ```
 
@@ -57,48 +57,47 @@ Where,
 - `node-id` is a string indicating the label for the waypoint (it will probably be of the form l1, l2, l3, but this should not be assumed).
 - `coord` is composed of floats, significant to one decimal, indicating the coordinate of the waypoint, in meters from some origin point
 - `connected-to` is the set of labels that a node is connected to, and should be drawn from the set of node-id's defined in the map
-- `lights` are the ids and locations of each of the lights in the map (the coordinates being meters from the the same origin as the waypoints.
+- `lights` are the ids and locations of each of the lights in the map (the coordinates being meters from the same origin as the waypoints). The light status of ONOFF = enum{ON,OFF} indicates that the light is on or off. If status is not there, assume that the light is on.
 
 The set of all "node-ids" will be referred to as WAYPOINT_SET; the set of all light "light-ids" will be referred to as LIGHT_SET.
+
+The map for this challenge problem can be tracked at: https://github.com/cmu-mars/cp3_base/edit/develop/cp3_base/maps/cp3.json. The precise version to use will be fixed at a later date -- currently this tracks the develop branch.
 
 ### Sensors
 
 The robot will have three sensors that can be referred to by the test harness:
 
-- KINECT_IR: Is the infra-red part of the kinect that gives Kinect images depth
-- LIDAR: Is the planar Hokuyo lidar sensor
-- KINECT_ALL: Is the infra-red and RGB image part of the KINECT sensor
+- `kinect`: Is the sensor that gives Kinect images depth
+- `lidar`: Is the planar Hokuyo lidar sensor
+- 'camera`: Is the dual camera that gives RGB images that can be used for visual navigation
 
 ```
-SENSOR_SET = enum {KINECT_IR, KINECT_ALL, LIDAR}
+SENSOR_SET = enum {kinect, lidar, camera}
 ```
 
 ### Nodes
-> TODO: This set needs to be finalized
 The robot will have a set of software nodes that can be referred to by the test harness, these will be e.g.,
 
-- MOVEBASE: The low-level robot navigation subsystem
-- AMCL: The adaptive Monte Carlo localization algorithm that uses depth information and odometry to estimate robot location in a map
-- MRPT: A particle based localization algorithm
-- CB_BASE: A constraint-based navigation subsystem
+- `amcl`: The adaptive Monte Carlo localization algorithm that uses depth information and odometry to estimate robot location in a map
+- `mrpt`: A particle based localization algorithm
+- `aruco`: A visual marker based navigation subsystem
 
 ```
-NODE_SET = enum {MOVEBASE, AMCL, MRPT, CB_BASE, ...}
+NODE_SET = enum {amcl,mrpt,aruco}
 ```
 
 ### Configurations
-> TODO: This set needs to be finalized
 The robot will have a set of valid configurations that the test harness can start the robot up in. These will be given a label of the form `CONFIG<N>`. 
 
 ```
-CONFIG_SET = enum {CONFIG1, CONFIG2, ..., CONFIGN}
+CONFIG_SET = enum {amcl-kinect, amcl-lidar, mrpt-kinect, mrpt-lidar, aruco}
 ```
 
 ### Utilities
 The adaptation engine will use one of a set of utility functions that can be specified for Lincoln Labs. The utility function may cause different adaptations to occur in the same context, depending on what trade-off is being made. The set of allowable functions are labeled as:
 
 ```
-UTILITY_SET = enum {FAVOR_TIMELINESS, FAVOR_SAFETY, FAVOR_EFFICIENCY}
+UTILITY_SET = enum {favor_timeliness, favor_safety, favor_efficiency}
 ```
 
 ## Test Parameters
@@ -106,9 +105,9 @@ UTILITY_SET = enum {FAVOR_TIMELINESS, FAVOR_SAFETY, FAVOR_EFFICIENCY}
 The test will be able to be parameterized in a number of ways, and this will be done via the response to ready. The elements that may be specified for the test are:
 
 - the initial robot position, as well as the target location for the robot, which constitutes the mission. Both of these will be specified using waypoint labels defined in the map. It is intended that the start and target waypoint **NOT** be the same label.
-- the initial configuration of the robot, chosen from a set of potential robot configurations. This will be one chosen from a set of labels that specify the configuration, that are part of the test data, i.e., CONFIG1, CONFIG2, ..., CONFIGN
+- the initial configuration of the robot, chosen from a set of potential robot configurations. This will be one chosen from a set of labels that specify the configuration, that are part of the test data, i.e., `CONFIG_SET`
 - whether adaptation is enabled for this test. A boolean.
-- the utility preference function to use for trading off adaptations
+- the utility preference function to use for trading off adaptations, one of the labels from `UTILITY_SET`
 
 ## Test Procedure
 
@@ -241,62 +240,39 @@ DEG_B = the score (0..1) degraded of B
 
 **Utility Component 1: Timing**
 
-**Informal Description**: Robot reaches target location by a deadline
+**Informal Description**: Robot reaches target location close to how fast Baseline A does
 
 **Formal Description**:
 
 Scoring requirements:
 
-1. Account for some inaccuracy (can’t be right on the deadline). Call this BUFFER
-2. Being early is better than being late, but don’t want to encourage inaccurate over predictions. We can be early by 2 x BUFFER or late by BUFFER
-3. Want to penalize too many deadline predictions (so we don’t predict just before getting there). If there is no adaptation, then we can make one prediction. In Phase II, we will allow ourselves only the number of predicitions for the times we adapt. If we adapt one more than allowed, then the prediction penalty is 0, otherwise it is 1.
+1. Account for some inaccuracy (can’t be right on the time). Call this BUFFER
+2. Being quicker is better
 
-![Timing diagram](img/cp3-timing-intent.png "Timing Intent")
-
-The above diagram gives the intent of the base score. If inDeadlineWindow, then we get 1. If too early, then we get less score, but at a slower rate (½) than if we are too late.
-We’re allowed one prediction at the beginning of the test. So if there is one adaptation, then we expect two predictions.
-
-
-**Test/Capture Method**: The running time of the test will be calculated starting when the test begins to when the mission is complete. The predicted deadline will be sent in the observations.
+**Test/Capture Method**: The running time of the test will be calculated starting when the test begins to when the mission is complete. 
 
 **Result Expression**: 
 ```
 location=(/done/final_x,/done/final_y)
-deadline=(/done/arrival-predictions[size(/done/arrival-prediction)]
 arrival=/done/final-sim-time
-number_of_predictions=size(/done/arrival-predictions)
-number_of_adaptations=/done/num-adaptations
+
+arrival_C = arrival for Challenge 
+arrival_A = arrival for Baseline A
 ```
 
 **Verdict Expressions**:
 
-| Constant | likely value | meaning |
-|----------|--------------|---------|
-| BUFFER   | 10 seconds   | TODO    |
-| PENALTY  | 120 seconds  | TODO    |
-
 ```
+BUFFER = 30s, the amount of time we can be slower than A and still get a score
+
 function close_enough (loc1, loc2) = distance (loc1, loc2) <= MAX_DISTANCE
 
-
-// can be one minute late or two minutes early
-function inDeadlineWindow(deadline, arrival) = arrival <= deadline + BUFFER and arrival > deadline-2*BUFFER
-
-// 6 minutes early is ok, but more than two minutes gives us a degraded score
-function tooEarly(deadline, arrival) = arrival <= deadline - 2*BUFFER
-
-// 3 minutes late is ok, but later than one minutes gives us a degraded score
-function tooLate(deadline, arrival) = arrival > deadline + BUFFER
-
-function prediction_penalty() = number_predicitions > 1 + number_adaptations?0:1
 ```
 
 | Condition                                                      | Score                                                |
 |---|---|
-| prediction_penalty == 0                                        | 0 |
-| eventually(close(location,target)  and inDeadlineWindow(deadline, arrival)) | 	1 |
-| eventually(close(location,target)  and  tooEarly (deadline, arrival)) | (arrival -  (deadline - 2 * (PENALTY+BUFFER)) /(2*PENALTY)) |
-| eventually(close(location,target)  and tooLate(deadline, arrival)) | ((arrival -  (deadline + PENALTY+BUFFER))  / (-PENALTY)) |
+| arrival_A < arrival_C | 	1 |
+| arrival_A - BUFFER <= arrival_C | (arrival_C - arrival_A - BUFFER) / (arrival_A - BUFFER) |
 | else | 0 |
 
 
