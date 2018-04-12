@@ -112,6 +112,28 @@ class BaseSystem:
 				else:
 					return False, "IG Failed perhaps because of timeout"
 
+	def execute_instructions(self, igcode, wait=True, active_cb=None, done_cb=None, discharge=True):
+		if self.ig is None:
+			self.ig = actionlib.SimpleActionClient("ig_action_server", ig_action_msgs.msg.InstructionGraphAction)
+			self.ig.wait_for_server()
+
+		goal = ig_action_msgs.msg.InstructionGraphGoal(order=igcode)
+		self.gazebo.set_charge_srv(18000000000)
+		if discharge: 
+			self.gazebo.set_charging_srv(False)
+		if not wait:
+			self.ig.send_goal(goal = goal, done_cb=done_cb, active_cb=active_cb)
+		else:
+			self.ig.send_goal(goal)
+			result = self.ig.wait_for_result(timeout=rospy.Duration(15*60))
+			state = self.ig.get_state()
+			if result and self.ig.get_result().succeeded and state == GoalStatus.SUCCEEDED:
+				return True, None
+			else:
+				if self.ig.get_result() is not None:
+					return False, self.ig.get_result().sequence
+				else:
+					return False, "IG Failed perhaps because of a timeout"
 
 class ConverterMixin:
 	@classmethod
@@ -144,6 +166,11 @@ class CP3(ConverterMixin,BaseSystem):
 		self.marker_subscriber = None
 		self.illuminance_subscriber = None
 		self.was_bumped = False
+
+	def init(self):
+		off = self.map_server.lights_off()
+		for l in off:
+			self.gazebo.enable_light(l,False)
 
 	def track_bumps(self):
 		self.was_bumped = False

@@ -1,3 +1,4 @@
+from __future__ import with_statement 
 import argparse
 import rospy
 from gazebo_interface import GazeboInterface
@@ -32,7 +33,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     commands = ['help', 'enable_light', 'enable_headlamp', 'list_obstacles', 
         'place_obstacle', 'remove_obstacle', 'set_pose', 'kinect', 'lidar', 'where', 'go',
-        'voltage', 'charging', "place_markers", "set_location", "cover", "kill", "list_lights", "safety_test"]
+        'voltage', 'charging', "place_markers", "set_location", "cover", "kill", "list_lights", "safety_test", 'execute']
     configs = ['amcl-kinect', 'mrpt-kinect', 'amcl-lidar', 'mrpt-lidar', 'aruco']
     parser.add_argument('--challenge', choices={'cp1','cp2','cp3'}, default='cp3', help='The challenge problem context')
     parser.add_argument('command', choices=commands, help='The command to issue to Gazebo')
@@ -107,12 +108,15 @@ if __name__ == "__main__":
     ll_parser = argparse.ArgumentParser(prog=parser.prog + " list_lights")
     ll_parser.add_argument("waypoints", type=str, nargs='+', help='A list of connected waypoints')
 
-    st_parser = argparse.ArgumentParser(prog=parser.prog + "safety_test")
+    st_parser = argparse.ArgumentParser(prog=parser.prog + " safety_test")
     st_parser.add_argument("runs", type=int, help="The number of times to run the test")
     st_parser.add_argument("start", type=str, help="The starting waypoint")
     st_parser.add_argument("target", type=str, help="The target waypoint to go to")
     st_parser.add_argument("config", choices=configs, help="The label to give to the file")
 
+    ex_parser = argparse.ArgumentParser(prog=parser.prog + " execute");
+    ex_parser.add_argument("-s", "--start", type=str, help="The starting waypoint")
+    ex_parser.add_argument("instructions", type=str, help="The file containing the list of instructions")
 
     args, extras = parser.parse_known_args()
 
@@ -166,6 +170,9 @@ if __name__ == "__main__":
         elif hargs.command=="safety_test":
             print("Runs a safety test, accumulating the results in <start>_<target>_safety.csv")
             st_parser.print_help()
+        elif hargs.command=="execute":
+            print("Executes an instruction graph")
+            ex_parser.print_help()
         else:
             h_parser.print_help()
         sys.exit()
@@ -279,7 +286,7 @@ if __name__ == "__main__":
 
                 location = cp.map_server.waypoint_to_coords(gargs.start)
                 heading = cp.instruction_server.get_start_heading(gargs.start, gargs.target)
-                result = cp.gazebo.set_turtlebot_position(location["x"], location["y"], 0)
+                result = cp.gazebo.set_turtlebot_position(location["x"], location["y"], heading)
                 rospy.sleep(10)
                 start = rospy.Time.now()
                 result, message = cp.do_instructions(gargs.start, gargs.target, True)
@@ -369,7 +376,7 @@ if __name__ == "__main__":
             start_wp = 1
         
         CP3.convert_to_class(cp)
-
+        cp.init()
         if not cargs.restart:
             cp.track(cargs.aruco, cargs.illuminance)
             
@@ -472,7 +479,7 @@ if __name__ == "__main__":
     elif args.command=='safety_test':
         cargs = st_parser.parse_args(extras)
         CP3.convert_to_class(cp)
-
+        cp.init()
         launch_cmd = "roslaunch cp3_base ";
         if cargs.config is None:
             print('Error: Cannot specify --restart and not pass a --config')
@@ -527,7 +534,22 @@ if __name__ == "__main__":
         finally:
             kill_launch(launch_cmd);
 
+    elif args.command=="execute":
+        cargs = ex_parser.parse_args(extras)
+        CP3.convert_to_class(cp)
+        cp.init()
+        if cargs.start is not None:
+            location = cp.map_server.waypoint_to_coords(cargs.start)
+            cp.gazebo.set_turtlebot_position(location["x"], location["y"], 0)
 
+        cargs.instructions = os.path.expanduser(cargs.instructions)
+        with open(cargs.instructions, 'r') as f:
+            cargs.instructions = f.read()
+       
+
+        result, msg = cp.execute_instructions(cargs.instructions, discharge=False)
+
+        print("Successfully executed the instructions " if result else "Unsuccessfully executed the instructions: %s" %msg)
 
         # cp.track_bumps()
 
