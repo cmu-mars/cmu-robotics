@@ -103,6 +103,11 @@ if __name__ == '__main__':
     thApi.api_client.host = th_uri
     try:
         resp = thApi.ready_post() ## i think this takes no args; could be wrong
+
+        ## check dynamic invariants on ready message
+
+        ## once it's good, write it to file
+
         if(resp.start_configuration() == "AMCL_KINECT"):
             ## popen roslauch cp3_base cp3-amcl-kinect.launch
 
@@ -119,7 +124,7 @@ if __name__ == '__main__':
     print ("Starting up Gazebo interface")
     try:
       gazebo = GazeboInterface()
-      gazebo.set_turtlebot_position(19.8, 58.8, 0);
+      gazebo.set_turtlebot_position(19.8, 58.8, 0); ## todo, this should be from Ready
     except Exception as e:
       logger.error('Fatal: gazebo did not start up: %s' %e)
       thApi.error_post(Parameters("Gazebo Error", "Fatal: failed to connect to gazebo: %s" %e))
@@ -128,7 +133,7 @@ if __name__ == '__main__':
 
     ## process rest of reply from /ready -- put the robot where it
     ## goes, etc.. for integration assume that use adaptation is false
-    ## and ignore utility function but stub it in
+    ## and ignore utility function but stub it in,
 
 
     ## send status live after gazebo interface comes up
@@ -148,7 +153,8 @@ if __name__ == '__main__':
 
 
 
-
+##### dead below here, keeping around because i might want to pick
+##### bits from it
     ## todo: remove the fake semantics function above
 ##    fake_semantics(thApi,5000)
 
