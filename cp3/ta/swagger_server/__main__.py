@@ -28,6 +28,7 @@ from swagger_client.models.parameters_2 import Parameters2
 
 from cp3 import CP3
 from flask.ext.script import Manager
+import config
 
 if __name__ == '__main__':
     # Command line argument parsing
@@ -143,23 +144,32 @@ if __name__ == '__main__':
 
     print ("Starting up Gazebo interface")
     try:
-      gazebo = GazeboInterface(0,0) ## TODO: unsure what these args mean but they appear in cli.py
-      cp = CP3(gazebo)
-      ## todo: CP3.convert_to_class(cp) ## appears a lot in cli.py but i don't know what it means
-      start_coords = cp.map_server.waypoint_to_coords(ready_resp.start_loc())
-      gazebo.set_turtlebot_position(start_coords['x'], start_coords['y'], 0)
+        gazebo = GazeboInterface(0,0) ## TODO: unsure what these args mean but they appear in cli.py
+        cp = CP3(gazebo)
+        ## todo: CP3.convert_to_class(cp) ## appears a lot in cli.py but i don't know what it means
+        start_coords = cp.map_server.waypoint_to_coords(ready_resp.start_loc())
+        gazebo.set_turtlebot_position(start_coords['x'], start_coords['y'], 0)
+
+        config.gazebo = gazebo
+        config.cp = cp
     except Exception as e:
         fail_hard("failed to connect to gazebo: %s" % e)
 
     ## todo: for RR2, need to also process use_adaptation and the utility function
 
+    ## subscribe to rostopics
+    def energy_cb(msg):
+        """call back to update the global battery state from the ros topic"""
+        config.battery = msg.data
+
+    sub_voltage = rospy.Subscriber("/energy_monitor/voltage", Int32, energy_cb)
+
     def send_live():
         ## send status live after gazebo interface comes up
         logger.debug("sending live status message")
-        ## todo: sending simtime 0 here may be wrong; technically there is
-        ## no simtime yet. but it's required in the spec. maybe change the
-        ## api so it isn't required?
-        live_resp = thApi.status_post(Parameters1("live","CP3 TA ready to recieve inital perturbs and start",0,None,None,None))
+        ## todo: i have no idea what rospy is going to say the sim
+        ## time is. probably 0.
+        live_resp = thApi.status_post(Parameters1("live","CP3 TA ready to recieve inital perturbs and start",rospy.Time.now().secs,None,None,None))
 
     @manager.command
     def runserver():
