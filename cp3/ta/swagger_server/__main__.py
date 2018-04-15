@@ -27,6 +27,7 @@ from swagger_client.models.parameters_1 import Parameters1
 from swagger_client.models.parameters_2 import Parameters2
 
 from cp3 import CP3
+from flask.ext.script import Manager
 
 if __name__ == '__main__':
     # Command line argument parsing
@@ -39,6 +40,8 @@ if __name__ == '__main__':
     app = connexion.App(__name__, specification_dir='./swagger/')
     app.app.json_encoder = JSONEncoder
     app.add_api('swagger.yaml', arguments={'title': 'CP3'}, strict_validation=True)
+
+    manager = Manager(app)
 
     ## capture the ambient logger
     logger = logging.getLogger('werkzeug')
@@ -150,14 +153,18 @@ if __name__ == '__main__':
 
     ## todo: for RR2, need to also process use_adaptation and the utility function
 
-    ## send status live after gazebo interface comes up
-    logger.debug("sending live status message")
-    ## todo: sending simtime 0 here may be wrong; technically there is
-    ## no simtime yet. but it's required in the spec. maybe change the
-    ## api so it isn't required?
-    live_resp = thApi.status_post(Parameters1("live","CP3 TA ready to recieve inital perturbs and start",0,None,None,None))
+    def send_live():
+        ## send status live after gazebo interface comes up
+        logger.debug("sending live status message")
+        ## todo: sending simtime 0 here may be wrong; technically there is
+        ## no simtime yet. but it's required in the spec. maybe change the
+        ## api so it isn't required?
+        live_resp = thApi.status_post(Parameters1("live","CP3 TA ready to recieve inital perturbs and start",0,None,None,None))
+
+    @manager.command
+    def runserver():
+        app.run(port=5000, host='0.0.0.0')
+        send_live()
 
     logger.debug("starting TA REST interface")
-
-    ## todo: is there a callback to make the above happen after this?
-    app.run(port=5000, host='0.0.0.0')
+    manager.run()
