@@ -36,7 +36,6 @@ class Parameters2(object):
         'final_x': 'float',
         'final_y': 'float',
         'final_sim_time': 'int',
-        'arrival_predictions': 'list[int]',
         'final_charge': 'int',
         'collisions': 'list[CollisionData]',
         'num_adaptations': 'int',
@@ -47,20 +46,18 @@ class Parameters2(object):
         'final_x': 'final-x',
         'final_y': 'final-y',
         'final_sim_time': 'final-sim-time',
-        'arrival_predictions': 'arrival-predictions',
         'final_charge': 'final-charge',
         'collisions': 'collisions',
         'num_adaptations': 'num-adaptations',
         'final_utility': 'final-utility'
     }
 
-    def __init__(self, final_x=None, final_y=None, final_sim_time=None, arrival_predictions=None, final_charge=None, collisions=None, num_adaptations=None, final_utility=None):  # noqa: E501
+    def __init__(self, final_x=None, final_y=None, final_sim_time=None, final_charge=None, collisions=None, num_adaptations=None, final_utility=None):  # noqa: E501
         """Parameters2 - a model defined in Swagger"""  # noqa: E501
 
         self._final_x = None
         self._final_y = None
         self._final_sim_time = None
-        self._arrival_predictions = None
         self._final_charge = None
         self._collisions = None
         self._num_adaptations = None
@@ -70,7 +67,6 @@ class Parameters2(object):
         self.final_x = final_x
         self.final_y = final_y
         self.final_sim_time = final_sim_time
-        self.arrival_predictions = arrival_predictions
         self.final_charge = final_charge
         self.collisions = collisions
         self.num_adaptations = num_adaptations
@@ -152,31 +148,6 @@ class Parameters2(object):
             raise ValueError("Invalid value for `final_sim_time`, must be a value greater than or equal to `0`")  # noqa: E501
 
         self._final_sim_time = final_sim_time
-
-    @property
-    def arrival_predictions(self):
-        """Gets the arrival_predictions of this Parameters2.  # noqa: E501
-
-        all the predicted arrival times made by the SUT during      the test, in the order they were made.  # noqa: E501
-
-        :return: The arrival_predictions of this Parameters2.  # noqa: E501
-        :rtype: list[int]
-        """
-        return self._arrival_predictions
-
-    @arrival_predictions.setter
-    def arrival_predictions(self, arrival_predictions):
-        """Sets the arrival_predictions of this Parameters2.
-
-        all the predicted arrival times made by the SUT during      the test, in the order they were made.  # noqa: E501
-
-        :param arrival_predictions: The arrival_predictions of this Parameters2.  # noqa: E501
-        :type: list[int]
-        """
-        if arrival_predictions is None:
-            raise ValueError("Invalid value for `arrival_predictions`, must not be `None`")  # noqa: E501
-
-        self._arrival_predictions = arrival_predictions
 
     @property
     def final_charge(self):

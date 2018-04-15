@@ -156,7 +156,7 @@ class InlineResponse200(object):
         :param start_configuration: The start_configuration of this InlineResponse200.  # noqa: E501
         :type: str
         """
-        allowed_values = ["AMCL_KINECT", "AMCL_LIDAR", "MPRT_KINECT", "MPRT_LIDAR", "ARUCO_CAMERA"]  # noqa: E501
+        allowed_values = ["amcl-kinect", "amcl-lidar", "mprt-kinect", "mprt-lidar", "aruco-camera"]  # noqa: E501
         if start_configuration not in allowed_values:
             raise ValueError(
                 "Invalid value for `start_configuration` ({0}), must be one of {1}"  # noqa: E501
@@ -185,7 +185,7 @@ class InlineResponse200(object):
         :param utility_function: The utility_function of this InlineResponse200.  # noqa: E501
         :type: str
         """
-        allowed_values = ["FAVOR_TIMELINESS", "FAVOR_SAFETY", "FAVOR_EFFICIENCY"]  # noqa: E501
+        allowed_values = ["favor-timeliness", "favor-safety", "favor-efficiency"]  # noqa: E501
         if utility_function not in allowed_values:
             raise ValueError(
                 "Invalid value for `utility_function` ({0}), must be one of {1}"  # noqa: E501

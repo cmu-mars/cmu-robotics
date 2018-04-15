@@ -194,6 +194,13 @@ class Parameters1(object):
         :param config: The config of this Parameters1.  # noqa: E501
         :type: list[str]
         """
+        allowed_values = ["amcl-kinect", "amcl-lidar", "mprt-kinect", "mprt-lidar", "aruco-camera"]  # noqa: E501
+        if not set(config).issubset(set(allowed_values)):
+            raise ValueError(
+                "Invalid values for `config` [{0}], must be a subset of [{1}]"  # noqa: E501
+                .format(", ".join(map(str, set(config) - set(allowed_values))),  # noqa: E501
+                        ", ".join(map(str, allowed_values)))
+            )
 
         self._config = config
 
@@ -217,6 +224,13 @@ class Parameters1(object):
         :param sensors: The sensors of this Parameters1.  # noqa: E501
         :type: list[str]
         """
+        allowed_values = ["kinect", "lidar", "camera", "headlamp"]  # noqa: E501
+        if not set(sensors).issubset(set(allowed_values)):
+            raise ValueError(
+                "Invalid values for `sensors` [{0}], must be a subset of [{1}]"  # noqa: E501
+                .format(", ".join(map(str, set(sensors) - set(allowed_values))),  # noqa: E501
+                        ", ".join(map(str, allowed_values)))
+            )
 
         self._sensors = sensors
 

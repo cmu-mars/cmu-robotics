@@ -106,10 +106,14 @@ if __name__ == '__main__':
 
         ## check dynamic invariants on ready message
 
-        ## once it's good, write it to file
+        ## once it's good, write it to ~/ready
 
+        launch_file = ""
         if(resp.start_configuration() == "AMCL_KINECT"):
             ## popen roslauch cp3_base cp3-amcl-kinect.launch
+
+            ## launch files in
+            ## cp3_base/cp3_base/launch
 
     except Exception as e:
       logger.debug("Failed to connect with th")
