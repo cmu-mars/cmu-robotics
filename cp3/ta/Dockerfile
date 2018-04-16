@@ -43,7 +43,9 @@ COPY requirements.txt /usr/src/app/
 
 RUN sudo pip3 install --no-cache-dir -r requirements.txt
 
-RUN sudo pip3 install catkin_pkg rospkg numpy
+RUN sudo pip3 install catkin_pkg rospkg numpy psutil defusedxml flask-script
+
+
 
 COPY . /usr/src/app
 
