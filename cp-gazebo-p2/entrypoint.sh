@@ -1,6 +1,6 @@
 #!/bin/bash
 source "/opt/ros/${ROS_DISTRO}/setup.bash"
-source devel/setup.bash
+source ~/catkin_ws/devel/setup.bash
 
 sudo ln -sf /dev/null /dev/raw1394
 
