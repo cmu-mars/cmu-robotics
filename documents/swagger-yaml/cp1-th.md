@@ -42,8 +42,6 @@ turtlebot has reached the goal and that the mission has been completed.  note th
 |**outcome**  <br>*required*|indicates the reason why the test is over<br><br>  * at-goal - the turtlebot has reached the goal and<br>              completed the mission objectives<br><br>  * out-of-battery - the battery on the turtlebot has run<br>                     out, and cannot be charged, so the<br>                     turtlebot cannot make progress<br><br>  * other-outcome - the test is over for any other<br>                    non-error reason|enum (at-goal, out-of-battery, other-outcome)|
 |**sim-time**  <br>*required*|the final internal simulation time  <br>**Minimum value** : `0`|integer|
 |**tasks-finished**  <br>*required*|the names of the waypoints that the turtlebot visited in the order that it visited them as well as the x,y coordinates of the robot and simulation time that it arrived there|< [tasks-finished](#done-post-tasks-finished) > array|
-|**v**  <br>*required*|final velocity of the turtlebot|number (float)|
-|**w**  <br>*required*|final yaw of the turtlebot|number (float)|
 |**x**  <br>*required*|final x-coordinate of the turtlebot|number (float)|
 |**y**  <br>*required*|final y-coordinate of the turtlebot|number (float)|
 
@@ -114,8 +112,7 @@ indicate to the TH that the TA is ready to recieve configuration data to continu
 
 |Name|Description|Schema|
 |---|---|---|
-|**charge-budget**  <br>*optional*|if in level c, the maximum number of queries against the target recharging function during learning  <br>**Minimum value** : `2`|integer|
-|**discharge-budget**  <br>*optional*|if in level c, the maximum number of queries against the target function during learning  <br>**Minimum value** : `2`|integer|
+|**discharge-budget**  <br>*optional*|if in level c, the maximum number of queries against the target function during learning  <br>**Minimum value** : `2`  <br>**Maximum value** : `1048576`|integer|
 |**level**  <br>*required*|the level at which the DAS should operate for this test.<br>as given in the CP definition,<br><br>  * a - no perturbations, no adaptation, no power model<br><br>  * b - perturbations, but no adaptation, no power model<br><br>  * c - perturbations and adaptation, with charge and<br>        discharge power models provided and learned|enum (a, b, c)|
 |**power-model**  <br>*optional*|if in level c, the name of the power model from the test data to use for this test. each power model includes at least a function describing how the battery charges, discharges, and a maximum possible charge.  <br>**Minimum value** : `0`  <br>**Maximum value** : `99`|integer|
 |**start-loc**  <br>*required*|the name of the start map waypoint. start-loc must not be the same as the first item of `target-locs`.|string|
@@ -141,11 +138,8 @@ used by the TA to periodically indicate its current state to the TH
 |Name|Description|Schema|
 |---|---|---|
 |**charge**  <br>*required*|current turtlebot battery charge in mWh. cannot be more than the maximum specified in the response from `/ready`.  <br>**Minimum value** : `0`|integer|
-|**predicted-arrival**  <br>*required*|current best prediction of arrival time, in simulation time  <br>**Minimum value** : `0`|integer|
 |**sim-time**  <br>*required*|the internal simulation time at the time that the status message was sent  <br>**Minimum value** : `0`|integer|
 |**status**  <br>*required*|one of the possible status codes<br><br> * learning-started - the learning phase has started<br><br> * learning-done - the learning phase has been<br><br> * adapt-started - the SUT has started adapting and<br>                   cannot be perturbed<br><br> * adapt-done - the SUT has finished adapting<br><br> * charging-started - the turtlebot is currently charging<br><br> * charging-done - the turtlebot has stopped charging<br><br> * at-waypoint - the turtlebot has arrived at one of the<br>   waypoints in the list received from /ready|enum (learning-started, learning-done, adapt-started, adapt-done, charging-started, charging-done, at-waypoint)|
-|**v**  <br>*required*|current velocity of the turtlebot|number (float)|
-|**w**  <br>*required*|current yaw of the turtlebot|number (float)|
 |**x**  <br>*required*|current x-coordinate of the turtlebot|number (float)|
 |**y**  <br>*required*|current y-coordinate of the turtlebot|number (float)|
 

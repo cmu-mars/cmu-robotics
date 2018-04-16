@@ -32,18 +32,40 @@ RUN sudo apt-get update && \
 # install Kobuki (does this really belong here?)
 RUN sudo apt-get install -y ros-kinetic-kobuki ros-kinetic-kobuki-core
 
-# install the maps
+# install the maps -- BRS Does this need to be here? CP3 uses different maps
 ENV CP_MAPS_REV 80afb8f
-RUN git clone https://github.com/cmu-mars/cp-maps-p15 src/maps && \
+RUN git clone https://github.com/cmu-mars/cp-maps src/maps && \
     cd src/maps && \
     git reset --hard "${CP_MAPS_REV}"
-    
+
 # install shared "models" module
 ENV MARS_MODELS_REVISION 5dd3542
 RUN git clone https://github.com/cmu-mars/cp-models-p15 \
               src/cp-models-p15 && \
     cd src/cp-models-p15 && \
     git checkout "${MARS_MODELS_REVISION}"
+
+# install the instruction graph interpreter
+RUN git clone https://github.com/cmu-mars/notifications-p15 \
+      --depth 1 \
+      src/notifications
+
+
+ENV IG_INTERPRETER_REV fe5da82
+RUN git clone https://github.com/cmu-mars/ig-action-server-p15.git   src/ig-interpreter  &&\
+         cd src/ig-interpreter  &&\
+         git checkout "${IG_INTERPRETER_REV}"
+
+
+# Install Python Libraries etc
+RUN sudo apt-get install -y python-flask python-ply
+
+ENV TF_REV  4ee2cff  
+RUN git clone https://github.com/ros/geometry.git src/geometry && \
+    cd src/geometry && \
+    git checkout "${TF_REV}"
+   
+
 
 # add the entrypoint script
 ADD entrypoint.sh entrypoint.sh

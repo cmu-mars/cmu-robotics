@@ -107,7 +107,7 @@ cause one of the software nodes to fail
 
 |Name|Description|Schema|
 |---|---|---|
-|**id**  <br>*required*|cause the named node to fail|enum (movebase, amcl, mrpt, cb-base)|
+|**id**  <br>*required*|cause the named node to fail|enum (amcl, mrpt, aruco)|
 
 
 #### Responses
@@ -151,7 +151,7 @@ change the state of one of the sensors on the robot
 
 |Name|Description|Schema|
 |---|---|---|
-|**id**  <br>*required*|which sensor of SENSORSET to set|enum (kinect-ir, lidar, kinect-all)|
+|**id**  <br>*required*|which sensor of SENSORSET to set|enum (kinect, lidar, camera)|
 |**state**  <br>*required*|upon response, the named sensor will be on if `true` and `off` otherwise|boolean|
 
 

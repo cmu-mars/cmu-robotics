@@ -1,7 +1,7 @@
 swagger: '2.0'
 info:
   version: '0.1'
-  title: 'cmu mars brass ta: phase 2, cp2'
+  title: 'CMU MARS BRASS TA: Phase II, CP2'
 schemes:
   - http
 host: brass-ta
@@ -53,65 +53,36 @@ definitions:
         description: >-
           The location that marks the end of this source range.
 
+  PerturbationKind:
+    type: string
+    enum:
+      - delete-void-function-call
+      - flip-arithmetic-operator
+      - flip-boolean-operator
+      - flip-relational-operator
+      - undo-transformation
+      - delete-conditional-control-flow
+      - flip-signedness
+    description: >-
+      A description of the kind of the perturbation.
+
   Perturbation:
     type: object
-    discriminator: kind
     required:
       - kind
+      - at
     properties:
       kind:
+        $ref: '#/definitions/PerturbationKind'
+      at:
+        $ref: '#/definitions/SourceRange'
+        description: >-
+          The range of code that is deleted or replaced by the perturbation.
+      replacement:
         type: string
         description: >-
-          Used to discriminate between different kinds of perturbation.
-
-  DeleteStatementPerturbation:
-    type: object
-    allOf:
-      - $ref: '#/definitions/Perturbation'
-      - required:
-          - kind
-          - locationRange
-      - properties:
-          locationRange:
-            $ref: '#/definitions/SourceRange'
-            description: >-
-              The range of code that is deleted by the perturbation.
-
-  ReplaceStatementPerturbation:
-    type: object
-    allOf:
-      - $ref: '#/definitions/Perturbation'
-      - required:
-          - kind
-          - locationRange
-      - properties:
-          locationRange:
-            $ref: '#/definitions/SourceRange'
-            description: >-
-              The range of code that is replaced by the perturbation.
-          statement:
-            type: string
-            description:
-              The source code for the replacement statement.
-
-  InsertStatementPerturbation:
-    type: object
-    allOf:
-      - $ref: '#/definitions/Perturbation'
-      - required:
-          - kind
-          - location
-          - statement
-      - properties:
-          location:
-            $ref: '#/definitions/SourceRange'
-            description: >-
-              The location immediately before the location at which the
-              statement will be inserted.
-          statement:
-            type: string
-            description:
-              The source code for the inserted statement.
+          The body of the source code that should replaced the source code
+          given by the location range associated with this perturbation.
 
 paths:
   /perturbations:
@@ -136,14 +107,7 @@ paths:
                 description: >-
                   The file at which the perturbation should be injected.
               shape:
-                type: string
-                enum:
-                  - DeleteStatement
-                  - ReplaceStatement
-                  - InsertStatement
-                description: >-
-                  The shape of the fault (e.g., incorrect conditional,
-                  missing control flow).
+                $ref: '#/definitions/PerturbationKind'
               line:
                 type: integer
                 description: >-
@@ -196,10 +160,12 @@ paths:
   /adapt:
     post:
       description: Used to trigger the code adaptation process.
+      consumes:
+        - application/json
       parameters:
         - in: body
-          required: true
           name: Parameters
+          required: true
           schema:
             type: object
             properties:
@@ -207,14 +173,12 @@ paths:
                 type: number
                 format: float
                 minimum: 1.0
-                required: false
                 description: >-
                   An (optional) time limit for the adaptation process,
                   specified in minutes.
               attempt-limit:
                 type: integer
                 minimum: 1
-                required: false
                 description: >-
                   An (optional) limit on the number of adaptations that may be
                   attempted.

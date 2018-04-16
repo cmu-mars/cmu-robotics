@@ -120,12 +120,8 @@ if the test is running, then place an instance of the obstacle on the map
 
 |Name|Description|Schema|
 |---|---|---|
-|**botright-x**  <br>*required*|the x-coordinate of the bottom right corner of the bounding box of the placed obstacle|number (float)|
-|**botright-y**  <br>*required*|the y-coordinate of the bottom right corner of the bounding box of the placed obstacle|number (float)|
 |**obstacleid**  <br>*required*|a unique identifier for this particular placed obstacle, so that it can be removed in the future|string|
 |**sim-time**  <br>*required*|the simulation time when the obstacle was placed|integer|
-|**topleft-x**  <br>*required*|the x-coordinate of the top left corner of the bounding box of the placed obstacle|number (float)|
-|**topleft-y**  <br>*required*|the y-coordinate of the top left corner of the bounding box of the placed obstacle|number (float)|
 
 <a name="perturb-place-obstacle-post-response-400"></a>
 **Response 400**
