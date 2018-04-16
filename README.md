@@ -233,8 +233,8 @@ TH_PORT=8081 TA_PORT=8080 docker-compose up
 The compose file currently has the dependency to the TH commented out,
 per https://github.mit.edu/brass/mitll-harness/issues/19
 
-The easiest way o see the difference in APIs since the RR1 build is to
-use `git diff` with the appropriate commit SHA:
+The easiest way to see the difference in APIs since the RR1 build is
+to use `git diff` with the appropriate commit SHA:
 
 ```
 iev@iev-mbp swagger-yaml % git diff -w 7b2713e450425ead250d804a00012c599ad5da61 cp3-ta.yaml
