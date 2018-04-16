@@ -224,7 +224,7 @@ docker build -t cmu-mars/gazebo .
 # in a clone of the cp3_base repository, develop branch
 docker build -t cmu-mars/cp3_base .
 # back in cmu-mars clone
-cd ../cp3-ta
+cd ../cp3/ta
 docker build -t cmu-mars/cp3 .
 TH_PORT=8081 TA_PORT=8080 docker-compose up
 
