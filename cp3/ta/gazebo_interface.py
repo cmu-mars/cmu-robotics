@@ -73,8 +73,8 @@ class GazeboInterface:
         self.set_headlamp_srv = rospy.ServiceProxy("/mobile_base/headlamp", ToggleHeadlamp)
 
 
-        self.set_charging_srv = rospy.ServiceProxy("/mobile_base/set_charging", SetCharging)
-        self.set_voltage_srv = rospy.ServiceProxy("/mobile_base/set_voltage", SetVoltage)
+        self.set_charging_srv = rospy.ServiceProxy("/energy_monitor_client/mobile_base/set_charging", SetCharging)
+        self.set_charge_srv = rospy.ServiceProxy("/energy_monitor_client/mobile_base/set_charge", SetCharge)
 
         self.amcl = rospy.Publisher('initialpose', PoseWithCovarianceStamped, queue_size=10, latch=True)
 
