@@ -1,5 +1,10 @@
 FROM cmu-mars/cp3_base
 
+RUN . ~/catkin_ws/devel/setup.sh
+
+RUN echo ". /opt/ros/kinetic/setup.bash" >> ~/.bashrc
+RUN echo ". ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
+
 RUN sudo apt-get install ca-certificates
 ENV GPG_KEY=0D96DF4D4110E5C43FBFB17F2D347EA6AA65421D
 ENV PYTHON_VERSION=3.6.3
@@ -47,7 +52,5 @@ RUN sudo chown -R mars /usr/src/app
 ENV PYTHONUNBUFFERED 0
 
 EXPOSE 8080
-
-CMD source ~/catkin_ws/install/setup.bash
 
 CMD ["python3", "-m", "swagger_server"]
