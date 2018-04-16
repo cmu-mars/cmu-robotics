@@ -46,19 +46,19 @@ Inside each CP directory, you'll find:
 
 * a simple script called `smoke.sh` to exercise each endpoint on each TA
   with some happy-path parameters, assuming it's running on localhost.
-  
+
 * a `docker-compose.yml` that specifies how to compose a docker container as
   a (potential) combination of several docker containers, including the th
   from Lincoln Labs
-  
+
 * a `docker-compose-no-th.yml` that specifies a how to compose a docker container
   like the one above, but without the TH from Lincoln Labs
 
 An example of launching the system locally is as follows. Note that you can
-parameterize the location of the TH and the TA by passing URI definitions to 
+parameterize the location of the TH and the TA by passing URI definitions to
 the docker compose command. In one terminal, in the `ta` directory,
 
-``` 
+```
 iev@bruce ta % TH_PORT=8081 TA_PORT=8080 docker-compose up
 Creating network "ta_default" with the default driver
 Creating roscore ... <Note that the actual containers composed will differ between CPs>
@@ -164,11 +164,11 @@ iev@bruce cp2 %
 
 To compose withouth a th (although, you still need to have a TH somewhere), you should do the following:
 
-``` 
+```
 iev@bruce ta % TH_HOST=<some host> TH_PORT=8081 TA_PORT=8080 docker-compose up
 ```
 As part of the composition, each docker instance will contain a docker container
-`cp<N>_ta` where `<N>` is the number of the challenge problem. You may log into 
+`cp<N>_ta` where `<N>` is the number of the challenge problem. You may log into
 this container, in particular to access the log file that contains the details of
 each request made to the TA, as information about call attempts to the TH. For example,
 for challenge problem 3:
@@ -208,3 +208,63 @@ netsh interface portproxy add v4tov4 listenaddress=127.0.0.1 listenport=8080 con
 ```
 
 Where `listenport` and `connectport` are the `TA_PORT` specified in docker compose, and `connectaddress` is the IP of the host machine.
+
+Phase II RR2 (Early Integration) Instructions
+----------------
+
+As of 16 April, CP3 is the only CP that's been integrated with its
+TA. The build process is as follows:
+
+```
+# in a clone of this repository
+cd mars-main-p2
+docker build -t cmu-mars/base .
+cd ../cp-gazebo-p2
+docker build -t cmu-mars/gazebo .
+# in a clone of the cp3_base repository, develop branch
+docker build -t cmu-mars/cp3_base .
+# back in cmu-mars clone
+cd ../cp3-ta
+docker build -t cmu-mars/cp3 .
+TH_PORT=8081 TA_PORT=8080 docker-compose up
+
+```
+
+The compose file currently has the dependency to the TH commented out,
+per https://github.mit.edu/brass/mitll-harness/issues/19
+
+The easiest way o see the difference in APIs since the RR1 build is to
+use `git diff` with the appropriate commit SHA:
+
+```
+iev@iev-mbp swagger-yaml % git diff -w 7b2713e450425ead250d804a00012c599ad5da61 cp3-ta.yaml
+diff --git a/documents/swagger-yaml/cp3-ta.yaml b/documents/swagger-yaml/cp3-ta.yaml
+index fc1da1e..52b125c 100644
+--- a/documents/swagger-yaml/cp3-ta.yaml
++++ b/documents/swagger-yaml/cp3-ta.yaml
+@@ -87,9 +87,9 @@ paths:
+               id:
+                 type: string
+                 enum:
+-                  - kinect-ir
++                  - kinect
+                   - lidar
+-                  - kinect-all
++                  - camera
+                 description: >-
+                   which sensor of SENSORSET to set
+               state:
+@@ -138,10 +138,9 @@ paths:
+               id:
+                 type: string
+                 enum:
+-                  - movebase
+                   - amcl
+                   - mrpt
+-                  - cb-base
++                  - aruco
+                 description: >-
+                   cause the named node to fail
+       responses:
+iev@iev-mbp swagger-yaml %
+```
