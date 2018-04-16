@@ -15,7 +15,7 @@ from six import iteritems
 from ..util import deserialize_date, deserialize_datetime
 
 import rospy
-import ..config
+import swagger_server.config
 
 def observe_get():
     """
