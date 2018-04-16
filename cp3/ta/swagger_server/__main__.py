@@ -49,6 +49,7 @@ if __name__ == '__main__':
     logger.setLevel(logging.DEBUG)
     handler = logging.FileHandler('access.log')
     logger.addHandler(handler)
+    config.logger = logger
 
     ## log every HTTP request we see
     def log_request_info():
@@ -80,44 +81,35 @@ if __name__ == '__main__':
         logger.debug(traceback.format_exc())
         raise e
 
+    ## build CP object without a gazebo instance, need to set later
+    cp = CP3(None)
+    config.cp = cp
+
     ## check dynamic invariants on ready message
     if ready_resp.start_loc() == ready_resp.target_loc():
         fail_hard("malformed response from ready: start_loc is target_loc")
 
-    ## todo: add checking here to make sure that start_loc and
-    ## target_loc are indeed waypoint names once i know what the
-    ## waypoint names are. can't (don't want to) use
-    ## waypoint_to_coords from CP3 object beloq because i don't want
-    ## to build gazebo interface just to check this. could just read
-    ## the map json.
+    if not (cp.map_server.is_waypoint(ready_resp.target_loc()) and
+            cp.map_server.is_waypoint(ready_resp.target_loc())):
+        fail_hard("response from /ready includes invalid waypoint names")
+
+    cp.start = ready_resp.target_loc()
+    cp.target = ready_resp.target_loc()
 
     ## once the response is checked, write it to ~/ready
     logger.debug("writing checked /ready message to ~/ready")
     fo = open('~/ready', 'w')
-    fo.write('%s', ready_resp) #todo: this may or may not be JSON;
-                               #check once we can run it
+    fo.write('%s', ready_resp) #todo: this may or may not be JSON; check once we can run it
     fo.close()
+
+    launch_file = ready_resp.start_configuration()
 
     ## todo: this is possibly unnecesscary if we renamed the aruco
     ## file to match the start-configuration string and then just
     ## trust the static checking that this response will be well
     ## formed. the files exist in cp3_base/cp3_base/launch
-    launch_file = ""
-    if(ready_resp.start_configuration() == "amcl-kinect"):
-        launch_file = "amcl-kinect"
-    elif(ready_resp.start_configuration() == "amcl-lidar"):
-        launch_file = "amcl-lidar"
-    elif(ready_resp.start_configuration() == "mprt-kinect"):
-        launch_file = "mprt-kinect"
-    elif(ready_resp.start_configuration() == "mprt-lidar"):
-        launch_file = "mprt-lidar"
-    elif(ready_resp.start_configuration() == "aruco-camera"):
+    if(ready_resp.start_configuration() == "aruco-camera"):
         launch_file = "aruco-front"
-    else:
-        ## todo: this should never happen, given that the static
-        ## checks from swagger work as intended. might be able to get
-        ## away without it entirely if it's actually dead code.
-        fail_hard("ready error: /ready response contained an invalid start_configuration: %s" % ready_resp.start_configuration())
 
     logger.debug("launching cp3-%s.launch" % launch_file)
     rl_child = subprocess.Popen(["roslaunch", "cp3_base", "cp3-" + launch_file + ".launch"],
@@ -144,14 +136,12 @@ if __name__ == '__main__':
 
     print ("Starting up Gazebo interface")
     try:
-        gazebo = GazeboInterface(0,0) ## TODO: unsure what these args mean but they appear in cli.py
-        cp = CP3(gazebo)
+        gazebo = GazeboInterface(0,0) ## todo: unsure what these args mean but they appear in cli.py
         ## todo: CP3.convert_to_class(cp) ## appears a lot in cli.py but i don't know what it means
+        ## todo: this could be totally busted
+        cp.gazebo = gazebo
         start_coords = cp.map_server.waypoint_to_coords(ready_resp.start_loc())
         gazebo.set_turtlebot_position(start_coords['x'], start_coords['y'], 0)
-
-        config.gazebo = gazebo
-        config.cp = cp
     except Exception as e:
         fail_hard("failed to connect to gazebo: %s" % e)
 

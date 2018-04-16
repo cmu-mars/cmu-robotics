@@ -24,7 +24,10 @@ def observe_get():
 
     :rtype: InlineResponse2003
     """
-    x , y = config.gazebo.get_turtlebot_state()
+    x , y = config.cp.gazebo.get_turtlebot_state()
+
+    if x == None or y == None:
+        return {} , 400 ## todo: api doesn't specify any payload here
 
     ret = InlineResponse2003()
     ret.x = x
@@ -33,7 +36,6 @@ def observe_get():
     ret.sim_time = rospy.Time.now().secs
     ret.lights = [ "l1" ] ## todo: https://github.mit.edu/brass/cmu-robotics/issues/116
     return ret
-
 
 def perturb_light_post(Parameters):
     """
@@ -48,13 +50,14 @@ def perturb_light_post(Parameters):
         Parameters = Parameters0.from_dict(connexion.request.get_json())
 
     ## todo: check if the lights are in LIGHTSET
-    ## todo: set the light (doesn't appear to be something in cp3.py?)
 
-    ret = InlineResponse200()
-    ret.sim_time = rospy.Time.now().secs
-
-    return ret
-
+    if config.cp.gazebo.enable_light(Parameters.id, Parameters.state):
+        ret = InlineResponse200()
+        ret.sim_time = rospy.Time.now().secs
+        return ret
+    else:
+        ret = InlineResponse4001(rospy.Time.now().secs, "light setting failed on: %s" % Parameters)
+        return ret , 400
 
 def perturb_nodefail_post(Parameters):
     """
@@ -92,11 +95,31 @@ def perturb_sensor_post(Parameters):
     if connexion.request.is_json:
         Parameters = Parameters1.from_dict(connexion.request.get_json())
 
-    ret = InlineResponse2001()
-    ret.sim_time = rospy.Time.now().secs
+    res = None
+    if Parameters.id == "kinect" and Parameters.state:
+        res = config.cp.gazebo.set_kinect_mode('on')
+    elif Parameters.id == "kinect" and not Parameters.state:
+        res = config.cp.gazebo.set_kinect_mode('off')
 
-    return ret
+    elif Parameters.id == "lidar" and Parameters.state:
+        res = config.cp.gazebo.set_lidar_mode('on')
+    elif Parameters.id == "lidar" and not Parameters.state:
+        res = config.cp.gazebo.set_lidar_mode('off')
 
+    elif Parameters.id == "camera" and Parameters.state:
+        res = config.cp.gazebo.set_kinect_mode('image-only')
+    elif Parameters.id == "camera" and not Parameters.state:
+        res = config.cp.gazebo.set_kinect_mode('off')
+
+    if res:
+        ret = InlineResponse2001()
+        ret.sim_time = rospy.Time.now().secs
+        return ret
+    else:
+        ret = InlineResponse4001()
+        ret.sim_time = rospy.Time.now.secs()
+        ret.message = ("failed to set sensor state: %s" % Parameters)
+        return ret , 400
 
 def start_post():
     """
@@ -105,5 +128,22 @@ def start_post():
 
     :rtype: None
     """
+    if not config.started:
+        def active_cb():
+            """ callback for when the bot is made active """
+            config.logger.debug("received notification that goal is active")
 
-    return {} , 200
+        def done_cb(terminal, result):
+            """ callback for when the bot is at the target """
+            if 'successfully' in result.sequence:
+                config.logger.debug("received notification that the goal has been completed!")
+                ## todo: this is one thing that should trigger posting
+                ## to /done with a bunch of stuff i don't have yet
+
+        result , msg = config.cp.do_instructions(cp.start, cp.target,
+                                                 False, active_cb, done_cb)
+        config.started = True
+        return {} , 200
+    else:
+        ret = InlineResponse400("/start called more than once")
+        return ret , 400
