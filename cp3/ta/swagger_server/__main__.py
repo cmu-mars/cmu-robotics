@@ -27,7 +27,7 @@ from swagger_client.models.parameters_1 import Parameters1
 from swagger_client.models.parameters_2 import Parameters2
 
 from cp3 import CP3
-from flask.ext.script import Manager
+from flask_script import Manager
 from swagger_server import config
 
 if __name__ == '__main__':
