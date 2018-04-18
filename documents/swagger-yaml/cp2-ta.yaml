@@ -163,6 +163,12 @@ paths:
           schema:
             type: object
             $ref: '#/definitions/Error'
+        '409':
+          description: >-
+            System is not in a state where it can be perturbed.
+          schema:
+            type: object
+            $ref: '#/definitions/Error'
 
   /lines:
     get:
