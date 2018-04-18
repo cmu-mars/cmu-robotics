@@ -251,37 +251,25 @@ paths:
   /perturb:
     post:
       description: >-
-        Applies a set of perturbations, given as a list of JSON objects,
-        to the SUT. This endpoint should be used to prepare a test scenario
-        for evaluation.
+        Applies a given perturbation to the SUT. The resulting perturbed system
+        will become Baseline B, provided that the system builds and fails at
+        least one test.
       parameters:
         - in: body
           required: true
           name: Parameters
           schema:
             type: object
-            required:
-              - perturbations
-            properties:
-              perturbations:
-                type: array
-                description: A non-empty list of perturbations to apply to the
-                  codebase
-                items:
-                  $ref: '#/definitions/Perturbation'
+            $ref: '#/definitions/Perturbation'
+            description: The perturbation to apply to the SUT.
       responses:
-        '200':
-          description: Applied the perturbations to the the system successfully
+        '204':
+          description: OK.
         '400':
-          description: Encountered an error while applying the perturbations to the system
+          description: Failed to perturb the SUT.
           schema:
             type: object
-            properties:
-              message:
-                type: string
-                description: >-
-                  Human-readable information about the error, if any can be
-                  provided
+            $ref: '#/definitions/Error'
 
   /adapt:
     post:
