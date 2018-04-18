@@ -101,15 +101,8 @@ Used to indicate that the SUT is ready and that testing may begin.
 
 |HTTP Code|Description|Schema|
 |---|---|---|
-|**200**|the TH acknowledges the ready message|[Response 200](#ready-post-response-200)|
-|**400**|the TH has itself encontered an error processing the ready message|No Content|
-
-<a name="ready-post-response-200"></a>
-**Response 200**
-
-|Name|Description|Schema|
-|---|---|---|
-|**docker-ip**  <br>*required*|the IP address to connect to in order to allocate new worker containers|string (ip-address)|
+|**204**|the TH acknowledges the ready message|No Content|
+|**400**|the TH has itself encountered an error processing the ready message|No Content|
 
 
 <a name="status-post"></a>
@@ -172,20 +165,9 @@ Used to inform the test harness that a new adaptation has been added to the Pare
 |Name|Description|Schema|
 |---|---|---|
 |**crashed**  <br>*optional*|A flag indicating whether or not the system crashed during execution of the test.|boolean|
-|**qos**  <br>*optional*|A summary of the quality of service that was observed during the execution of the test.|[TestQoS](#testqos)|
 |**test-id**  <br>*required*|A unique identifier for the test to which this outcome belongs.|string|
 |**time-taken**  <br>*required*|The number of seconds taken to complete the test.  <br>**Minimum value** : `0`|number (float)|
 |**timed-out**  <br>*required*|A flag indicating whether or not the test timed out during execution.|boolean|
-
-
-<a name="testqos"></a>
-### TestQoS
-
-|Name|Description|Schema|
-|---|---|---|
-|**collisions**  <br>*required*|A measure of service quality with respect to the number of collisions.|object|
-|**duration**  <br>*required*|A measure of service quality with respect to time taken to complete the test.|object|
-|**proximity**  <br>*required*|A measure of service quality with respect to proximity to the goal.|object|
 
 
 
