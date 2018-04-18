@@ -186,8 +186,8 @@ paths:
 
   /files:
     get:
-      description: Returns a list of all the source files in which
-        perturbations may be injected.
+      description: Returns a list of all the source files that may be
+        subject to perturbation.
       responses:
         '200':
           description: OK.
@@ -197,7 +197,7 @@ paths:
               type: string
               example: foo.cpp
             description: >-
-              A list of the mutable files within the project.
+              A list of the mutable files.
 
   /adapt:
     post:
