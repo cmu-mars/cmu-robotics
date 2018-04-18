@@ -145,7 +145,7 @@ paths:
                   injected.
       responses:
         '200':
-          description: Successfully computed the list of possible perturbations
+          description: OK.
           schema:
             type: object
             properties:
@@ -206,7 +206,7 @@ paths:
 
       responses:
         '200':
-          description: Successfully observed the state of the SUT.
+          description: OK.
           schema:
             type: object
             required:
