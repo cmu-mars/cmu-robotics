@@ -248,6 +248,41 @@ paths:
                   have been encountered that belong to the
                   pareto set (i.e., the set of non-dominated adaptations).
 
+  /perturb:
+    post:
+      description: >-
+        Applies a set of perturbations, given as a list of JSON objects,
+        to the SUT. This endpoint should be used to prepare a test scenario
+        for evaluation.
+      parameters:
+        - in: body
+          required: true
+          name: Parameters
+          schema:
+            type: object
+            required:
+              - perturbations
+            properties:
+              perturbations:
+                type: array
+                description: A non-empty list of perturbations to apply to the
+                  codebase
+                items:
+                  $ref: '#/definitions/Perturbation'
+      responses:
+        '200':
+          description: Applied the perturbations to the the system successfully
+        '400':
+          description: Encountered an error while applying the perturbations to the system
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: >-
+                  Human-readable information about the error, if any can be
+                  provided
+
   /adapt:
     post:
       description: Used to trigger the code adaptation process.
@@ -278,40 +313,6 @@ paths:
           description: Successfully triggered code adaptation
         '400':
           description: Encountered an error while triggering code adaptation
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-                description: >-
-                  Human-readable information about the error, if any can be
-                  provided
-  /perturb:
-    post:
-      description: >-
-        Applies a set of perturbations, given as a list of JSON objects,
-        to the SUT. This endpoint should be used to prepare a test scenario
-        for evaluation.
-      parameters:
-        - in: body
-          required: true
-          name: Parameters
-          schema:
-            type: object
-            required:
-              - perturbations
-            properties:
-              perturbations:
-                type: array
-                description: A non-empty list of perturbations to apply to the
-                  codebase
-                items:
-                  $ref: '#/definitions/Perturbation'
-      responses:
-        '200':
-          description: Applied the perturbations to the the system successfully
-        '400':
-          description: Encountered an error while applying the perturbations to the system
           schema:
             type: object
             properties:
