@@ -15,8 +15,12 @@ sequenceDiagram
 
 	TH ->>+ TA: /perturbations
 	TA -->>- TH: all possible perturbations
-	TH ->>+ TA: /perturb
-	TA -->>- TH: ack. perturbed
+
+	Note right of TA: some perturbations are neutral
+	loop until get 204 reply
+		TH ->>+ TA: /perturb
+		TA -->>- TH: ack. perturbed
+	end
 
 	opt in adaptive case
 	     TH ->> TA: /adapt
@@ -24,13 +28,6 @@ sequenceDiagram
 	     	  TA ->>+ TH: /status
 		  TH -->>- TA: ack. status
 	     end
-	     TA ->> TH: /adapted
-	end
-
-	TH ->>+ TA: /validate
-	TA -->>- TH: ack. starting to validate
-	loop periodical
-	     TA ->> TH: /status
 	end
 
         Note right of TA: won't send until validation is over and all logs cleaned up

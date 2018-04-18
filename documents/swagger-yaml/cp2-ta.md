@@ -264,20 +264,9 @@ A description of the kind of the perturbation.
 |Name|Description|Schema|
 |---|---|---|
 |**crashed**  <br>*optional*|A flag indicating whether or not the system crashed during execution of the test.|boolean|
-|**qos**  <br>*optional*|A summary of the quality of service that was observed during the execution of the test.|[TestQoS](#testqos)|
 |**test-id**  <br>*required*|A unique identifier for the test to which this outcome belongs.|string|
 |**time-taken**  <br>*required*|The number of seconds taken to complete the test.  <br>**Minimum value** : `0`|number (float)|
 |**timed-out**  <br>*required*|A flag indicating whether or not the test timed out during execution.|boolean|
-
-
-<a name="testqos"></a>
-### TestQoS
-
-|Name|Description|Schema|
-|---|---|---|
-|**collisions**  <br>*required*|A measure of service quality with respect to the number of collisions.|object|
-|**duration**  <br>*required*|A measure of service quality with respect to time taken to complete the test.|object|
-|**proximity**  <br>*required*|A measure of service quality with respect to proximity to the goal.|object|
 
 
 
