@@ -163,12 +163,6 @@ paths:
           schema:
             type: object
             $ref: '#/definitions/Error'
-        '409':
-          description: >-
-            System is not in a state where it can be perturbed.
-          schema:
-            type: object
-            $ref: '#/definitions/Error'
 
   /lines:
     get:
@@ -267,6 +261,12 @@ paths:
           description: OK.
         '400':
           description: Failed to perturb the SUT.
+          schema:
+            type: object
+            $ref: '#/definitions/Error'
+        '409':
+          description: >-
+            System is not in a state where it can be perturbed.
           schema:
             type: object
             $ref: '#/definitions/Error'
