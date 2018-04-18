@@ -117,26 +117,17 @@ paths:
           description: the TH acknowledges the error
         '400':
           description: the TH has itself encountered an error processing the error
+
   /ready:
     post:
       description: >-
         Used to indicate that the SUT is ready and that testing may begin.
       responses:
-        '200':
+        '204':
           description: the TH acknowledges the ready message
-          schema:
-            type: object
-            required:
-              - docker-ip
-            properties:
-              docker-ip:
-                type: string
-                format: ip-address
-                description: >-
-                  the IP address to connect to in order to allocate new
-                  worker containers
         '400':
-          description: the TH has itself encontered an error processing the ready message
+          description: the TH has itself encountered an error processing the ready message
+
   /status:
     post:
       description: >-
