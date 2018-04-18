@@ -12,16 +12,16 @@
 #
 version: '2'
 services:
-  # cp3_th:
-  #   image: docker.darpa-brass.com/ll/cmur-harness
-  #   container_name: cp3_th
-  #   hostname: cp3_th
-  #   environment:
-  #     - "TA_PORT=${TA_PORT}"
-  #     - "TH_PORT=${TH_PORT}"
-  #   ports:
-  #     - ${TH_PORT}:${TH_PORT}
-  #   command: --cp CP3 --thPort ${TH_PORT} --taHost cp3_ta --taPort 5000
+  cp3_th:
+    image: docker.darpa-brass.com/ll/cmur-harness
+    container_name: cp3_th
+    hostname: cp3_th
+    environment:
+      - "TA_PORT=${TA_PORT}"
+      - "TH_PORT=${TH_PORT}"
+    ports:
+      - ${TH_PORT}:${TH_PORT}
+    command: --cp CP3 --thPort ${TH_PORT} --taHost cp3_ta --taPort 5000
 
   cp3_ta:
     image: cmu-mars/cp3
@@ -33,8 +33,8 @@ services:
       - "TA_PORT=${TA_PORT}"
     ports:
       - ${TA_PORT}:5000
-    # depends_on:
-    #   - cp3_th
+    depends_on:
+      - cp3_th
     expose:
       - 5000
     command: bash -c "cd /usr/src/app && python3 -u -m swagger_server http://cp3_th:${TH_PORT}"
