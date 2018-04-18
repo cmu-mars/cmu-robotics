@@ -144,7 +144,7 @@ paths:
               - pareto-set
             properties:
               adaptation:
-                type: Object
+                type: object
                 $ref: '#/definitions/CandidateAdaptation'
                 description: The candidate adaptation that was added to the
                   Pareto set.
