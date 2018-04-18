@@ -273,7 +273,7 @@ paths:
 
   /adapt:
     post:
-      description: Used to trigger the code adaptation process.
+      description: Triggers the code adaptation process.
       consumes:
         - application/json
       parameters:
@@ -297,15 +297,15 @@ paths:
                   An (optional) limit on the number of adaptations that may be
                   attempted.
       responses:
-        '200':
-          description: Successfully triggered code adaptation
+        '204':
+          description: OK.
         '400':
-          description: Encountered an error while triggering code adaptation
+          description: An error prevented code adaptation from being triggered.
           schema:
             type: object
-            properties:
-              message:
-                type: string
-                description: >-
-                  Human-readable information about the error, if any can be
-                  provided
+            $ref: '#/definitions/Error'
+        '409':
+          description: System has not been (successfully) perturbed or adaptation has already been triggered.
+          schema:
+            type: object
+            $ref: '#/definitions/Error'
