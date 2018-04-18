@@ -217,11 +217,11 @@ paths:
                 description: >-
                   A concise description of the current state of the system.
                 enum:
-                  - awaiting-perturbation
-                  - injecting-perturbation
-                  - localising-perturbation
-                  - searching-for-adaptation
-                  - finished-adapting
+                  - READY_TO_PERTURB
+                  - PERTURBING
+                  - READY_TO_ADAPT
+                  - SEARCHING
+                  - FINISHED
               resource-consumption:
                 type: object
                 description: >-
