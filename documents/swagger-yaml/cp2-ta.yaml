@@ -43,6 +43,7 @@ definitions:
               - FileNotFound
               - LineNotFound
               - OperatorNotFound
+              - NoSearchLimits
             example: NeutralPerturbation
             description: The kind of error that occurred.
           message:
