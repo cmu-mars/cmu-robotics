@@ -22,6 +22,36 @@ definitions:
         description: >-
           The one-indexed number of this line in the file.
 
+  Error:
+    type: object
+    required:
+      - error
+    properties:
+      error:
+        type: object
+        required:
+          - kind
+          - message
+        properties:
+          kind:
+            type: string
+            enum:
+              - NeutralPerturbation
+              - FailedToComputeCoverage
+              - NotReadyToPerturb
+              - NotReadyToAdapt
+              - FileNotFound
+              - LineNotFound
+              - OperatorNotFound
+            example: NeutralPerturbation
+            description: The kind of error that occurred.
+          message:
+            type: string
+            example: "invalid perturbation: no test failures."
+            description: >-
+                Human-readable information about the error, if any can be
+                provided.
+
   SourceLocation:
     type: object
     required:
@@ -132,12 +162,7 @@ paths:
             perturbations.
           schema:
             type: object
-            properties:
-              message:
-                type: string
-                description: >-
-                  Human-readable information about the error, if any can be
-                  provided
+            $ref: '#/definitions/Error'
 
   /lines:
     get:
