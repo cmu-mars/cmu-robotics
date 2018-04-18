@@ -59,12 +59,6 @@ definitions:
         description: >-
           A flag indicating whether or not the system crashed during execution
           of the test.
-      qos:
-        type: object
-        $ref: '#/definitions/TestQoS'
-        description: >-
-          A summary of the quality of service that was observed during the
-          execution of the test.
 
   CompilationOutcome:
     type: object
@@ -82,27 +76,6 @@ definitions:
         description: >-
           A flag indicating whether the compilation of this adaptation was
           successful or not.
-
-  TestQoS:
-    type: object
-    required:
-      - duration
-      - proximity
-      - collisions
-    properties:
-      duration:
-        type: object
-        description: >-
-          A measure of service quality with respect to time taken to complete
-          the test.
-      proximity:
-        type: object
-        description: >-
-          A measure of service quality with respect to proximity to the goal.
-      collisions:
-        type: object
-        description:
-          A measure of service quality with respect to the number of collisions.
 
 paths:
   /error:
