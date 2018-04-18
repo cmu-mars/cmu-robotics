@@ -176,17 +176,28 @@ paths:
         perturbations may be injected.
       responses:
         '200':
-          description: Successfully computed and returned a list of source
-            lines within the project.
+          description: OK.
           schema:
             type: array
             items:
               $ref: '#/definitions/SourceLine'
             description: >-
-              A list of the (mutable) source lines within the project.
-        '400':
-          description: Failed to produce a list of source lines within the
-            project.
+              A list of the mutable source lines within the project.
+
+  /files:
+    get:
+      description: Returns a list of all the source files in which
+        perturbations may be injected.
+      responses:
+        '200':
+          description: OK.
+          schema:
+            type: array
+            items:
+              type: string
+              example: foo.cpp
+            description: >-
+              A list of the mutable files within the project.
 
   /adapt:
     post:
