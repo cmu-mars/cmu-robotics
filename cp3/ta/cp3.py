@@ -169,6 +169,8 @@ class CP3(ConverterMixin,BaseSystem):
 
 	def init(self):
 		off = self.map_server.lights_off()
+		if self.gazebo is None:
+			return
 		for l in off:
 			self.gazebo.enable_light(l,False)
 
