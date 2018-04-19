@@ -59,12 +59,6 @@ definitions:
         description: >-
           A flag indicating whether or not the system crashed during execution
           of the test.
-      qos:
-        type: object
-        $ref: '#/definitions/TestQoS'
-        description: >-
-          A summary of the quality of service that was observed during the
-          execution of the test.
 
   CompilationOutcome:
     type: object
@@ -82,27 +76,6 @@ definitions:
         description: >-
           A flag indicating whether the compilation of this adaptation was
           successful or not.
-
-  TestQoS:
-    type: object
-    required:
-      - duration
-      - proximity
-      - collisions
-    properties:
-      duration:
-        type: object
-        description: >-
-          A measure of service quality with respect to time taken to complete
-          the test.
-      proximity:
-        type: object
-        description: >-
-          A measure of service quality with respect to proximity to the goal.
-      collisions:
-        type: object
-        description:
-          A measure of service quality with respect to the number of collisions.
 
 paths:
   /error:
@@ -144,26 +117,17 @@ paths:
           description: the TH acknowledges the error
         '400':
           description: the TH has itself encountered an error processing the error
+
   /ready:
     post:
       description: >-
         Used to indicate that the SUT is ready and that testing may begin.
       responses:
-        '200':
+        '204':
           description: the TH acknowledges the ready message
-          schema:
-            type: object
-            required:
-              - docker-ip
-            properties:
-              docker-ip:
-                type: string
-                format: ip-address
-                description: >-
-                  the IP address to connect to in order to allocate new
-                  worker containers
         '400':
-          description: the TH has itself encontered an error processing the ready message
+          description: the TH has itself encountered an error processing the ready message
+
   /status:
     post:
       description: >-
@@ -180,7 +144,7 @@ paths:
               - pareto-set
             properties:
               adaptation:
-                type: Object
+                type: object
                 $ref: '#/definitions/CandidateAdaptation'
                 description: The candidate adaptation that was added to the
                   Pareto set.

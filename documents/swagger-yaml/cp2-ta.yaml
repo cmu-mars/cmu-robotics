@@ -22,6 +22,37 @@ definitions:
         description: >-
           The one-indexed number of this line in the file.
 
+  Error:
+    type: object
+    required:
+      - error
+    properties:
+      error:
+        type: object
+        required:
+          - kind
+          - message
+        properties:
+          kind:
+            type: string
+            enum:
+              - NeutralPerturbation
+              - FailedToComputeCoverage
+              - NotReadyToPerturb
+              - NotReadyToAdapt
+              - FileNotFound
+              - LineNotFound
+              - OperatorNotFound
+              - NoSearchLimits
+            example: NeutralPerturbation
+            description: The kind of error that occurred.
+          message:
+            type: string
+            example: "invalid perturbation: no test failures."
+            description: >-
+                Human-readable information about the error, if any can be
+                provided.
+
   SourceLocation:
     type: object
     required:
@@ -115,7 +146,7 @@ paths:
                   injected.
       responses:
         '200':
-          description: Successfully computed the list of possible perturbations
+          description: OK.
           schema:
             type: object
             properties:
@@ -132,12 +163,7 @@ paths:
             perturbations.
           schema:
             type: object
-            properties:
-              message:
-                type: string
-                description: >-
-                  Human-readable information about the error, if any can be
-                  provided
+            $ref: '#/definitions/Error'
 
   /lines:
     get:
@@ -145,90 +171,29 @@ paths:
         perturbations may be injected.
       responses:
         '200':
-          description: Successfully computed and returned a list of source
-            lines within the project.
+          description: OK.
           schema:
             type: array
             items:
               $ref: '#/definitions/SourceLine'
             description: >-
-              A list of the (mutable) source lines within the project.
-        '400':
-          description: Failed to produce a list of source lines within the
-            project.
+              A list of the mutable source lines within the project.
 
-  /adapt:
-    post:
-      description: Used to trigger the code adaptation process.
-      consumes:
-        - application/json
-      parameters:
-        - in: body
-          name: Parameters
-          required: true
-          schema:
-            type: object
-            properties:
-              time-limit:
-                type: number
-                format: float
-                minimum: 1.0
-                description: >-
-                  An (optional) time limit for the adaptation process,
-                  specified in minutes.
-              attempt-limit:
-                type: integer
-                minimum: 1
-                description: >-
-                  An (optional) limit on the number of adaptations that may be
-                  attempted.
+  /files:
+    get:
+      description: Returns a list of all the source files that may be
+        subject to perturbation.
       responses:
         '200':
-          description: Successfully triggered code adaptation
-        '400':
-          description: Encountered an error while triggering code adaptation
+          description: OK.
           schema:
-            type: object
-            properties:
-              message:
-                type: string
-                description: >-
-                  Human-readable information about the error, if any can be
-                  provided
-  /perturb:
-    post:
-      description: >-
-        Applies a set of perturbations, given as a list of JSON objects,
-        to the SUT. This endpoint should be used to prepare a test scenario
-        for evaluation.
-      parameters:
-        - in: body
-          required: true
-          name: Parameters
-          schema:
-            type: object
-            required:
-              - perturbations
-            properties:
-              perturbations:
-                type: array
-                description: A non-empty list of perturbations to apply to the
-                  codebase
-                items:
-                  $ref: '#/definitions/Perturbation'
-      responses:
-        '200':
-          description: Applied the perturbations to the the system successfully
-        '400':
-          description: Encountered an error while applying the perturbations to the system
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-                description: >-
-                  Human-readable information about the error, if any can be
-                  provided
+            type: array
+            items:
+              type: string
+              example: foo.cpp
+            description: >-
+              A list of the mutable files.
+
   /observe:
     get:
       description: >-
@@ -236,7 +201,7 @@ paths:
 
       responses:
         '200':
-          description: Successfully observed the state of the SUT.
+          description: OK.
           schema:
             type: object
             required:
@@ -247,11 +212,11 @@ paths:
                 description: >-
                   A concise description of the current state of the system.
                 enum:
-                  - awaiting-perturbation
-                  - injecting-perturbation
-                  - localising-perturbation
-                  - searching-for-adaptation
-                  - finished-adapting
+                  - READY_TO_PERTURB
+                  - PERTURBING
+                  - READY_TO_ADAPT
+                  - SEARCHING
+                  - FINISHED
               resource-consumption:
                 type: object
                 description: >-
@@ -278,5 +243,70 @@ paths:
                   have been encountered that belong to the
                   pareto set (i.e., the set of non-dominated adaptations).
 
+  /perturb:
+    post:
+      description: >-
+        Applies a given perturbation to the SUT. The resulting perturbed system
+        will become Baseline B, provided that the system builds and fails at
+        least one test.
+      parameters:
+        - in: body
+          required: true
+          name: Parameters
+          schema:
+            type: object
+            $ref: '#/definitions/Perturbation'
+            description: The perturbation to apply to the SUT.
+      responses:
+        '204':
+          description: OK.
         '400':
-          description: Encounted an error while observing the SUT.
+          description: Failed to perturb the SUT.
+          schema:
+            type: object
+            $ref: '#/definitions/Error'
+        '409':
+          description: >-
+            The SUT has already been perturbed.
+          schema:
+            type: object
+            $ref: '#/definitions/Error'
+
+  /adapt:
+    post:
+      description: Triggers the code adaptation process.
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: Parameters
+          required: true
+          schema:
+            type: object
+            properties:
+              time-limit:
+                type: number
+                format: float
+                minimum: 1.0
+                description: >-
+                  An (optional) time limit for the adaptation process,
+                  specified in minutes.
+              attempt-limit:
+                type: integer
+                minimum: 1
+                description: >-
+                  An (optional) limit on the number of adaptations that may be
+                  attempted.
+      responses:
+        '204':
+          description: OK.
+        '400':
+          description: An error prevented code adaptation from being triggered.
+          schema:
+            type: object
+            $ref: '#/definitions/Error'
+        '409':
+          description: System has not been (successfully) perturbed or adaptation has already been triggered.
+          schema:
+            type: object
+            $ref: '#/definitions/Error'
