@@ -66,7 +66,7 @@ class Parameters1(Model):
         :param id: The id of this Parameters1.
         :type id: str
         """
-        allowed_values = ["kinect-ir", "lidar", "kinect-all"]
+        allowed_values = ["kinect", "lidar", "camera"]
         if id not in allowed_values:
             raise ValueError(
                 "Invalid value for `id` ({0}), must be one of {1}"
@@ -99,4 +99,3 @@ class Parameters1(Model):
             raise ValueError("Invalid value for `state`, must not be `None`")
 
         self._state = state
-

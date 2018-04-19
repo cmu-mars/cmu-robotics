@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import subprocess
+
 import configparser
 import sys
 import connexion
@@ -10,7 +12,6 @@ import rospy
 import actionlib
 #from move_base_msgs.msg import MoveBaseAction
 from urllib.parse import urlparse
-
 
 from gazebo_interface import GazeboInterface
 
@@ -25,58 +26,11 @@ from swagger_client.models.parameters import Parameters
 from swagger_client.models.parameters_1 import Parameters1
 from swagger_client.models.parameters_2 import Parameters2
 
-# Function to mimic wait for ta to be up, send ready, then status, then error, then wait
-# and send done
-def fake_semantics(thApi, port):
-    def fake_ta():
-        not_started = True
-        while not_started:
-            print('Checking to see if TA is up on port ' + str(port))
-            try:
-                r = requests.get('http://0.0.0.0:' + str(port) + '/')
-                print(r.status_code)
-                if r.status_code == 200 or r.status_code == 404:
-                    print('Server started; Starting to push th')
-                    not_started=False
-            except:
-                print('server not yet started')
-            time.sleep(2)
-
-        try:
-          logger.debug("Sending ready");
-          response = thApi.ready_post()
-          logger.debug('Received response from th/ready:')
-          logger.debug ('%s' %response)
-          if response.start_loc == response.target_loc:
-              logger.debug("malformed response from ready: start_loc is target_loc; posting to error")
-              thApi.error_post(Parameters("ready error", "start_loc is target_loc"))
-        except Exception as e:
-          logger.error(traceback.format_exc())
-          logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
-        try:
-          logger.debug("Sending status")
-          response = thApi.status_post(Parameters1("adapted", "Test for status", 55, ["l1", "l2", "l3"], ["MOVEBASE", "AMCL"], ["KINECT_ALL"]))
-        except Exception as e:
-          logger.error(traceback.format_exc())
-          logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
-
-        wait_time = random.randint(5,60)
-        print ('TA sleeping for ' + str(wait_time) + 's before sending done')
-        time.sleep(wait_time)
-
-        try:
-          logger.debug("Sending done")
-          response = thApi.done_post(Parameters2(14.5, 25.9, 72, [72], 2500))
-        except Exception as e:
-          logger.error(traceback.format_exc())
-          logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
-
-    print ('Starting fake semantics')
-    thread = threading.Thread(target=fake_ta)
-    thread.start()
+from cp3 import CP3
+from flask_script import Manager
+from swagger_server import config
 
 if __name__ == '__main__':
-
     # Command line argument parsing
     if len(sys.argv) != 2:
       print ("No URI for TH passed in!")
@@ -88,43 +42,129 @@ if __name__ == '__main__':
     app.app.json_encoder = JSONEncoder
     app.add_api('swagger.yaml', arguments={'title': 'CP3'}, strict_validation=True)
 
+    manager = Manager(app)
+
+    ## capture the ambient logger
     logger = logging.getLogger('werkzeug')
     logger.setLevel(logging.DEBUG)
     handler = logging.FileHandler('access.log')
     logger.addHandler(handler)
+    config.logger = logger
+
+    ## log every HTTP request we see
     def log_request_info():
        logger.debug('Headers: %s', connexion.request.headers)
        logger.debug('Body: %s', connexion.request.get_data())
 
     app.app.before_request(log_request_info)
 
-
+    ## build the TH API object from the client stubs
     thApi = DefaultApi()
     thApi.api_client.host = th_uri
-    try:
-      thApi.error_post(Parameters("Test Error", "This is a test error post to th"))
-    except Exception as e:
-      logger.debug("Failed to connect with th")
-      logger.debug(traceback.format_exc())
 
-    rospy.init_node ("cp3_ta")
-#    move_base = actionlib.SimpleActionClient("move_base", MoveBaseAction)
-#    move_base_started = move_base.wait_for_server(rospy.Duration(30.0))
-#    if not move_base_started:
-#      logger.error ('Fatal: move_base did not start?')
-#      thApi.error_post(Parameters("MoveBase Error", "Fatal: failed to wait for move_base"))
-    rospy.sleep(30.0)
+    def fail_hard(s):
+        logger.debug(s)
+        thApi.error_post(Parameters(s))
+        raise Exception(s)
+
+    ## start the sequence diagram: post to ready to get configuration data
+    try:
+        logger.debug("posting to /ready")
+        ready_resp = thApi.ready_post()
+        logger.debug("recieved response from /ready:")
+        logger.debug("%s" % resp)
+    except Exception as e:
+        ## this isn't a call to fail_hard because the TH isn't
+        ## responding at all; we have to hope that LL notices the log
+        ## output and that this happens only very rarely if at all
+        logger.debug("Failed to connect with th")
+        logger.debug(traceback.format_exc())
+        raise e
+
+    ## build CP object without a gazebo instance, need to set later
+    cp = CP3(None)
+    config.cp = cp
+
+    ## check dynamic invariants on ready message
+    if ready_resp.start_loc() == ready_resp.target_loc():
+        fail_hard("malformed response from ready: start_loc is target_loc")
+
+    if not (cp.map_server.is_waypoint(ready_resp.target_loc()) and
+            cp.map_server.is_waypoint(ready_resp.target_loc())):
+        fail_hard("response from /ready includes invalid waypoint names")
+
+    cp.start = ready_resp.target_loc()
+    cp.target = ready_resp.target_loc()
+
+    ## once the response is checked, write it to ~/ready
+    logger.debug("writing checked /ready message to ~/ready")
+    fo = open('~/ready', 'w')
+    fo.write('%s', ready_resp) #todo: this may or may not be JSON; check once we can run it
+    fo.close()
+
+    launch_file = ready_resp.start_configuration()
+
+    ## todo: this is possibly unnecesscary if we renamed the aruco
+    ## file to match the start-configuration string and then just
+    ## trust the static checking that this response will be well
+    ## formed. the files exist in cp3_base/cp3_base/launch
+    if(ready_resp.start_configuration() == "aruco-camera"):
+        launch_file = "aruco-front"
+
+    logger.debug("launching cp3-%s.launch" % launch_file)
+    rl_child = subprocess.Popen(["roslaunch", "cp3_base", "cp3-" + launch_file + ".launch"],
+                                stdin=None,
+                                stdout=None,
+                                stderr=None) ## todo: unsure about
+                                             ## these redirects; see
+                                             ## if we like what
+                                             ## happens. otherwise can
+                                             ## redirect to any file
+                                             ## handle instead and
+                                             ## capture the logs there
+
+    ## make this module a ros node so that we can subscribe to topics
+    logger.debug("initializing cp3_ta ros node")
+    rospy.init_node("cp3_ta")
+
+    ## todo: instead of sleeping, listen to a topic for whatever indicated "odom recieved"
+    logger.debug("waiting for move_base (emulates watching for odom_recieved)")
+    move_base = actionlib.SimpleActionClient("move_base", MoveBaseAction)
+    move_base_started = move_base.wait_for_server()
+    if not move_base_started:
+        fail_hard("fatal error: navigation stack has failed to start")
+
     print ("Starting up Gazebo interface")
     try:
-      gazebo = GazeboInterface()
-      gazebo.set_turtlebot_position(19.8, 58.8, 0);
+        gazebo = GazeboInterface(0,0) ## todo: unsure what these args mean but they appear in cli.py
+        ## todo: CP3.convert_to_class(cp) ## appears a lot in cli.py but i don't know what it means
+        ## todo: this could be totally busted
+        cp.gazebo = gazebo
+        start_coords = cp.map_server.waypoint_to_coords(ready_resp.start_loc())
+        gazebo.set_turtlebot_position(start_coords['x'], start_coords['y'], 0)
     except Exception as e:
-      logger.error('Fatal: gazebo did not start up: %s' %e)
-      thApi.error_post(Parameters("Gazebo Error", "Fatal: failed to connect to gazebo: %s" %e))
-      raise
-    print ("Started Gazebo Interface")
+        fail_hard("failed to connect to gazebo: %s" % e)
 
-    fake_semantics(thApi,5000)
+    ## todo: for RR2, need to also process use_adaptation and the utility function
 
-    logger.debug("Starting TA")
-    app.run(port=5000, host='0.0.0.0')
+    ## subscribe to rostopics
+    def energy_cb(msg):
+        """call back to update the global battery state from the ros topic"""
+        config.battery = msg.data
+
+    sub_voltage = rospy.Subscriber("/energy_monitor/voltage", Int32, energy_cb)
+
+    def send_live():
+        ## send status live after gazebo interface comes up
+        logger.debug("sending live status message")
+        ## todo: i have no idea what rospy is going to say the sim
+        ## time is. probably 0.
+        live_resp = thApi.status_post(Parameters1("live","CP3 TA ready to recieve inital perturbs and start",rospy.Time.now().secs,None,None,None))
+
+    @manager.command
+    def runserver():
+        app.run(port=5000, host='0.0.0.0')
+        send_live()
+
+    logger.debug("starting TA REST interface")
+    manager.run()

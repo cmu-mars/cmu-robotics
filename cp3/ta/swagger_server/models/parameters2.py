@@ -61,7 +61,7 @@ class Parameters2(Model):
         :param id: The id of this Parameters2.
         :type id: str
         """
-        allowed_values = ["movebase", "amcl", "mrpt", "cb-base"]
+        allowed_values = ["amcl", "mrpt", "aruco"]
         if id not in allowed_values:
             raise ValueError(
                 "Invalid value for `id` ({0}), must be one of {1}"
@@ -69,4 +69,3 @@ class Parameters2(Model):
             )
 
         self._id = id
-
