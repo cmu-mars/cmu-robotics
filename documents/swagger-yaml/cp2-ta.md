@@ -210,7 +210,7 @@ Returns a list of possible perturbations of an (optionally) specified shape and 
 
 |Name|Description|Schema|
 |---|---|---|
-|**kind**  <br>*required*|The kind of error that occurred.  <br>**Example** : `"NeutralPerturbation"`|enum (NeutralPerturbation, FailedToComputeCoverage, NotReadyToPerturb, NotReadyToAdapt, FileNotFound, LineNotFound, OperatorNotFound)|
+|**kind**  <br>*required*|The kind of error that occurred.  <br>**Example** : `"NeutralPerturbation"`|enum (NeutralPerturbation, FailedToComputeCoverage, NotReadyToPerturb, NotReadyToAdapt, FileNotFound, LineNotFound, OperatorNotFound, NoSearchLimits)|
 |**message**  <br>*required*|Human-readable information about the error, if any can be provided.  <br>**Example** : `"invalid perturbation: no test failures."`|string|
 
 
@@ -263,10 +263,9 @@ A description of the kind of the perturbation.
 
 |Name|Description|Schema|
 |---|---|---|
-|**crashed**  <br>*optional*|A flag indicating whether or not the system crashed during execution of the test.|boolean|
+|**passed**  <br>*required*|Indicates whether or not the test passed.|boolean|
 |**test-id**  <br>*required*|A unique identifier for the test to which this outcome belongs.|string|
 |**time-taken**  <br>*required*|The number of seconds taken to complete the test.  <br>**Minimum value** : `0`|number (float)|
-|**timed-out**  <br>*required*|A flag indicating whether or not the test timed out during execution.|boolean|
 
 
 

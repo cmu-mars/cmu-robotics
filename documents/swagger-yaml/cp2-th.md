@@ -38,7 +38,7 @@ Used to indicate that evaluation of the test scenario has been completed. A summ
 |---|---|---|
 |**log**  <br>*required*|A list containing details of each of the attempted repairs.|< [CandidateAdaptation](#candidateadaptation) > array|
 |**num-attempts**  <br>*required*|The number of code adaptations attempted.  <br>**Minimum value** : `0`|integer|
-|**outcome**  <br>*required*|A short description of the success of the repair process. A complete repair is one which fully restores the intent of the system (i.e., system degradation is reduced to zero). A partial repair reduces the degradation of the system from its initial value to a value greater than zero. If the level of degradation remains unchanged, no (partial) repair has been found.|enum (complete-repair, partial-repair, no-repair)|
+|**outcome**  <br>*required*|A short description of the success of the repair process. A complete repair is one which passes all of the tests in the test suite. A partial repair is one that passes at least one previously failing test and does not introduce any new test failures. If the outcome of the test suite for the best patch found during the search does cause any previously failing tests to pass, then no repair has been found.|enum (complete-repair, partial-repair, no-repair)|
 |**pareto-set**  <br>*required*|A list containing details of all adaptations within the pareto set.|< [CandidateAdaptation](#candidateadaptation) > array|
 |**running-time**  <br>*required*|The number of minutes taken to complete the repair process.  <br>**Minimum value** : `0`|number (float)|
 
@@ -47,8 +47,8 @@ Used to indicate that evaluation of the test scenario has been completed. A summ
 
 |HTTP Code|Description|Schema|
 |---|---|---|
-|**200**|the TH acknowledges the done message|No Content|
-|**400**|the TH has itself encontered an error processing the done message|No Content|
+|**204**|the TH acknowledges the done message|No Content|
+|**400**|the TH has itself encountered an error processing the done message|No Content|
 
 
 <a name="error-post"></a>
@@ -58,36 +58,26 @@ Used to indicate that evaluation of the test scenario has been completed. A summ
 Used to indicate that an error has occurred during the preparation
 or evaluation of a test scenario, or during the start-up of the
 system under test.
-\
-**Error codes**:
-  * *NeutralPerturbation:* One of the perturbations for the test scenario has no
-    effect on the outcome of the test suite, and as such, it
-    does not consistitute a fault.
-  * *PerturbationFailedToCompile:* The perturbed version of the system
-    failed to compile.
 
 
 #### Parameters
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**Parameters**  <br>*required*|[Parameters](#error-post-parameters)|
-
-<a name="error-post-parameters"></a>
-**Parameters**
-
-|Name|Description|Schema|
-|---|---|---|
-|**err-code**  <br>*required*|Used to indicate the type of error that has occurred.|enum (neutral-perturbation, pertubation-failed-to-compile)|
-|**err-description**  <br>*optional*|An optional description of the error.|string|
+|**Body**|**Parameters**  <br>*required*|[Error](#error)|
 
 
 #### Responses
 
 |HTTP Code|Description|Schema|
 |---|---|---|
-|**200**|the TH acknowledges the error|No Content|
+|**204**|the TH acknowledges the error|No Content|
 |**400**|the TH has itself encountered an error processing the error|No Content|
+
+
+#### Consumes
+
+* `application/json`
 
 
 <a name="ready-post"></a>
@@ -101,8 +91,20 @@ Used to indicate that the SUT is ready and that testing may begin.
 
 |HTTP Code|Description|Schema|
 |---|---|---|
-|**204**|the TH acknowledges the ready message|No Content|
+|**200**|the TH acknowledges the ready message|[Response 200](#ready-post-response-200)|
 |**400**|the TH has itself encountered an error processing the ready message|No Content|
+
+<a name="ready-post-response-200"></a>
+**Response 200**
+
+|Name|Description|Schema|
+|---|---|---|
+|**bugzoo-server-urls**  <br>*optional*|A list of the base URLs for all BugZoo servers that have been made available for the purpose of evaluating candidate patches.|< string > array|
+
+
+#### Produces
+
+* `application/json`
 
 
 <a name="status-post"></a>
@@ -131,8 +133,13 @@ Used to inform the test harness that a new adaptation has been added to the Pare
 
 |HTTP Code|Description|Schema|
 |---|---|---|
-|**200**|the TH acknowledges the status|No Content|
+|**204**|the TH acknowledges the status|No Content|
 |**400**|the TH has itself encontered an error processing the status|No Content|
+
+
+#### Consumes
+
+* `application/json`
 
 
 
@@ -159,15 +166,30 @@ Used to inform the test harness that a new adaptation has been added to the Pare
 |**time-taken**  <br>*required*|The number of seconds taken to compile this adaptation.  <br>**Minimum value** : `0`|number (float)|
 
 
+<a name="error"></a>
+### Error
+
+|Name|Schema|
+|---|---|
+|**error**  <br>*required*|[error](#error-error)|
+
+<a name="error-error"></a>
+**error**
+
+|Name|Description|Schema|
+|---|---|---|
+|**kind**  <br>*required*|The kind of error that occurred.  <br>**Example** : `"NeutralPerturbation"`|enum (NeutralPerturbation, FailedToComputeCoverage, NotReadyToPerturb, NotReadyToAdapt, FileNotFound, LineNotFound, OperatorNotFound, NoSearchLimits)|
+|**message**  <br>*required*|Human-readable information about the error, if any can be provided.  <br>**Example** : `"invalid perturbation: no test failures."`|string|
+
+
 <a name="testoutcome"></a>
 ### TestOutcome
 
 |Name|Description|Schema|
 |---|---|---|
-|**crashed**  <br>*optional*|A flag indicating whether or not the system crashed during execution of the test.|boolean|
+|**passed**  <br>*required*|Indicates whether or not the test passed.|boolean|
 |**test-id**  <br>*required*|A unique identifier for the test to which this outcome belongs.|string|
 |**time-taken**  <br>*required*|The number of seconds taken to complete the test.  <br>**Minimum value** : `0`|number (float)|
-|**timed-out**  <br>*required*|A flag indicating whether or not the test timed out during execution.|boolean|
 
 
 
