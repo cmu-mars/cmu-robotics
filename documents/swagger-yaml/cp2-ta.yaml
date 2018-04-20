@@ -5,116 +5,6 @@ info:
 schemes:
   - http
 host: brass-ta
-definitions:
-  SourceLine:
-    type: object
-    required:
-      - file
-      - number
-    properties:
-      file:
-        type: string
-        description: >-
-          The file to which this line belongs.
-      number:
-        type: integer
-        minimum: 1
-        description: >-
-          The one-indexed number of this line in the file.
-
-  Error:
-    type: object
-    required:
-      - error
-    properties:
-      error:
-        type: object
-        required:
-          - kind
-          - message
-        properties:
-          kind:
-            type: string
-            enum:
-              - NeutralPerturbation
-              - FailedToComputeCoverage
-              - NotReadyToPerturb
-              - NotReadyToAdapt
-              - FileNotFound
-              - LineNotFound
-              - OperatorNotFound
-              - NoSearchLimits
-            example: NeutralPerturbation
-            description: The kind of error that occurred.
-          message:
-            type: string
-            example: "invalid perturbation: no test failures."
-            description: >-
-                Human-readable information about the error, if any can be
-                provided.
-
-  SourceLocation:
-    type: object
-    required:
-      - file
-      - offset
-    properties:
-      file:
-        type: string
-        description: >-
-          The file at which this source location resides.
-      offset:
-        type: integer
-        minimum: 0
-        description: >-
-          The character offset between the start of the file and this location.
-
-  SourceRange:
-    type: object
-    required:
-      - start
-      - stop
-    properties:
-      start:
-        $ref: '#/definitions/SourceLocation'
-        description: >-
-          The location that marks the start of this source range.
-      stop:
-        $ref: '#/definitions/SourceLocation'
-        description: >-
-          The location that marks the end of this source range.
-
-  PerturbationKind:
-    type: string
-    enum:
-      - delete-void-function-call
-      - flip-arithmetic-operator
-      - flip-boolean-operator
-      - flip-relational-operator
-      - undo-transformation
-      - delete-conditional-control-flow
-      - flip-signedness
-    description: >-
-      A description of the kind of the perturbation.
-
-  Perturbation:
-    type: object
-    required:
-      - kind
-      - at
-    properties:
-      kind:
-        $ref: '#/definitions/PerturbationKind'
-      at:
-        $ref: '#/definitions/SourceRange'
-        description: >-
-          The range of code that is deleted or replaced by the perturbation.
-      replacement:
-        type: string
-        description: >-
-          The body of the source code that should replaced the source code
-          given by the location range associated with this perturbation.
-
 paths:
   /perturbations:
     get:
@@ -138,7 +28,7 @@ paths:
                 description: >-
                   The file at which the perturbation should be injected.
               shape:
-                $ref: '#/definitions/PerturbationKind'
+                $ref: './cp2-definitions.yaml#/definitions/PerturbationKind'
               line:
                 type: integer
                 description: >-
@@ -153,7 +43,7 @@ paths:
               perturbations:
                 type: array
                 items:
-                  $ref: '#/definitions/Perturbation'
+                  $ref: './cp2-definitions.yaml#/definitions/Perturbation'
                 description: >-
                   A list of perturbations that satisfy the query parameters
                   provided by the request.
@@ -163,7 +53,7 @@ paths:
             perturbations.
           schema:
             type: object
-            $ref: '#/definitions/Error'
+            $ref: './cp2-definitions.yaml#/definitions/Error'
 
   /lines:
     get:
@@ -175,7 +65,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/SourceLine'
+              $ref: './cp2-definitions.yaml#/definitions/SourceLine'
             description: >-
               A list of the mutable source lines within the project.
 
@@ -255,7 +145,7 @@ paths:
           name: Parameters
           schema:
             type: object
-            $ref: '#/definitions/Perturbation'
+            $ref: './cp2-definitions.yaml#/definitions/Perturbation'
             description: The perturbation to apply to the SUT.
       responses:
         '204':
@@ -264,13 +154,13 @@ paths:
           description: Failed to perturb the SUT.
           schema:
             type: object
-            $ref: '#/definitions/Error'
+            $ref: './cp2-definitions.yaml#/definitions/Error'
         '409':
           description: >-
             The SUT has already been perturbed.
           schema:
             type: object
-            $ref: '#/definitions/Error'
+            $ref: './cp2-definitions.yaml#/definitions/Error'
 
   /adapt:
     post:
@@ -304,9 +194,9 @@ paths:
           description: An error prevented code adaptation from being triggered.
           schema:
             type: object
-            $ref: '#/definitions/Error'
+            $ref: './cp2-definitions.yaml#/definitions/Error'
         '409':
           description: System has not been (successfully) perturbed or adaptation has already been triggered.
           schema:
             type: object
-            $ref: '#/definitions/Error'
+            $ref: './cp2-definitions.yaml#/definitions/Error'
