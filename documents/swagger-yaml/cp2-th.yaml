@@ -80,13 +80,6 @@ paths:
         Used to indicate that an error has occurred during the preparation
         or evaluation of a test scenario, or during the start-up of the
         system under test.
-        \
-        **Error codes**:
-          * *NeutralPerturbation:* One of the perturbations for the test scenario has no
-            effect on the outcome of the test suite, and as such, it
-            does not consistitute a fault.
-          * *PerturbationFailedToCompile:* The perturbed version of the system
-            failed to compile.
 
       parameters:
         - in: body
