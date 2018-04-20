@@ -20,20 +20,7 @@ paths:
           name: Parameters
           schema:
             type: object
-            required:
-              - err-code
-            properties:
-              err-code:
-                type: string
-                enum:
-                  - neutral-perturbation
-                  - pertubation-failed-to-compile
-                description: >-
-                  Used to indicate the type of error that has occurred.
-              err-description:
-                type: string
-                description: An optional description of the error.
-
+            $ref: './cp2-definitions.yaml#/definitions/Error'
       responses:
         '204':
           description: the TH acknowledges the error
