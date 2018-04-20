@@ -1,0 +1,64 @@
+# this document provides a set of shared definitions between the CP2 TA and TH
+definitions:
+  CandidateAdaptation:
+    type: object
+    required:
+      - diff
+      - compilation-outcome
+      - test-outcomes
+    properties:
+      diff:
+        type: string
+        description: >-
+          A description of the change to the code, given in the form of a diff.
+      compilation-outcome:
+        type: object
+        $ref: '#/definitions/CompilationOutcome'
+        description: >-
+          A description of the outcome of attempting to compile this adaptation.
+      test-outcomes:
+        type: array
+        items:
+          $ref: '#/definitions/TestOutcome'
+        description: >-
+          A summary of the outcomes for each of the test cases that this
+          adaptation was evaluated against.
+
+  TestOutcome:
+    type: object
+    required:
+      - test-id
+      - time-taken
+      - passed
+    properties:
+      test-id:
+        type: string
+        description: >-
+          A unique identifier for the test to which this outcome belongs.
+      time-taken:
+        type: number
+        format: float
+        minimum: 0
+        description: >-
+          The number of seconds taken to complete the test.
+      passed:
+        type: boolean
+        description: >-
+          Indicates whether or not the test passed.
+
+  CompilationOutcome:
+    type: object
+    required:
+      - time-taken
+      - successful
+    properties:
+      time-taken:
+        type: number
+        format: float
+        minimum: 0
+        description: The number of seconds taken to compile this adaptation.
+      successful:
+        type: boolean
+        description: >-
+          A flag indicating whether the compilation of this adaptation was
+          successful or not.
