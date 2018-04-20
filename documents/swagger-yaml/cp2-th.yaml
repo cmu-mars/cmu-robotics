@@ -74,6 +74,8 @@ definitions:
 paths:
   /error:
     post:
+      consumes:
+        - application/json
       description: |-
         Used to indicate that an error has occurred during the preparation
         or evaluation of a test scenario, or during the start-up of the
@@ -107,7 +109,7 @@ paths:
                 description: An optional description of the error.
 
       responses:
-        '200':
+        '204':
           description: the TH acknowledges the error
         '400':
           description: the TH has itself encountered an error processing the error
@@ -116,9 +118,23 @@ paths:
     post:
       description: >-
         Used to indicate that the SUT is ready and that testing may begin.
+      produces:
+        - application/json
       responses:
-        '204':
+        '200':
           description: the TH acknowledges the ready message
+          schema:
+            type: object
+            properties:
+              bugzoo-server-urls:
+                type: array
+                items:
+                  type: string
+                  example: 'http://127.0.0.1:6060'
+                description: >-
+                  A list of the base URLs for all BugZoo servers that have been
+                  made available for the purpose of evaluating candidate
+                  patches.
         '400':
           description: the TH has itself encountered an error processing the ready message
 
@@ -127,6 +143,8 @@ paths:
       description: >-
         Used to inform the test harness that a new adaptation has been added to
         the Pareto set (i.e., a new "best" adaptation has been found).
+      consumes:
+        - application/json
       parameters:
         - in: body
           required: true
@@ -148,7 +166,7 @@ paths:
                   $ref: '#/definitions/CandidateAdaptation'
                 description: The current contents of the Pareto-set of adaptations.
       responses:
-        '200':
+        '204':
           description: the TH acknowledges the status
         '400':
           description: the TH has itself encontered an error processing the status
@@ -211,7 +229,7 @@ paths:
                 description: >-
                   A list containing details of each of the attempted repairs.
       responses:
-        '200':
+        '204':
           description: the TH acknowledges the done message
         '400':
           description: the TH has itself encountered an error processing the done message
