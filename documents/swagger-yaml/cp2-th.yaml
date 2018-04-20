@@ -37,7 +37,6 @@ definitions:
     required:
       - test-id
       - time-taken
-      - timed-out
       - passed
     properties:
       test-id:
@@ -50,15 +49,10 @@ definitions:
         minimum: 0
         description: >-
           The number of seconds taken to complete the test.
-      timed-out:
+      passed:
         type: boolean
         description: >-
-          A flag indicating whether or not the test timed out during execution.
-      crashed:
-        type: boolean
-        description: >-
-          A flag indicating whether or not the system crashed during execution
-          of the test.
+          Indicates whether or not the test passed.
 
   CompilationOutcome:
     type: object
@@ -186,12 +180,12 @@ paths:
                   - no-repair
                 description: >-
                   A short description of the success of the repair process.
-                  A complete repair is one which fully restores the intent of
-                  the system (i.e., system degradation is reduced to zero).
-                  A partial repair reduces the degradation of the system from
-                  its initial value to a value greater than zero. If the
-                  level of degradation remains unchanged, no (partial) repair
-                  has been found.
+                  A complete repair is one which passes all of the tests in the
+                  test suite. A partial repair is one that passes at least one
+                  previously failing test and does not introduce any new test
+                  failures. If the outcome of the test suite for the best patch
+                  found during the search does cause any previously failing
+                  tests to pass, then no repair has been found.
               running-time:
                 type: number
                 format: float
@@ -220,4 +214,4 @@ paths:
         '200':
           description: the TH acknowledges the done message
         '400':
-          description: the TH has itself encontered an error processing the done message
+          description: the TH has itself encountered an error processing the done message
