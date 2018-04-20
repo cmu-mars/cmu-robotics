@@ -237,7 +237,7 @@ paths:
               pareto-set:
                 type: array
                 items:
-                  $ref: './cp2-th.yaml#/definitions/CandidateAdaptation'
+                  $ref: './cp2-definitions.yaml#/definitions/CandidateAdaptation'
                 description: >-
                   A list containing details of the sub-set of adaptations that
                   have been encountered that belong to the

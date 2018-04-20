@@ -150,13 +150,13 @@ paths:
             properties:
               adaptation:
                 type: object
-                $ref: '#/definitions/CandidateAdaptation'
+                $ref: './cp2-definitions.yaml#/definitions/CandidateAdaptation'
                 description: The candidate adaptation that was added to the
                   Pareto set.
               pareto-set:
                 type: array
                 items:
-                  $ref: '#/definitions/CandidateAdaptation'
+                  $ref: './cp2-definitions.yaml#/definitions/CandidateAdaptation'
                 description: The current contents of the Pareto-set of adaptations.
       responses:
         '204':
@@ -211,14 +211,14 @@ paths:
               pareto-set:
                 type: array
                 items:
-                  $ref: '#/definitions/CandidateAdaptation'
+                  $ref: './cp2-definitions.yaml#/definitions/CandidateAdaptation'
                 description: >-
                   A list containing details of all adaptations within the
                   pareto set.
               log:
                 type: array
                 items:
-                  $ref: '#/definitions/CandidateAdaptation'
+                  $ref: './cp2-definitions.yaml#/definitions/CandidateAdaptation'
                 description: >-
                   A list containing details of each of the attempted repairs.
       responses:
