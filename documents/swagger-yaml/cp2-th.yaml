@@ -5,7 +5,6 @@ info:
 schemes:
   - http
 host: brass-th
-
 paths:
   /error:
     post:
@@ -15,7 +14,6 @@ paths:
         Used to indicate that an error has occurred during the preparation
         or evaluation of a test scenario, or during the start-up of the
         system under test.
-
       parameters:
         - in: body
           required: true
@@ -98,6 +96,7 @@ paths:
           description: the TH acknowledges the status
         '400':
           description: the TH has itself encontered an error processing the status
+
   /done:
     post:
       description: >-
