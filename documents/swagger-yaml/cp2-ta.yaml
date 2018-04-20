@@ -16,7 +16,7 @@ paths:
       parameters:
         - in: body
           required: true
-          name: Parameters
+          name: perturbation-params
           schema:
             type: object
             required:
@@ -142,7 +142,7 @@ paths:
       parameters:
         - in: body
           required: true
-          name: Parameters
+          name: perturb-params
           schema:
             type: object
             $ref: './cp2-definitions.yaml#/definitions/Perturbation'
