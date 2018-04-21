@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 
 import connexion
-
+import sys
 from swagger_server import encoder
-
 from swagger_client import DefaultApi
-
 
 if __name__ == '__main__':
     # Parameter parsing, to set up TH
