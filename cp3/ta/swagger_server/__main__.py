@@ -39,7 +39,7 @@ if __name__ == '__main__':
     th_uri = sys.argv[1]
 
     app = connexion.App(__name__, specification_dir='./swagger/')
-    app.app.json_encoder = JSONEncoder
+    app.app.json_encoder = JSONEncoder ## this may be busted; see CP2. depends on codegen version
     app.add_api('swagger.yaml', arguments={'title': 'CP3'}, strict_validation=True)
 
     manager = Manager(app)

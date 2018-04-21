@@ -2,7 +2,7 @@
 swagger: "2.0"
 info:
   version: "0.1"
-  title: "cmu mars brass ta: phase 2, cp2"
+  title: "CMU MARS BRASS TA: Phase II, CP2"
 host: "brass-ta"
 schemes:
 - "http"
@@ -16,20 +16,20 @@ paths:
       operationId: "perturbations_get"
       parameters:
       - in: "body"
-        name: "Parameters"
+        name: "perturbation_params"
         required: true
         schema:
-          $ref: "#/definitions/Parameters"
+          $ref: "#/definitions/perturbation_params"
       responses:
         200:
-          description: "Successfully computed the list of possible perturbations"
+          description: "OK."
           schema:
             $ref: "#/definitions/inline_response_200"
         400:
           description: "Encountered an error while computing the list of possible\
             \ perturbations."
           schema:
-            $ref: "#/definitions/inline_response_400"
+            $ref: "#/definitions/Error"
       x-swagger-router-controller: "swagger_server.controllers.default_controller"
   /lines:
     get:
@@ -39,54 +39,28 @@ paths:
       parameters: []
       responses:
         200:
-          description: "Successfully computed and returned a list of source lines\
-            \ within the project."
+          description: "OK."
           schema:
             type: "array"
-            description: "A list of the (mutable) source lines within the project."
+            description: "A list of the mutable source lines within the project."
             items:
               $ref: "#/definitions/SourceLine"
-        400:
-          description: "Failed to produce a list of source lines within the project."
       x-swagger-router-controller: "swagger_server.controllers.default_controller"
-  /adapt:
-    post:
-      description: "Used to trigger the code adaptation process."
-      operationId: "adapt_post"
-      parameters:
-      - in: "body"
-        name: "Parameters"
-        required: true
-        schema:
-          $ref: "#/definitions/Parameters_1"
+  /files:
+    get:
+      description: "Returns a list of all the source files that may be subject to\
+        \ perturbation."
+      operationId: "files_get"
+      parameters: []
       responses:
         200:
-          description: "Successfully triggered code adaptation"
-        400:
-          description: "Encountered an error while triggering code adaptation"
+          description: "OK."
           schema:
-            $ref: "#/definitions/inline_response_400"
-      x-swagger-router-controller: "swagger_server.controllers.default_controller"
-  /perturb:
-    post:
-      description: "Applies a set of perturbations, given as a list of JSON objects,\
-        \ to the SUT. This endpoint should be used to prepare a test scenario for\
-        \ evaluation."
-      operationId: "perturb_post"
-      parameters:
-      - in: "body"
-        name: "Parameters"
-        required: true
-        schema:
-          $ref: "#/definitions/Parameters_2"
-      responses:
-        200:
-          description: "Applied the perturbations to the the system successfully"
-        400:
-          description: "Encountered an error while applying the perturbations to the\
-            \ system"
-          schema:
-            $ref: "#/definitions/inline_response_400"
+            type: "array"
+            description: "A list of the mutable files."
+            items:
+              type: "string"
+              example: "foo.cpp"
       x-swagger-router-controller: "swagger_server.controllers.default_controller"
   /observe:
     get:
@@ -95,29 +69,115 @@ paths:
       parameters: []
       responses:
         200:
-          description: "Successfully observed the state of the SUT."
+          description: "OK."
           schema:
             $ref: "#/definitions/inline_response_200_1"
+      x-swagger-router-controller: "swagger_server.controllers.default_controller"
+  /perturb:
+    post:
+      description: "Applies a given perturbation to the SUT. The resulting perturbed\
+        \ system will become Baseline B, provided that the system builds and fails\
+        \ at least one test."
+      operationId: "perturb_post"
+      parameters:
+      - in: "body"
+        name: "perturb_params"
+        required: true
+        schema:
+          $ref: "#/definitions/Perturbation"
+      responses:
+        204:
+          description: "OK."
         400:
-          description: "Encounted an error while observing the SUT."
+          description: "Failed to perturb the SUT."
+          schema:
+            $ref: "#/definitions/Error"
+        409:
+          description: "The SUT has already been perturbed."
+          schema:
+            $ref: "#/definitions/Error"
+      x-swagger-router-controller: "swagger_server.controllers.default_controller"
+  /adapt:
+    post:
+      description: "Triggers the code adaptation process."
+      operationId: "adapt_post"
+      consumes:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "Parameters"
+        required: true
+        schema:
+          $ref: "#/definitions/Parameters"
+      responses:
+        204:
+          description: "OK."
+        400:
+          description: "An error prevented code adaptation from being triggered."
+          schema:
+            $ref: "#/definitions/Error"
+        409:
+          description: "System has not been (successfully) perturbed or adaptation\
+            \ has already been triggered."
+          schema:
+            $ref: "#/definitions/Error"
       x-swagger-router-controller: "swagger_server.controllers.default_controller"
 definitions:
-  Adaptation:
+  PerturbationKind:
     type: "string"
-    description: "placeholder for actual definition of adaptations"
-  SourceLine:
+    description: "A description of the kind of the perturbation."
+    enum:
+    - "delete-void-function-call"
+    - "flip-arithmetic-operator"
+    - "flip-boolean-operator"
+    - "flip-relational-operator"
+    - "undo-transformation"
+    - "delete-conditional-control-flow"
+    - "flip-signedness"
+  Perturbation:
     type: "object"
     required:
-    - "file"
-    - "number"
+    - "at"
+    - "kind"
     properties:
-      file:
+      kind:
+        $ref: "#/definitions/PerturbationKind"
+      at:
+        description: "The range of code that is deleted or replaced by the perturbation."
+        $ref: "#/definitions/SourceRange"
+      replacement:
         type: "string"
-        description: "The file to which this line belongs."
-      number:
-        type: "integer"
-        description: "The one-indexed number of this line in the file."
-        minimum: 1
+        description: "The body of the source code that should replaced the source\
+          \ code given by the location range associated with this perturbation."
+    example:
+      at:
+        stop:
+          file: "file"
+          offset: 0
+        start:
+          file: "file"
+          offset: 0
+      kind: {}
+      replacement: "replacement"
+  SourceRange:
+    type: "object"
+    required:
+    - "start"
+    - "stop"
+    properties:
+      start:
+        description: "The location that marks the start of this source range."
+        $ref: "#/definitions/SourceLocation"
+      stop:
+        description: "The location that marks the end of this source range."
+        $ref: "#/definitions/SourceLocation"
+    example:
+      stop:
+        file: "file"
+        offset: 0
+      start:
+        file: "file"
+        offset: 0
   SourceLocation:
     type: "object"
     required:
@@ -132,60 +192,36 @@ definitions:
         description: "The character offset between the start of the file and this\
           \ location."
         minimum: 0
-  SourceRange:
+    example:
+      file: "file"
+      offset: 0
+  Error:
     type: "object"
     required:
-    - "start"
-    - "stop"
+    - "error"
     properties:
-      start:
-        description: "The location that marks the start of this source range."
-        $ref: "#/definitions/SourceLocation"
-      stop:
-        description: "The location that marks the end of this source range."
-        $ref: "#/definitions/SourceLocation"
-  Perturbation:
+      error:
+        $ref: "#/definitions/Error_error"
+  SourceLine:
     type: "object"
     required:
-    - "kind"
-    discriminator: "kind"
+    - "file"
+    - "number"
     properties:
-      kind:
+      file:
         type: "string"
-        description: "Used to discriminate between different kinds of perturbation."
-  DeleteStatementPerturbation:
-    allOf:
-    - $ref: "#/definitions/Perturbation"
-    - properties:
-        locationRange:
-          description: "The range of code that is deleted by the perturbation."
-          $ref: "#/definitions/SourceRange"
-  ReplaceStatementPerturbation:
-    allOf:
-    - $ref: "#/definitions/Perturbation"
-    - properties:
-        locationRange:
-          description: "The range of code that is replaced by the perturbation."
-          $ref: "#/definitions/SourceRange"
-        statement:
-          type: "string"
-          description: "The source code for the replacement statement."
-  InsertStatementPerturbation:
-    allOf:
-    - $ref: "#/definitions/Perturbation"
-    - properties:
-        location:
-          description: "The location immediately before the location at which the\
-            \ statement will be inserted."
-          $ref: "#/definitions/SourceRange"
-        statement:
-          type: "string"
-          description: "The source code for the inserted statement."
+        description: "The file to which this line belongs."
+      number:
+        type: "integer"
+        description: "The one-indexed number of this line in the file."
+        minimum: 1
+    example:
+      number: 1
+      file: "file"
   CandidateAdaptation:
     type: "object"
     required:
     - "compilation-outcome"
-    - "degradation"
     - "diff"
     - "test-outcomes"
     properties:
@@ -196,16 +232,24 @@ definitions:
       compilation-outcome:
         description: "A description of the outcome of attempting to compile this adaptation."
         $ref: "#/definitions/CompilationOutcome"
-      degradation:
-        description: "A description of the level of degradation that was observed\
-          \ when this adaptation was applied."
-        $ref: "#/definitions/Degradation"
       test-outcomes:
         type: "array"
         description: "A summary of the outcomes for each of the test cases that this\
           \ adaptation was evaluated against."
         items:
           $ref: "#/definitions/TestOutcome"
+    example:
+      compilation-outcome:
+        time-taken: 0.14658129
+        successful: true
+      test-outcomes:
+      - test-id: "test-id"
+        passed: true
+        time-taken: 0.5962134
+      - test-id: "test-id"
+        passed: true
+        time-taken: 0.5962134
+      diff: "diff"
   CompilationOutcome:
     type: "object"
     required:
@@ -216,18 +260,20 @@ definitions:
         type: "number"
         format: "float"
         description: "The number of seconds taken to compile this adaptation."
+        minimum: 0
       successful:
         type: "boolean"
         description: "A flag indicating whether the compilation of this adaptation\
           \ was successful or not."
-  Degradation:
-    type: "object"
+    example:
+      time-taken: 0.14658129
+      successful: true
   TestOutcome:
     type: "object"
     required:
+    - "passed"
     - "test-id"
     - "time-taken"
-    - "timed-out"
     properties:
       test-id:
         type: "string"
@@ -236,39 +282,15 @@ definitions:
         type: "number"
         format: "float"
         description: "The number of seconds taken to complete the test."
-      timed-out:
+        minimum: 0
+      passed:
         type: "boolean"
-        description: "A flag indicating whether or not the test timed out during execution."
-      crashed:
-        type: "boolean"
-        description: "A flag indicating whether or not the system crashed during execution\
-          \ of the test."
-      qos:
-        description: "A summary of the quality of service that was observed during\
-          \ the execution of the test."
-        $ref: "#/definitions/TestQoS"
-  TestQoS:
-    type: "object"
-    required:
-    - "collisions"
-    - "duration"
-    - "proximity"
-    properties:
-      duration:
-        type: "object"
-        description: "A measure of service quality with respect to time taken to complete\
-          \ the test."
-        properties: {}
-      proximity:
-        type: "object"
-        description: "A measure of service quality with respect to proximity to the\
-          \ goal."
-        properties: {}
-      collisions:
-        type: "object"
-        description: "A measure of service quality with respect to the number of collisions."
-        properties: {}
-  Parameters:
+        description: "Indicates whether or not the test passed."
+    example:
+      test-id: "test-id"
+      passed: true
+      time-taken: 0.5962134
+  perturbation_params:
     type: "object"
     required:
     - "file"
@@ -278,13 +300,7 @@ definitions:
         type: "string"
         description: "The file at which the perturbation should be injected."
       shape:
-        type: "string"
-        description: "The shape of the fault (e.g., incorrect conditional, missing\
-          \ control flow)."
-        enum:
-        - "DeleteStatement"
-        - "ReplaceStatement"
-        - "InsertStatement"
+        $ref: "#/definitions/PerturbationKind"
       line:
         type: "integer"
         description: "The number of the line at which the perturbation should be injected."
@@ -296,35 +312,26 @@ definitions:
           \ by the request."
         items:
           $ref: "#/definitions/Perturbation"
-  inline_response_400:
-    properties:
-      message:
-        type: "string"
-        description: "Human-readable information about the error, if any can be provided"
-  Parameters_1:
-    type: "object"
-    properties:
-      time-limit:
-        type: "number"
-        format: "float"
-        description: "An (optional) time limit for the adaptation process, specified\
-          \ in minutes."
-        minimum: 1.0
-      attempt-limit:
-        type: "integer"
-        description: "An (optional) limit on the number of adaptations that may be\
-          \ attempted."
-        minimum: 1
-  Parameters_2:
-    type: "object"
-    required:
-    - "perturbations"
-    properties:
+    example:
       perturbations:
-        type: "array"
-        description: "A non-empty list of perturbations to apply to the codebase"
-        items:
-          $ref: "#/definitions/Perturbation"
+      - at:
+          stop:
+            file: "file"
+            offset: 0
+          start:
+            file: "file"
+            offset: 0
+        kind: {}
+        replacement: "replacement"
+      - at:
+          stop:
+            file: "file"
+            offset: 0
+          start:
+            file: "file"
+            offset: 0
+        kind: {}
+        replacement: "replacement"
   inline_response_200_1_resourceconsumption:
     required:
     - "num-attempts"
@@ -340,6 +347,9 @@ definitions:
         minimum: 0.0
     description: "A description of the resources that have been consumed in the process\
       \ of searching for an adaptation."
+    example:
+      num-attempts: 0
+      time-spent: 0.6027456
   inline_response_200_1:
     required:
     - "stage"
@@ -348,11 +358,11 @@ definitions:
         type: "string"
         description: "A concise description of the current state of the system."
         enum:
-        - "awaiting-perturbation"
-        - "injecting-perturbation"
-        - "localising-perturbation"
-        - "searching-for-adaptation"
-        - "finished-adapting"
+        - "READY_TO_PERTURB"
+        - "PERTURBING"
+        - "READY_TO_ADAPT"
+        - "SEARCHING"
+        - "FINISHED"
       resource-consumption:
         $ref: "#/definitions/inline_response_200_1_resourceconsumption"
       pareto-set:
@@ -362,3 +372,70 @@ definitions:
           \ non-dominated adaptations)."
         items:
           $ref: "#/definitions/CandidateAdaptation"
+    example:
+      resource-consumption:
+        num-attempts: 0
+        time-spent: 0.6027456
+      stage: "READY_TO_PERTURB"
+      pareto-set:
+      - compilation-outcome:
+          time-taken: 0.14658129
+          successful: true
+        test-outcomes:
+        - test-id: "test-id"
+          passed: true
+          time-taken: 0.5962134
+        - test-id: "test-id"
+          passed: true
+          time-taken: 0.5962134
+        diff: "diff"
+      - compilation-outcome:
+          time-taken: 0.14658129
+          successful: true
+        test-outcomes:
+        - test-id: "test-id"
+          passed: true
+          time-taken: 0.5962134
+        - test-id: "test-id"
+          passed: true
+          time-taken: 0.5962134
+        diff: "diff"
+  Parameters:
+    type: "object"
+    properties:
+      time-limit:
+        type: "number"
+        format: "float"
+        description: "An (optional) time limit for the adaptation process, specified\
+          \ in minutes."
+        minimum: 1.0
+      attempt-limit:
+        type: "integer"
+        description: "An (optional) limit on the number of adaptations that may be\
+          \ attempted."
+        minimum: 1
+    example:
+      time-limit: 1.0800828
+      attempt-limit: 1
+  Error_error:
+    required:
+    - "kind"
+    - "message"
+    properties:
+      kind:
+        type: "string"
+        example: "NeutralPerturbation"
+        description: "The kind of error that occurred."
+        enum:
+        - "NeutralPerturbation"
+        - "FailedToComputeCoverage"
+        - "NotReadyToPerturb"
+        - "NotReadyToAdapt"
+        - "FileNotFound"
+        - "LineNotFound"
+        - "OperatorNotFound"
+        - "NoSearchLimits"
+      message:
+        type: "string"
+        example: "invalid perturbation: no test failures."
+        description: "Human-readable information about the error, if any can be provided."
