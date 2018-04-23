@@ -184,6 +184,13 @@ The start location, target locations, initial battery, ..., are all defined
 in the test harness response to
 [ready](https://github.mit.edu/brass/cmu-robotics/blob/master/documents/swagger-yaml/cp1-th.md#post-ready).
 
+## List of log files
+
+Here is a list of paths to log files that we want saved from every test run:
+* Standard output
+* Standard error
+* All files in `~/cp1/`
+
 ## Test Procedure
 
 See overview above. In particular, this challenge problem will require a
