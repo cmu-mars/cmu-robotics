@@ -14,7 +14,7 @@ from swagger_server import util
 from orchestrator import Orchestrator
 from exceptions import *
 
-orc = None
+orc = None ## todo: this never gets created? that's weird. also need to add call backs
 
 def adapt_post(Parameters):  # noqa: E501
     """adapt_post
@@ -117,7 +117,7 @@ def perturbations_get(perturbation_params):  # noqa: E501
     if connexion.request.is_json:
         pp = PerturbationParams.from_dict(connexion.request.get_json())  # noqa: E501
 
-    mutations = ORCHESTRATOR.perturbations(filename=pp.file,
+    mutations = orc.perturbations(filename=pp.file,
                                            line_num=pp.line,
                                            op_name=pp.shape)
 
