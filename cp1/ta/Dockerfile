@@ -1,5 +1,4 @@
-FROM cmu-mars/base
-
+FROM cmu-mars/cp1_controllers
 
 RUN sudo apt-get update
 RUN sudo apt-get install ros-kinetic-gazebo-msgs
@@ -12,7 +11,7 @@ RUN wget -q "https://github.com/ros-planning/navigation_msgs/archive/${ROS_NAVIG
     rm navigation_msgs/README.md && \
     mv navigation_msgs/* src && \
     rm -rf navigation_msgs
-    
+
 RUN sudo apt-get install -y python3 python3-pip
 
 RUN sudo mkdir -p /usr/src/app

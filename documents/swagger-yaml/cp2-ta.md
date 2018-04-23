@@ -22,7 +22,7 @@
 ### POST /adapt
 
 #### Description
-Used to trigger the code adaptation process.
+Triggers the code adaptation process.
 
 
 #### Parameters
@@ -44,20 +44,28 @@ Used to trigger the code adaptation process.
 
 |HTTP Code|Description|Schema|
 |---|---|---|
-|**200**|Successfully triggered code adaptation|No Content|
-|**400**|Encountered an error while triggering code adaptation|[Response 400](#adapt-post-response-400)|
-
-<a name="adapt-post-response-400"></a>
-**Response 400**
-
-|Name|Description|Schema|
-|---|---|---|
-|**message**  <br>*optional*|Human-readable information about the error, if any can be provided|string|
+|**204**|OK.|No Content|
+|**400**|An error prevented code adaptation from being triggered.|[Error](#error)|
+|**409**|System has not been (successfully) perturbed or adaptation has already been triggered.|[Error](#error)|
 
 
 #### Consumes
 
 * `application/json`
+
+
+<a name="files-get"></a>
+### GET /files
+
+#### Description
+Returns a list of all the source files that may be subject to perturbation.
+
+
+#### Responses
+
+|HTTP Code|Description|Schema|
+|---|---|---|
+|**200**|OK.|< string > array|
 
 
 <a name="lines-get"></a>
@@ -71,8 +79,7 @@ Returns a list of all the source lines at which perturbations may be injected.
 
 |HTTP Code|Description|Schema|
 |---|---|---|
-|**200**|Successfully computed and returned a list of source lines within the project.|< [SourceLine](#sourceline) > array|
-|**400**|Failed to produce a list of source lines within the project.|No Content|
+|**200**|OK.|< [SourceLine](#sourceline) > array|
 
 
 <a name="observe-get"></a>
@@ -86,8 +93,7 @@ Returns the current status of the SUT.
 
 |HTTP Code|Description|Schema|
 |---|---|---|
-|**200**|Successfully observed the state of the SUT.|[Response 200](#observe-get-response-200)|
-|**400**|Encounted an error while observing the SUT.|No Content|
+|**200**|OK.|[Response 200](#observe-get-response-200)|
 
 <a name="observe-get-response-200"></a>
 **Response 200**
@@ -96,7 +102,7 @@ Returns the current status of the SUT.
 |---|---|---|
 |**pareto-set**  <br>*optional*|A list containing details of the sub-set of adaptations that have been encountered that belong to the pareto set (i.e., the set of non-dominated adaptations).|< [CandidateAdaptation](#candidateadaptation) > array|
 |**resource-consumption**  <br>*optional*|A description of the resources that have been consumed in the process of searching for an adaptation.|[resource-consumption](#observe-get-resource-consumption)|
-|**stage**  <br>*required*|A concise description of the current state of the system.|enum (awaiting-perturbation, injecting-perturbation, localising-perturbation, searching-for-adaptation, finished-adapting)|
+|**stage**  <br>*required*|A concise description of the current state of the system.|enum (READY_TO_PERTURB, PERTURBING, READY_TO_ADAPT, SEARCHING, FINISHED)|
 
 <a name="observe-get-resource-consumption"></a>
 **resource-consumption**
@@ -111,36 +117,23 @@ Returns the current status of the SUT.
 ### POST /perturb
 
 #### Description
-Applies a set of perturbations, given as a list of JSON objects, to the SUT. This endpoint should be used to prepare a test scenario for evaluation.
+Applies a given perturbation to the SUT. The resulting perturbed system will become Baseline B, provided that the system builds and fails at least one test.
 
 
 #### Parameters
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**Parameters**  <br>*required*|[Parameters](#perturb-post-parameters)|
-
-<a name="perturb-post-parameters"></a>
-**Parameters**
-
-|Name|Description|Schema|
-|---|---|---|
-|**perturbations**  <br>*required*|A non-empty list of perturbations to apply to the codebase|< [Perturbation](#perturbation) > array|
+|**Body**|**Parameters**  <br>*required*|[Perturbation](#perturbation)|
 
 
 #### Responses
 
 |HTTP Code|Description|Schema|
 |---|---|---|
-|**200**|Applied the perturbations to the the system successfully|No Content|
-|**400**|Encountered an error while applying the perturbations to the system|[Response 400](#perturb-post-response-400)|
-
-<a name="perturb-post-response-400"></a>
-**Response 400**
-
-|Name|Description|Schema|
-|---|---|---|
-|**message**  <br>*optional*|Human-readable information about the error, if any can be provided|string|
+|**204**|OK.|No Content|
+|**400**|Failed to perturb the SUT.|[Error](#error)|
+|**409**|The SUT has already been perturbed.|[Error](#error)|
 
 
 <a name="perturbations-get"></a>
@@ -170,8 +163,8 @@ Returns a list of possible perturbations of an (optionally) specified shape and 
 
 |HTTP Code|Description|Schema|
 |---|---|---|
-|**200**|Successfully computed the list of possible perturbations|[Response 200](#perturbations-get-response-200)|
-|**400**|Encountered an error while computing the list of possible perturbations.|[Response 400](#perturbations-get-response-400)|
+|**200**|OK.|[Response 200](#perturbations-get-response-200)|
+|**400**|Encountered an error while computing the list of possible perturbations.|[Error](#error)|
 
 <a name="perturbations-get-response-200"></a>
 **Response 200**
@@ -179,13 +172,6 @@ Returns a list of possible perturbations of an (optionally) specified shape and 
 |Name|Description|Schema|
 |---|---|---|
 |**perturbations**  <br>*optional*|A list of perturbations that satisfy the query parameters provided by the request.|< [Perturbation](#perturbation) > array|
-
-<a name="perturbations-get-response-400"></a>
-**Response 400**
-
-|Name|Description|Schema|
-|---|---|---|
-|**message**  <br>*optional*|Human-readable information about the error, if any can be provided|string|
 
 
 
@@ -210,6 +196,22 @@ Returns a list of possible perturbations of an (optionally) specified shape and 
 |---|---|---|
 |**successful**  <br>*required*|A flag indicating whether the compilation of this adaptation was successful or not.|boolean|
 |**time-taken**  <br>*required*|The number of seconds taken to compile this adaptation.  <br>**Minimum value** : `0`|number (float)|
+
+
+<a name="error"></a>
+### Error
+
+|Name|Schema|
+|---|---|
+|**error**  <br>*required*|[error](#error-error)|
+
+<a name="error-error"></a>
+**error**
+
+|Name|Description|Schema|
+|---|---|---|
+|**kind**  <br>*required*|The kind of error that occurred.  <br>**Example** : `"NeutralPerturbation"`|enum (NeutralPerturbation, FailedToComputeCoverage, NotReadyToPerturb, NotReadyToAdapt, FileNotFound, LineNotFound, OperatorNotFound, NoSearchLimits)|
+|**message**  <br>*required*|Human-readable information about the error, if any can be provided.  <br>**Example** : `"invalid perturbation: no test failures."`|string|
 
 
 <a name="perturbation"></a>
@@ -261,21 +263,9 @@ A description of the kind of the perturbation.
 
 |Name|Description|Schema|
 |---|---|---|
-|**crashed**  <br>*optional*|A flag indicating whether or not the system crashed during execution of the test.|boolean|
-|**qos**  <br>*optional*|A summary of the quality of service that was observed during the execution of the test.|[TestQoS](#testqos)|
+|**passed**  <br>*required*|Indicates whether or not the test passed.|boolean|
 |**test-id**  <br>*required*|A unique identifier for the test to which this outcome belongs.|string|
 |**time-taken**  <br>*required*|The number of seconds taken to complete the test.  <br>**Minimum value** : `0`|number (float)|
-|**timed-out**  <br>*required*|A flag indicating whether or not the test timed out during execution.|boolean|
-
-
-<a name="testqos"></a>
-### TestQoS
-
-|Name|Description|Schema|
-|---|---|---|
-|**collisions**  <br>*required*|A measure of service quality with respect to the number of collisions.|object|
-|**duration**  <br>*required*|A measure of service quality with respect to time taken to complete the test.|object|
-|**proximity**  <br>*required*|A measure of service quality with respect to proximity to the goal.|object|
 
 
 

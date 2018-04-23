@@ -158,12 +158,11 @@ to the mission goals (energy consumption and timeliness in this challenge).
 
 There are pieces of information that will be defined before the execution
 of a test for this challenge problem:
-* The map, including way point locations and locations of charging
+* The [map](https://github.com/cmu-mars/cp1_base/blob/master/cp1_base/maps/cp1_map.json), including way point locations and locations of charging
   stations.
-* The set of Kinect sensors that the robot can use.
-* The set of software components (localization) that can be used by the
+* A set of [software components](https://github.com/cmu-mars/model-learner/blob/master/conf/conf.json) (configuration options) that can be used by the
   robot.
-* A power model from a set of predefined power models that are inherently
+* A power model from a set of predefined [power models](https://github.com/cmu-mars/cp1_base/tree/master/cp1_base/power_models) that are inherently
   different from each other and they simulate different power consumptions
   of the robot.
 
