@@ -77,6 +77,7 @@ if __name__ == "__main__":
     go_parser.add_argument('-i', '--illuminance', action='store_true', help="Track illuminance and report max and min")
     go_parser.add_argument('-u', '--launch', action='store_true', help="Attempt to launch the ros configuration as well")
     go_parser.add_argument('-b', '--bumps', action="store_true", help="Track robot bumping into something")
+    go_parser.add_argument('--no_publish', action="store_true", help="Do not publish location")
     go_parser.add_argument('start', nargs='?', help='The waypoint label of the start')
     go_parser.add_argument('target', help='The wapoint lable of the target')
 
@@ -284,10 +285,11 @@ if __name__ == "__main__":
                     for id in gargs.lights.split(','):
                         result = cp.gazebo.enable_light(id, False) 
 
-                location = cp.map_server.waypoint_to_coords(gargs.start)
-                heading = cp.instruction_server.get_start_heading(gargs.start, gargs.target)
-                result = cp.gazebo.set_turtlebot_position(location["x"], location["y"], heading)
-                rospy.sleep(10)
+                if not gargs.no_publish:
+                    location = cp.map_server.waypoint_to_coords(gargs.start)
+                    heading = cp.instruction_server.get_start_heading(gargs.start, gargs.target)
+                    result = cp.gazebo.set_turtlebot_position(location["x"], location["y"], heading)
+                    rospy.sleep(10)
                 start = rospy.Time.now()
                 result, message = cp.do_instructions(gargs.start, gargs.target, True)
             except Exception as e:
