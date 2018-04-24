@@ -42,6 +42,8 @@ paths:
                     * `ADAPTED`, the SUT has found a new plan and it has been issued to 
                       the system.
                       
+                    * `ADAPTED_FAILED`, the plan failed to be executed on the system
+                      
                     * `FINAL_UTILITY` the final utility achieved by the system. Here the message will simply be a floating point number printed as a string
                     
                     * `PLAN` the new list of waypoints being visted by the system because of replanning. The message will be a stringified json array of strings.
@@ -53,6 +55,7 @@ paths:
                   - MISSION_FAILED
                   - ADAPTING
                   - ADAPTED
+                  - ADAPTED_FAILED
                   - FINAL_UTILITY
                   - PLAN
               message:
