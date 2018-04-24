@@ -38,16 +38,20 @@ paths:
 
                     * `ADAPTING`, the SUT has started adapting, which means looking
                       for a new plan.
-                      
-                    * `ADAPTED`, the SUT has found a new plan and it has been issued to 
+
+                    * `ADAPTED`, the SUT has found a new plan and it has been issued to
                       the system.
-                      
+
                     * `ADAPTED_FAILED`, the plan failed to be executed on the system
-                      
-                    * `FINAL_UTILITY` the final utility achieved by the system. Here the message will simply be a floating point number printed as a string
-                    
-                    * `PLAN` the new list of waypoints being visted by the system because of replanning. The message will be a stringified json array of strings.
-                    
+
+                    * `FINAL_UTILITY` the final utility achieved by
+                      the system. Here the message will simply be a
+                      floating point number printed as a string
+
+                    * `PLAN` the new list of waypoints being visted by
+                      the system because of replanning. The message
+                      will be a stringified json array of strings.
+
                 type: string
                 enum:
                   - RAINBOW_READY
@@ -70,4 +74,3 @@ paths:
           description: the TH acknowledges the status of the SUT
         '400':
           description: the TH has encountered an error in processing the status of the SUT
-  

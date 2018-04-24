@@ -14,8 +14,48 @@ from typing import List, Dict
 from six import iteritems
 from ..util import deserialize_date, deserialize_datetime
 
+from swagger_server.models.cp3_internal_status import CP3InternalStatus  # noqa: E501
+
 import rospy
 import swagger_server.config
+
+def internal_status_post(CP3InternalStatus):  # noqa: E501
+    """internal_status_post
+
+    reports any internal status that might be sent to the TA for internal bookeeping or forwarding to the TH # noqa: E501
+
+    :param CP3InternalStatus:
+    :type CP3InternalStatus: dict | bytes
+
+    :rtype: None
+    """
+    if connexion.request.is_json:
+        CP3InternalStatus = CP3InternalStatus.from_dict(connexion.request.get_json())  # noqa: E501
+
+    if CP3.InternalStatus.status == "RAINBOW_READY":
+        ## i think the sending of live has to happen once we get this,
+        ## not just once we bring up the TA interface; check with
+        ## bradley tomorrow. this possibly depends on if
+        ## /ready:adapting == true. or maybe this is the difference
+        ## between live and mission-running.
+
+        ## send status "live"
+    elif CP3.InternalStatus.status == "MISSION_SUCCEEDED":
+        ## send a done
+    elif CP3.InternalStatus.status == "MISSION_FAILED":
+        ## send a done
+    elif CP3.InternalStatus.status == "ADAPTING":
+        ## send a status "adapting"
+    elif CP3.InternalStatus.status == "ADAPTED":
+        ## send a status "adapted"
+    elif CP3.InternalStatus.status == "ADAPTED_FAILED":
+        ## send an error?
+    elif CP3.InternalStatus.status == "FINAL_UTILITY":
+        ## update a field in config to store this for a future done
+        ## message
+    elif CP3.InternalStatus.status == "PLAN":
+        ## update data structure for observe? although we don't return
+        ## the plan in observe now.
 
 def observe_get():
     """
