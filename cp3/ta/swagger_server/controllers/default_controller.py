@@ -34,7 +34,7 @@ def observe_get():
     ret.y = y
     ret.battery = config.battery
     ret.sim_time = rospy.Time.now().secs
-    ret.lights = [ "l1" ] ## todo: https://github.mit.edu/brass/cmu-robotics/issues/116
+    ret.lights = config.cp.map_server.lights_on()
     return ret
 
 def perturb_light_post(Parameters):
