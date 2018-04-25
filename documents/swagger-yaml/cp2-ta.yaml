@@ -1,118 +1,10 @@
 swagger: '2.0'
 info:
   version: '0.1'
-  title: 'cmu mars brass ta: phase 2, cp2'
+  title: 'CMU MARS BRASS TA: Phase II, CP2'
 schemes:
   - http
 host: brass-ta
-definitions:
-  SourceLine:
-    type: object
-    required:
-      - file
-      - number
-    properties:
-      file:
-        type: string
-        description: >-
-          The file to which this line belongs.
-      number:
-        type: integer
-        minimum: 1
-        description: >-
-          The one-indexed number of this line in the file.
-
-  SourceLocation:
-    type: object
-    required:
-      - file
-      - offset
-    properties:
-      file:
-        type: string
-        description: >-
-          The file at which this source location resides.
-      offset:
-        type: integer
-        minimum: 0
-        description: >-
-          The character offset between the start of the file and this location.
-
-  SourceRange:
-    type: object
-    required:
-      - start
-      - stop
-    properties:
-      start:
-        $ref: '#/definitions/SourceLocation'
-        description: >-
-          The location that marks the start of this source range.
-      stop:
-        $ref: '#/definitions/SourceLocation'
-        description: >-
-          The location that marks the end of this source range.
-
-  Perturbation:
-    type: object
-    discriminator: kind
-    required:
-      - kind
-    properties:
-      kind:
-        type: string
-        description: >-
-          Used to discriminate between different kinds of perturbation.
-
-  DeleteStatementPerturbation:
-    type: object
-    allOf:
-      - $ref: '#/definitions/Perturbation'
-      - required:
-          - kind
-          - locationRange
-      - properties:
-          locationRange:
-            $ref: '#/definitions/SourceRange'
-            description: >-
-              The range of code that is deleted by the perturbation.
-
-  ReplaceStatementPerturbation:
-    type: object
-    allOf:
-      - $ref: '#/definitions/Perturbation'
-      - required:
-          - kind
-          - locationRange
-      - properties:
-          locationRange:
-            $ref: '#/definitions/SourceRange'
-            description: >-
-              The range of code that is replaced by the perturbation.
-          statement:
-            type: string
-            description:
-              The source code for the replacement statement.
-
-  InsertStatementPerturbation:
-    type: object
-    allOf:
-      - $ref: '#/definitions/Perturbation'
-      - required:
-          - kind
-          - location
-          - statement
-      - properties:
-          location:
-            $ref: '#/definitions/SourceRange'
-            description: >-
-              The location immediately before the location at which the
-              statement will be inserted.
-          statement:
-            type: string
-            description:
-              The source code for the inserted statement.
-
 paths:
   /perturbations:
     get:
@@ -124,7 +16,7 @@ paths:
       parameters:
         - in: body
           required: true
-          name: Parameters
+          name: perturbation-params
           schema:
             type: object
             required:
@@ -136,14 +28,7 @@ paths:
                 description: >-
                   The file at which the perturbation should be injected.
               shape:
-                type: string
-                enum:
-                  - DeleteStatement
-                  - ReplaceStatement
-                  - InsertStatement
-                description: >-
-                  The shape of the fault (e.g., incorrect conditional,
-                  missing control flow).
+                $ref: './cp2-definitions.yaml#/definitions/PerturbationKind'
               line:
                 type: integer
                 description: >-
@@ -151,14 +36,14 @@ paths:
                   injected.
       responses:
         '200':
-          description: Successfully computed the list of possible perturbations
+          description: OK.
           schema:
             type: object
             properties:
               perturbations:
                 type: array
                 items:
-                  $ref: '#/definitions/Perturbation'
+                  $ref: './cp2-definitions.yaml#/definitions/Perturbation'
                 description: >-
                   A list of perturbations that satisfy the query parameters
                   provided by the request.
@@ -168,12 +53,7 @@ paths:
             perturbations.
           schema:
             type: object
-            properties:
-              message:
-                type: string
-                description: >-
-                  Human-readable information about the error, if any can be
-                  provided
+            $ref: './cp2-definitions.yaml#/definitions/Error'
 
   /lines:
     get:
@@ -181,90 +61,29 @@ paths:
         perturbations may be injected.
       responses:
         '200':
-          description: Successfully computed and returned a list of source
-            lines within the project.
+          description: OK.
           schema:
             type: array
             items:
-              $ref: '#/definitions/SourceLine'
+              $ref: './cp2-definitions.yaml#/definitions/SourceLine'
             description: >-
-              A list of the (mutable) source lines within the project.
-        '400':
-          description: Failed to produce a list of source lines within the
-            project.
+              A list of the mutable source lines within the project.
 
-  /adapt:
-    post:
-      description: Used to trigger the code adaptation process.
-      parameters:
-        - in: body
-          required: true
-          name: Parameters
-          schema:
-            type: object
-            properties:
-              time-limit:
-                type: number
-                format: float
-                minimum: 1.0
-                required: false
-                description: >-
-                  An (optional) time limit for the adaptation process,
-                  specified in minutes.
-              attempt-limit:
-                type: integer
-                minimum: 1
-                required: false
-                description: >-
-                  An (optional) limit on the number of adaptations that may be
-                  attempted.
+  /files:
+    get:
+      description: Returns a list of all the source files that may be
+        subject to perturbation.
       responses:
         '200':
-          description: Successfully triggered code adaptation
-        '400':
-          description: Encountered an error while triggering code adaptation
+          description: OK.
           schema:
-            type: object
-            properties:
-              message:
-                type: string
-                description: >-
-                  Human-readable information about the error, if any can be
-                  provided
-  /perturb:
-    post:
-      description: >-
-        Applies a set of perturbations, given as a list of JSON objects,
-        to the SUT. This endpoint should be used to prepare a test scenario
-        for evaluation.
-      parameters:
-        - in: body
-          required: true
-          name: Parameters
-          schema:
-            type: object
-            required:
-              - perturbations
-            properties:
-              perturbations:
-                type: array
-                description: A non-empty list of perturbations to apply to the
-                  codebase
-                items:
-                  $ref: '#/definitions/Perturbation'
-      responses:
-        '200':
-          description: Applied the perturbations to the the system successfully
-        '400':
-          description: Encountered an error while applying the perturbations to the system
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-                description: >-
-                  Human-readable information about the error, if any can be
-                  provided
+            type: array
+            items:
+              type: string
+              example: foo.cpp
+            description: >-
+              A list of the mutable files.
+
   /observe:
     get:
       description: >-
@@ -272,7 +91,7 @@ paths:
 
       responses:
         '200':
-          description: Successfully observed the state of the SUT.
+          description: OK.
           schema:
             type: object
             required:
@@ -283,11 +102,11 @@ paths:
                 description: >-
                   A concise description of the current state of the system.
                 enum:
-                  - awaiting-perturbation
-                  - injecting-perturbation
-                  - localising-perturbation
-                  - searching-for-adaptation
-                  - finished-adapting
+                  - READY_TO_PERTURB
+                  - PERTURBING
+                  - READY_TO_ADAPT
+                  - SEARCHING
+                  - FINISHED
               resource-consumption:
                 type: object
                 description: >-
@@ -308,11 +127,76 @@ paths:
               pareto-set:
                 type: array
                 items:
-                  $ref: './cp2-th.yaml#/definitions/CandidateAdaptation'
+                  $ref: './cp2-definitions.yaml#/definitions/CandidateAdaptation'
                 description: >-
                   A list containing details of the sub-set of adaptations that
                   have been encountered that belong to the
                   pareto set (i.e., the set of non-dominated adaptations).
 
+  /perturb:
+    post:
+      description: >-
+        Applies a given perturbation to the SUT. The resulting perturbed system
+        will become Baseline B, provided that the system builds and fails at
+        least one test.
+      parameters:
+        - in: body
+          required: true
+          name: perturb-params
+          schema:
+            type: object
+            $ref: './cp2-definitions.yaml#/definitions/Perturbation'
+            description: The perturbation to apply to the SUT.
+      responses:
+        '204':
+          description: OK.
         '400':
-          description: Encounted an error while observing the SUT.
+          description: Failed to perturb the SUT.
+          schema:
+            type: object
+            $ref: './cp2-definitions.yaml#/definitions/Error'
+        '409':
+          description: >-
+            The SUT has already been perturbed.
+          schema:
+            type: object
+            $ref: './cp2-definitions.yaml#/definitions/Error'
+
+  /adapt:
+    post:
+      description: Triggers the code adaptation process.
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: Parameters
+          required: true
+          schema:
+            type: object
+            properties:
+              time-limit:
+                type: number
+                format: float
+                minimum: 1.0
+                description: >-
+                  An (optional) time limit for the adaptation process,
+                  specified in minutes.
+              attempt-limit:
+                type: integer
+                minimum: 1
+                description: >-
+                  An (optional) limit on the number of adaptations that may be
+                  attempted.
+      responses:
+        '204':
+          description: OK.
+        '400':
+          description: An error prevented code adaptation from being triggered.
+          schema:
+            type: object
+            $ref: './cp2-definitions.yaml#/definitions/Error'
+        '409':
+          description: System has not been (successfully) perturbed or adaptation has already been triggered.
+          schema:
+            type: object
+            $ref: './cp2-definitions.yaml#/definitions/Error'

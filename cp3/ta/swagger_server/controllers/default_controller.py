@@ -14,6 +14,49 @@ from typing import List, Dict
 from six import iteritems
 from ..util import deserialize_date, deserialize_datetime
 
+from swagger_server.models.cp3_internal_status import CP3InternalStatus  # noqa: E501
+
+import rospy
+import swagger_server.config
+
+def internal_status_post(CP3InternalStatus):  # noqa: E501
+    """internal_status_post
+
+    reports any internal status that might be sent to the TA for internal bookeeping or forwarding to the TH # noqa: E501
+
+    :param CP3InternalStatus:
+    :type CP3InternalStatus: dict | bytes
+
+    :rtype: None
+    """
+    if connexion.request.is_json:
+        CP3InternalStatus = CP3InternalStatus.from_dict(connexion.request.get_json())  # noqa: E501
+
+    if CP3.InternalStatus.status == "RAINBOW_READY":
+        ## i think the sending of live has to happen once we get this,
+        ## not just once we bring up the TA interface; check with
+        ## bradley tomorrow. this possibly depends on if
+        ## /ready:adapting == true. or maybe this is the difference
+        ## between live and mission-running.
+
+        ## send status "live"
+    elif CP3.InternalStatus.status == "MISSION_SUCCEEDED":
+        ## send a done
+    elif CP3.InternalStatus.status == "MISSION_FAILED":
+        ## send a done
+    elif CP3.InternalStatus.status == "ADAPTING":
+        ## send a status "adapting"
+    elif CP3.InternalStatus.status == "ADAPTED":
+        ## send a status "adapted"
+    elif CP3.InternalStatus.status == "ADAPTED_FAILED":
+        ## send an error?
+    elif CP3.InternalStatus.status == "FINAL_UTILITY":
+        ## update a field in config to store this for a future done
+        ## message
+    elif CP3.InternalStatus.status == "PLAN":
+        ## update data structure for observe? although we don't return
+        ## the plan in observe now.
+
 def observe_get():
     """
     observe_get
@@ -21,14 +64,18 @@ def observe_get():
 
     :rtype: InlineResponse2003
     """
-    ret = InlineResponse2003()
-    ret.x = 0.0
-    ret.y = 0.0
-    ret.battery = 5000
-    ret.sim_time = 30
-    ret.lights = [ "l1" , "l2" ]
-    return ret
+    x , y = config.cp.gazebo.get_turtlebot_state()
 
+    if x == None or y == None:
+        return {} , 400 ## todo: api doesn't specify any payload here
+
+    ret = InlineResponse2003()
+    ret.x = x
+    ret.y = y
+    ret.battery = config.battery
+    ret.sim_time = rospy.Time.now().secs
+    ret.lights = config.cp.map_server.lights_on()
+    return ret
 
 def perturb_light_post(Parameters):
     """
@@ -42,11 +89,15 @@ def perturb_light_post(Parameters):
     if connexion.request.is_json:
         Parameters = Parameters0.from_dict(connexion.request.get_json())
 
-    ret = InlineResponse200()
-    ret.sim_time = 50
+    ## todo: check if the lights are in LIGHTSET
 
-    return ret
-
+    if config.cp.gazebo.enable_light(Parameters.id, Parameters.state):
+        ret = InlineResponse200()
+        ret.sim_time = rospy.Time.now().secs
+        return ret
+    else:
+        ret = InlineResponse4001(rospy.Time.now().secs, "light setting failed on: %s" % Parameters)
+        return ret , 400
 
 def perturb_nodefail_post(Parameters):
     """
@@ -60,10 +111,17 @@ def perturb_nodefail_post(Parameters):
     if connexion.request.is_json:
         Parameters = Parameters2.from_dict(connexion.request.get_json())
 
-    ret = InlineResponse2002()
-    ret.sim_time = 55
-    return ret
+    retval , message = config.cp.kill_node(Parameters.id)
 
+    if retval:
+        ret = InlineResponse2002()
+        ret.sim_time = rospy.Time.now().secs
+        return ret
+    else:
+        ret = InlineResponse4001()
+        ret.sim_time = rospy.Time.now().secs
+        ret.message = message
+        return ret , 400
 
 def perturb_sensor_post(Parameters):
     """
@@ -77,11 +135,31 @@ def perturb_sensor_post(Parameters):
     if connexion.request.is_json:
         Parameters = Parameters1.from_dict(connexion.request.get_json())
 
-    ret = InlineResponse2001()
-    ret.sim_time = 89
+    res = None
+    if Parameters.id == "kinect" and Parameters.state:
+        res = config.cp.gazebo.set_kinect_mode('on')
+    elif Parameters.id == "kinect" and not Parameters.state:
+        res = config.cp.gazebo.set_kinect_mode('off')
 
-    return ret
+    elif Parameters.id == "lidar" and Parameters.state:
+        res = config.cp.gazebo.set_lidar_mode('on')
+    elif Parameters.id == "lidar" and not Parameters.state:
+        res = config.cp.gazebo.set_lidar_mode('off')
 
+    elif Parameters.id == "camera" and Parameters.state:
+        res = config.cp.gazebo.set_kinect_mode('image-only')
+    elif Parameters.id == "camera" and not Parameters.state:
+        res = config.cp.gazebo.set_kinect_mode('off')
+
+    if res:
+        ret = InlineResponse2001()
+        ret.sim_time = rospy.Time.now().secs
+        return ret
+    else:
+        ret = InlineResponse4001()
+        ret.sim_time = rospy.Time.now.secs()
+        ret.message = ("failed to set sensor state: %s" % Parameters)
+        return ret , 400
 
 def start_post():
     """
@@ -90,4 +168,22 @@ def start_post():
 
     :rtype: None
     """
-    return {} , 200
+    if not config.started:
+        def active_cb():
+            """ callback for when the bot is made active """
+            config.logger.debug("received notification that goal is active")
+
+        def done_cb(terminal, result):
+            """ callback for when the bot is at the target """
+            if 'successfully' in result.sequence:
+                config.logger.debug("received notification that the goal has been completed!")
+                ## todo: this is one thing that should trigger posting
+                ## to /done with a bunch of stuff i don't have yet
+
+        result , msg = config.cp.do_instructions(cp.start, cp.target,
+                                                 False, active_cb, done_cb)
+        config.started = True
+        return {} , 200
+    else:
+        ret = InlineResponse400("/start called more than once")
+        return ret , 400

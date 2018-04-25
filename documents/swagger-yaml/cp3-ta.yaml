@@ -87,9 +87,9 @@ paths:
               id:
                 type: string
                 enum:
-                  - kinect-ir
+                  - kinect
                   - lidar
-                  - kinect-all
+                  - camera
                 description: >-
                   which sensor of SENSORSET to set
               state:
@@ -138,10 +138,9 @@ paths:
               id:
                 type: string
                 enum:
-                  - movebase
                   - amcl
                   - mrpt
-                  - cb-base
+                  - aruco
                 description: >-
                   cause the named node to fail
       responses:

@@ -39,10 +39,6 @@ paths:
             type: object
             required:
               - obstacleid
-              - topleft-x
-              - topleft-y
-              - botright-x
-              - botright-y
               - sim-time
             properties:
               obstacleid:
@@ -50,30 +46,6 @@ paths:
                 description: >-
                   a unique identifier for this particular placed obstacle, so
                   that it can be removed in the future
-              topleft-x:
-                type: number
-                format: float
-                description: >-
-                  the x-coordinate of the top left corner of the bounding box of
-                  the placed obstacle
-              topleft-y:
-                type: number
-                format: float
-                description: >-
-                  the y-coordinate of the top left corner of the bounding box of
-                  the placed obstacle
-              botright-x:
-                type: number
-                format: float
-                description: >-
-                  the x-coordinate of the bottom right corner of the bounding
-                  box of the placed obstacle
-              botright-y:
-                type: number
-                format: float
-                description: >-
-                  the y-coordinate of the bottom right corner of the bounding
-                  box of the placed obstacle
               sim-time:
                 type: integer
                 description: the simulation time when the obstacle was placed
@@ -164,8 +136,8 @@ paths:
                 minimum: 0
                 description: >-
                   the level to which the battery should be set, in
-                  mWh. cannot be more than the maximum given in the TH
-                  response to `/ready`.
+                  mWh. cannot be more than the maximum charge for the power
+                  model specified in the THs response to `/ready`.
       responses:
         '200':
           description: the battery has been set to the requested level

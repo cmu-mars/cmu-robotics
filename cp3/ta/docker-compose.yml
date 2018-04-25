@@ -12,30 +12,6 @@
 #
 version: '2'
 services:
-  roscore:
-    image: ros:kinetic
-    container_name: roscore
-    hostname: roscore
-    expose:
-      - 11311
-    command: roscore
-
-  gazebo:
-    image: cmu-mars/gazebo
-    container_name: gazebo
-    hostname: gazebo
-    # expose the Gazebo server to the host machine
-    ports:
-      - 11345:11345
-    environment:
-      - "ROS_HOSTNAME=gazebo"
-      - "ROS_MASTER_URI=http://roscore:11311"
-      - "GAZEBO_MASTER_URI=http://localhost:11345"
-    depends_on:
-      - roscore
-
-    command: roslaunch --wait /home/mars/catkin_ws/src/cp_gazebo/launch/cp1.launch
-
   cp3_th:
     image: docker.darpa-brass.com/ll/cmur-harness
     container_name: cp3_th
@@ -58,8 +34,6 @@ services:
     ports:
       - ${TA_PORT}:5000
     depends_on:
-      - roscore
-      - gazebo
       - cp3_th
     expose:
       - 5000
