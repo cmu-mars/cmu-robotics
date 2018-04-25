@@ -55,4 +55,7 @@ ENV PYTHONUNBUFFERED 0
 
 EXPOSE 8080
 
+ADD entrypoint.sh
+ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
+
 CMD ["python3", "-m", "swagger_server"]
