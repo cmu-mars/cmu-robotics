@@ -98,17 +98,23 @@ definitions:
     type: object
     required:
       - file
-      - offset
+      - line
+      - column
     properties:
       file:
         type: string
         description: >-
           The file at which this source location resides.
-      offset:
+      line:
         type: integer
-        minimum: 0
+        minimum: 1
         description: >-
-          The character offset between the start of the file and this location.
+          The one-indexed line number of this location.
+      column:
+        type: integer
+        minimum: 1
+        description: >-
+          The one-indexed column number of this location.
 
   SourceLine:
     type: object
