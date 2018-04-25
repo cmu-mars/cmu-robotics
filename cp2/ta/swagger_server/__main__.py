@@ -10,8 +10,8 @@ from swagger_client import DefaultApi
 from orchestrator import Orchestrator
 from orchestrator.exceptions import *
 
-import config
-from converters import *
+from swagger_server import config
+from swagger_server.converters import *
 
 if __name__ == '__main__':
     # Parameter parsing, to set up TH
@@ -53,7 +53,7 @@ if __name__ == '__main__':
                                     running_time=runtime,
                                     num_attempts=attempts,
                                     pareto_set=[ patch2ca(x) for x in pareto ],
-                                    log=[ patch2ca(x) for x in log ])
+                                    log=[ patch2ca(x) for x in log ]))
 
     def error_cb(err_code, msg):
         thApi.error_post(ErrorError(kind=err_code,message=msg))
@@ -68,8 +68,7 @@ if __name__ == '__main__':
     ## start the sequence diagram: post to ready to get configuration data
     try:
         logger.debug("posting to /ready")
-        # ready_resp = thApi.ready_post()
-        ready_resp = None
+        ready_resp = thApi.ready_post()
         logger.debug("recieved response from /ready:")
         logger.debug(str(ready_resp))
     except Exception as e:

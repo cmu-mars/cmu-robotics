@@ -14,8 +14,8 @@ from swagger_server import util
 from orchestrator import Orchestrator
 from orchestrator.exceptions import *
 
-import config
-from converters import *
+from swagger_server import config
+from swagger_server.converters import *
 
 def adapt_post(Parameters):  # noqa: E501
     """adapt_post
