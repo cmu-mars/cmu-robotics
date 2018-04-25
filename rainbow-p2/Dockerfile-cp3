@@ -31,7 +31,8 @@ RUN wget http://acme.able.cs.cmu.edu/public/BRASS/p2/prism-${PRISM_VER}-linux64.
     rm -f prism-${PRISM_VER}-linux64.tar.gz
     
 WORKDIR /home/mars/das
-
+RUN mkdir rainbow-brass
+WORKDIR /home/mars/das/rainbow-brass
 # Install Rainbow
 RUN wget http://acme.able.cs.cmu.edu/public/BRASS/p2/rainbow-brass-RR2.tgz && \
     tar zxf rainbow-brass-RR2.tgz && \
