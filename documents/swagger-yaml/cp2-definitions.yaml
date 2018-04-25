@@ -1,4 +1,3 @@
-# this document provides a set of shared definitions between the CP2 TA and TH
 definitions:
   CandidateAdaptation:
     type: object
