@@ -17,7 +17,7 @@ class Perturbation(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, kind: PerturbationKind=None, at: SourceRange=None, replacement: str=None):  # noqa: E501
+    def __init__(self, kind: PerturbationKind=None, at: SourceRange=None, replacement: str=None, transformation_index: int=None, arguments: Dict[str, str]=None):  # noqa: E501
         """Perturbation - a model defined in Swagger
 
         :param kind: The kind of this Perturbation.  # noqa: E501
@@ -26,22 +26,32 @@ class Perturbation(Model):
         :type at: SourceRange
         :param replacement: The replacement of this Perturbation.  # noqa: E501
         :type replacement: str
+        :param transformation_index: The transformation_index of this Perturbation.  # noqa: E501
+        :type transformation_index: int
+        :param arguments: The arguments of this Perturbation.  # noqa: E501
+        :type arguments: Dict[str, str]
         """
         self.swagger_types = {
             'kind': PerturbationKind,
             'at': SourceRange,
-            'replacement': str
+            'replacement': str,
+            'transformation_index': int,
+            'arguments': Dict[str, str]
         }
 
         self.attribute_map = {
             'kind': 'kind',
             'at': 'at',
-            'replacement': 'replacement'
+            'replacement': 'replacement',
+            'transformation_index': 'transformation-index',
+            'arguments': 'arguments'
         }
 
         self._kind = kind
         self._at = at
         self._replacement = replacement
+        self._transformation_index = transformation_index
+        self._arguments = arguments
 
     @classmethod
     def from_dict(cls, dikt) -> 'Perturbation':
@@ -124,3 +134,51 @@ class Perturbation(Model):
         """
 
         self._replacement = replacement
+
+    @property
+    def transformation_index(self) -> int:
+        """Gets the transformation_index of this Perturbation.
+
+
+        :return: The transformation_index of this Perturbation.
+        :rtype: int
+        """
+        return self._transformation_index
+
+    @transformation_index.setter
+    def transformation_index(self, transformation_index: int):
+        """Sets the transformation_index of this Perturbation.
+
+
+        :param transformation_index: The transformation_index of this Perturbation.
+        :type transformation_index: int
+        """
+        if transformation_index is None:
+            raise ValueError("Invalid value for `transformation_index`, must not be `None`")  # noqa: E501
+        if transformation_index is not None and transformation_index < 1:  # noqa: E501
+            raise ValueError("Invalid value for `transformation_index`, must be a value greater than or equal to `1`")  # noqa: E501
+
+        self._transformation_index = transformation_index
+
+    @property
+    def arguments(self) -> Dict[str, str]:
+        """Gets the arguments of this Perturbation.
+
+
+        :return: The arguments of this Perturbation.
+        :rtype: Dict[str, str]
+        """
+        return self._arguments
+
+    @arguments.setter
+    def arguments(self, arguments: Dict[str, str]):
+        """Sets the arguments of this Perturbation.
+
+
+        :param arguments: The arguments of this Perturbation.
+        :type arguments: Dict[str, str]
+        """
+        if arguments is None:
+            raise ValueError("Invalid value for `arguments`, must not be `None`")  # noqa: E501
+
+        self._arguments = arguments

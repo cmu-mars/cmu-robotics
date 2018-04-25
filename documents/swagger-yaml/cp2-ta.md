@@ -124,7 +124,7 @@ Applies a given perturbation to the SUT. The resulting perturbed system will bec
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**Parameters**  <br>*required*|[Perturbation](#perturbation)|
+|**Body**|**perturb-params**  <br>*required*|[Perturbation](#perturbation)|
 
 
 #### Responses
@@ -147,10 +147,10 @@ Returns a list of possible perturbations of an (optionally) specified shape and 
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**Parameters**  <br>*required*|[Parameters](#perturbations-get-parameters)|
+|**Body**|**perturbation-params**  <br>*required*|[perturbation-params](#perturbations-get-perturbation-params)|
 
-<a name="perturbations-get-parameters"></a>
-**Parameters**
+<a name="perturbations-get-perturbation-params"></a>
+**perturbation-params**
 
 |Name|Description|Schema|
 |---|---|---|
@@ -219,9 +219,11 @@ Returns a list of possible perturbations of an (optionally) specified shape and 
 
 |Name|Description|Schema|
 |---|---|---|
+|**arguments**  <br>*required*||< string, string > map|
 |**at**  <br>*required*|The range of code that is deleted or replaced by the perturbation.|[SourceRange](#sourcerange)|
 |**kind**  <br>*required*||[PerturbationKind](#perturbationkind)|
 |**replacement**  <br>*optional*|The body of the source code that should replaced the source code given by the location range associated with this perturbation.|string|
+|**transformation-index**  <br>*required*|**Minimum value** : `1`|integer|
 
 
 <a name="perturbationkind"></a>
@@ -245,8 +247,9 @@ A description of the kind of the perturbation.
 
 |Name|Description|Schema|
 |---|---|---|
+|**column**  <br>*required*|The one-indexed column number of this location.  <br>**Minimum value** : `1`|integer|
 |**file**  <br>*required*|The file at which this source location resides.|string|
-|**offset**  <br>*required*|The character offset between the start of the file and this location.  <br>**Minimum value** : `0`|integer|
+|**line**  <br>*required*|The one-indexed line number of this location.  <br>**Minimum value** : `1`|integer|
 
 
 <a name="sourcerange"></a>
