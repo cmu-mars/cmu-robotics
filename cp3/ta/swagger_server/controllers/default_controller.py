@@ -40,23 +40,30 @@ def internal_status_post(CP3InternalStatus):  # noqa: E501
         ## between live and mission-running.
 
         ## send status "live"
+        pass
     elif CP3.InternalStatus.status == "MISSION_SUCCEEDED":
         ## send a done
+        pass
     elif CP3.InternalStatus.status == "MISSION_FAILED":
         ## send a done
+        pass
     elif CP3.InternalStatus.status == "ADAPTING":
         ## send a status "adapting"
+        pass
     elif CP3.InternalStatus.status == "ADAPTED":
         ## send a status "adapted"
+        pass
     elif CP3.InternalStatus.status == "ADAPTED_FAILED":
         ## send an error?
+        pass
     elif CP3.InternalStatus.status == "FINAL_UTILITY":
         ## update a field in config to store this for a future done
         ## message
+        pass
     elif CP3.InternalStatus.status == "PLAN":
         ## update data structure for observe? although we don't return
         ## the plan in observe now.
-
+        pass
 def observe_get():
     """
     observe_get

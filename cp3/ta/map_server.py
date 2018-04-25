@@ -34,7 +34,8 @@ class MapServer():
 
 
     def get_waypoint(self, waypoint_id):
-        return filter(lambda waypoint: waypoint["node-id"] == waypoint_id, self.waypoint_list)
+        l = [x for x in self.waypoint_list if x["node-id"]==waypoint_id]  #filter(lambda waypoint: waypoint["node-id"] == waypoint_id, self.waypoint_list)
+        return l
 
     def __coords_on_line(self, x, y, sx, sy, ex, ey):
         tolerance = 2

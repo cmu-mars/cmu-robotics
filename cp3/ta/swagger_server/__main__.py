@@ -2,7 +2,6 @@
 
 import subprocess
 
-import configparser
 import sys
 import connexion
 from .encoder import JSONEncoder
@@ -10,7 +9,8 @@ import logging
 import traceback
 import rospy
 import actionlib
-#from move_base_msgs.msg import MoveBaseAction
+from move_base_msgs.msg import MoveBaseAction
+from std_msgs.msg import Float64
 from urllib.parse import urlparse
 
 from gazebo_interface import GazeboInterface
@@ -20,6 +20,8 @@ import threading
 import requests
 import time
 import random
+import json
+import os
 
 from swagger_client import DefaultApi
 from swagger_client.models.inline_response_200 import InlineResponse200
@@ -28,8 +30,11 @@ from swagger_client.models.parameters_1 import Parameters1
 from swagger_client.models.parameters_2 import Parameters2
 
 from cp3 import CP3
-from flask_script import Manager
+#from flask_script import Manager, Server
 from swagger_server import config
+
+
+
 
 if __name__ == '__main__':
     # Command line argument parsing
@@ -38,12 +43,12 @@ if __name__ == '__main__':
       sys.exit(1)
 
     th_uri = sys.argv[1]
+    th_connected = False
 
     app = connexion.App(__name__, specification_dir='./swagger/')
     app.app.json_encoder = JSONEncoder ## this may be busted; see CP2. depends on codegen version
     app.add_api('swagger.yaml', arguments={'title': 'CP3'}, strict_validation=True)
 
-    manager = Manager(app)
 
     ## capture the ambient logger
     logger = logging.getLogger('werkzeug')
@@ -65,13 +70,15 @@ if __name__ == '__main__':
 
     def fail_hard(s):
         logger.debug(s)
-        thApi.error_post(Parameters(s))
+        if th_connected:
+            thApi.error_post(Parameters(s))
         raise Exception(s)
 
     ## start the sequence diagram: post to ready to get configuration data
     try:
         logger.debug("posting to /ready")
         ready_resp = thApi.ready_post()
+        th_connected = True
         logger.debug("recieved response from /ready:")
         logger.debug("%s" % resp)
     except Exception as e:
@@ -80,36 +87,41 @@ if __name__ == '__main__':
         ## output and that this happens only very rarely if at all
         logger.debug("Failed to connect with th")
         logger.debug(traceback.format_exc())
-        raise e
+        th_connected = False
+        with open(os.path.expanduser("~/ready")) as ready:
+            data = json.load(ready)
+            ready_resp = InlineResponse200(data["start-loc"], data["target-loc"], data["use-adaptation"], data["start-configuration"], data["utility-function"])
+            logger.info("started TA in disconnected mode")
+        
 
     ## build CP object without a gazebo instance, need to set later
     cp = CP3(None)
     config.cp = cp
 
     ## check dynamic invariants on ready message
-    if ready_resp.start_loc() == ready_resp.target_loc():
+    if ready_resp.start_loc == ready_resp.target_loc:
         fail_hard("malformed response from ready: start_loc is target_loc")
 
-    if not (cp.map_server.is_waypoint(ready_resp.target_loc()) and
-            cp.map_server.is_waypoint(ready_resp.target_loc())):
+    if not (cp.map_server.is_waypoint(ready_resp.target_loc) and
+            cp.map_server.is_waypoint(ready_resp.start_loc)):
         fail_hard("response from /ready includes invalid waypoint names")
 
-    cp.start = ready_resp.target_loc()
-    cp.target = ready_resp.target_loc()
+    cp.start = ready_resp.start_loc
+    cp.target = ready_resp.target_loc
 
     ## once the response is checked, write it to ~/ready
     logger.debug("writing checked /ready message to ~/ready")
-    fo = open('~/ready', 'w')
-    fo.write('%s', ready_resp) #todo: this may or may not be JSON; check once we can run it
+    fo = open(os.path.expanduser('~/ready'), 'w')
+    fo.write('%s' %ready_resp) #todo: this may or may not be JSON; check once we can run it
     fo.close()
 
-    launch_file = ready_resp.start_configuration()
+    launch_file = ready_resp.start_configuration
 
     ## todo: this is possibly unnecesscary if we renamed the aruco
     ## file to match the start-configuration string and then just
     ## trust the static checking that this response will be well
     ## formed. the files exist in cp3_base/cp3_base/launch
-    if(ready_resp.start_configuration() == "aruco-camera"):
+    if(ready_resp.start_configuration == "aruco-camera"):
         launch_file = "aruco"
 
     logger.debug("launching cp3-%s.launch" % launch_file)
@@ -142,18 +154,18 @@ if __name__ == '__main__':
         ## todo: CP3.convert_to_class(cp) ## appears a lot in cli.py but i don't know what it means
         ## todo: this could be totally busted
         cp.gazebo = gazebo
-        start_coords = cp.map_server.waypoint_to_coords(ready_resp.start_loc())
+        start_coords = cp.map_server.waypoint_to_coords(ready_resp.start_loc)
         gazebo.set_turtlebot_position(start_coords['x'], start_coords['y'], 0)
     except Exception as e:
         fail_hard("failed to connect to gazebo: %s" % e)
 
     ## todo: for RR2, need to also process use_adaptation and the utility function
-    if ready_resp.use_adaptation():
+    if ready_resp.use_adaptation:
         try:
-            rainbow_log = open(os.path.expanduser("~/rainbow.log"))
+            rainbow_log = open(os.path.expanduser("~/rainbow.log"),'w')
             rainbow = RainbowInterface()
             ##todo: Ian: be careful copying this for cp1
-            rainbow.launch("cp3", rainbow_log)
+            rainbow.launchRainbow("cp3", rainbow_log)
             ok = rainbow.startRainbow()
             if not ok:
                 fail_hard("did not connect to rainbow in a timely fashion")
@@ -175,10 +187,17 @@ if __name__ == '__main__':
         ## time is. probably 0.
         live_resp = thApi.status_post(Parameters1("live","CP3 TA ready to recieve inital perturbs and start",rospy.Time.now().secs,None,None,None))
 
-    @manager.command
-    def runserver():
-        app.run(port=5000, host='0.0.0.0')
-        send_live()
+    # @manager.command
+    # def runserver():
+    #     print("Running server")
+    #     app.run(port=5000, host='0.0.0.0')
+    #     send_live()
+
+    # class CP3TA(Server):
+    #     def __call__(self, app, *args, **kwargs):
+
 
     logger.debug("starting TA REST interface")
-    manager.run()
+    if th_connected:
+        send_live()
+    app.run(port=5000, host='0.0.0.0')
