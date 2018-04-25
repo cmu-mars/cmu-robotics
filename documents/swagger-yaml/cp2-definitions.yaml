@@ -1,4 +1,3 @@
-# this document provides a set of shared definitions between the CP2 TA and TH
 definitions:
   CandidateAdaptation:
     type: object
@@ -98,17 +97,23 @@ definitions:
     type: object
     required:
       - file
-      - offset
+      - line
+      - column
     properties:
       file:
         type: string
         description: >-
           The file at which this source location resides.
-      offset:
+      line:
         type: integer
-        minimum: 0
+        minimum: 1
         description: >-
-          The character offset between the start of the file and this location.
+          The one-indexed line number of this location.
+      column:
+        type: integer
+        minimum: 1
+        description: >-
+          The one-indexed column number of this location.
 
   SourceLine:
     type: object
@@ -159,6 +164,8 @@ definitions:
     required:
       - kind
       - at
+      - transformation-index
+      - arguments
     properties:
       kind:
         $ref: '#/definitions/PerturbationKind'
@@ -171,3 +178,10 @@ definitions:
         description: >-
           The body of the source code that should replaced the source code
           given by the location range associated with this perturbation.
+      transformation-index:
+        type: integer
+        minimum: 1
+      arguments:
+        type: object
+        additionalProperties:
+          type: string

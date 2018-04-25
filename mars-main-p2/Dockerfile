@@ -52,9 +52,9 @@ RUN git clone https://github.com/cmu-mars/notifications-p15 \
 
 
 #ENV IG_INTERPRETER_REV fe5da82
-RUN git clone https://github.com/cmu-mars/ig-action-server-p15.git   src/ig-interpreter
-#&&\
-#         cd src/ig-interpreter  &&\
+RUN git clone https://github.com/cmu-mars/ig-action-server-p15.git   src/ig-interpreter 
+# &&\
+#         cd src/ig-interpreter # &&\
 #         git checkout "${IG_INTERPRETER_REV}"
 
 
