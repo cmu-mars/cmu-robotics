@@ -100,8 +100,6 @@ def perturb_post(perturb_params):  # noqa: E501
     except OrchestratorError as err:
         return err.to_response()
 
-
-
 def perturbations_get(perturbation_params):  # noqa: E501
     """perturbations_get
 

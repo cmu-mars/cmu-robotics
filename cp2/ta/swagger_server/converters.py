@@ -14,10 +14,12 @@ from swagger_server.models.source_line import SourceLine  # noqa: E501
 import hulk
 import darjeeling
 
-def patch2ca(ca):
-    return CandidateAdaptation( diff ,
-                                CompilationOutcome(time_taken, successful ),
-                                [ TestOutcome( test_id , time_taken, passed) for to in ??  ] )
+def patch2ca(pa):
+    return CandidateAdaptation( diff=pa.diff,
+                                CompilationOutcome(time_taken=pa.compilation.time_taken, successful=pa.compilation.successful),
+                                [ TestOutcome(test_id=outcome.test,
+                                              time_taken=outcome.time_taken,
+                                              passed=outcome.passed) for outcome in pa.test_outcomes ] )
 
 def perturb2mutation(pp):
     loc = hulk.FileLocationRange(pp.at.start.file,
