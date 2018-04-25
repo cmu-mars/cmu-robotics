@@ -165,6 +165,8 @@ definitions:
     required:
       - kind
       - at
+      - transformation-index
+      - arguments
     properties:
       kind:
         $ref: '#/definitions/PerturbationKind'
@@ -177,3 +179,10 @@ definitions:
         description: >-
           The body of the source code that should replaced the source code
           given by the location range associated with this perturbation.
+      transformation-index:
+        type: integer
+        minimum: 1
+      arguments:
+        type: object
+        additionalProperties:
+          type: string
