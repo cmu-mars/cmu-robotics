@@ -84,6 +84,7 @@ definitions:
               - LineNotFound
               - OperatorNotFound
               - NoSearchLimits
+              - UnexpectedError
             example: NeutralPerturbation
             description: The kind of error that occurred.
           message:
