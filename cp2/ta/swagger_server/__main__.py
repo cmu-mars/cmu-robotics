@@ -20,9 +20,8 @@ if __name__ == '__main__':
       sys.exit(1)
 
     th_uri = sys.argv[1]
-    config.hulk_url = sys.argv[2]
-    config.bugzoo_url = sys.argv[3]
-
+    hulk_url = sys.argv[2]
+    bugzoo_url = sys.argv[3]
 
     # Set up TA server and logging
     app = connexion.App(__name__, specification_dir='./swagger/')
@@ -59,7 +58,7 @@ if __name__ == '__main__':
     def error_cb(err_code, msg):
         thApi.error_post(ErrorError(kind=err_code,message=msg))
 
-    config.orc = Orchestrator(config.hulk_url, config.bugzoo_url, progress_cb, done_cb, error_cb)
+    config.orc = Orchestrator(hulk_url, bugzoo_url, progress_cb, done_cb, error_cb)
 
     def fail_hard(s):
         logger.debug(s)
