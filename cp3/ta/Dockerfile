@@ -1,4 +1,4 @@
-FROM cmu-mars/cp3_base
+FROM cmu-mars/cp3_rb
 
 RUN . ~/catkin_ws/devel/setup.sh
 
@@ -28,7 +28,7 @@ RUN wget -q "https://github.com/ros-planning/navigation_msgs/archive/${ROS_NAVIG
     rm "${ROS_NAVIGATION_MSGS_VERSION}.tar.gz" && \
     mv "navigation_msgs-${ROS_NAVIGATION_MSGS_VERSION}" navigation_msgs && \
     rm navigation_msgs/README.md && \
-    mv navigation_msgs/* src && \
+    mv navigation_msgs/* ~/catkin_ws/src && \
     rm -rf navigation_msgs
 
 RUN sudo apt-get install -y python3
@@ -54,5 +54,8 @@ RUN sudo chown -R mars /usr/src/app
 ENV PYTHONUNBUFFERED 0
 
 EXPOSE 8080
+
+ADD entrypoint.sh .
+ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
 
 CMD ["python3", "-m", "swagger_server"]

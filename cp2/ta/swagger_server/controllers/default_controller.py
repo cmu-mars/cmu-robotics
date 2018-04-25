@@ -12,9 +12,10 @@ from swagger_server.models.source_line import SourceLine  # noqa: E501
 from swagger_server import util
 
 from orchestrator import Orchestrator
-# from exceptions import *
+from orchestrator.exceptions import *
 
-orc = None ## todo: this never gets created? that's weird. also need to add call backs
+from swagger_server import config
+from swagger_server.converters import *
 
 def adapt_post(Parameters):  # noqa: E501
     """adapt_post
@@ -30,7 +31,7 @@ def adapt_post(Parameters):  # noqa: E501
         Parameters = Parameters.from_dict(connexion.request.get_json())  # noqa: E501
 
     try:
-        orc.adapt(Parameters.time_limit, Parameters.attempt_limit)
+        config.orc.adapt(Parameters.time_limit, Parameters.attempt_limit)
         return '', 202
     except OrchestratorError as err:
         return err.to_response()
@@ -44,7 +45,7 @@ def files_get():  # noqa: E501
 
     :rtype: List[str]
     """
-    return orc.files # todo: this may need tobe flask.jsonify, but that might happen already
+    return config.orc.files
 
 
 def lines_get():  # noqa: E501
@@ -55,9 +56,7 @@ def lines_get():  # noqa: E501
 
     :rtype: List[SourceLine]
     """
-    lines = orc.lines
-
-    return [ SourceLine.from_dict(vars(line)) for line in lines ] ## todo these dictionaries may also not line up
+    return [ SourceLine(line.filename, line.num)) for line in config.orc.lines ]
 
 def observe_get():  # noqa: E501
     """observe_get
@@ -68,7 +67,6 @@ def observe_get():  # noqa: E501
     :rtype: InlineResponse2001
     """
     num_attempts, time_spent = orc.resource_usage
-    # FIXME serialise ## todo from chris
     jsn_patches = orc.patches
 
     resources = InlineResponse2001Resourceconsumption()
@@ -78,10 +76,9 @@ def observe_get():  # noqa: E501
     ret = InlineResponse2001()
     ret.stage = orc.state.name
     ret.resource_consumption = resources
-    ret.pareto_set = jsn_patches ## todo this may be wrong; not sure if these will end up being candidate adaptations
+    ret.pareto_set = [ patch2ca(patch) for patch in config.orc.patches ]
 
     return ret
-
 
 def perturb_post(perturb_params):  # noqa: E501
     """perturb_post
@@ -96,13 +93,12 @@ def perturb_post(perturb_params):  # noqa: E501
     if connexion.request.is_json:
         perturb_params = Perturbation.from_dict(connexion.request.get_json())  # noqa: E501
 
-    mutant = hulk.base.Mutation.from_dict(vars(perturb_params)) ## todo: this may or may not coerce to a dict as desired
+    mutation = perturb2mutation(perturb_params)
     try:
-        orc.perturb(mutant)
+        config.orc.perturb(mutation)
         return '', 204
     except OrchestratorError as err:
         return err.to_response()
-
 
 def perturbations_get(perturbation_params):  # noqa: E501
     """perturbations_get
@@ -117,9 +113,8 @@ def perturbations_get(perturbation_params):  # noqa: E501
     if connexion.request.is_json:
         pp = PerturbationParams.from_dict(connexion.request.get_json())  # noqa: E501
 
-    mutations = orc.perturbations(filename=pp.file,
+    mutations = config.orc.perturbations(filename=pp.file,
                                            line_num=pp.line,
                                            op_name=pp.shape)
 
-    ## todo: these dicts may not line up and this might crash
-    return InlineResponse200([Perturbation.from_dict(m.to_dict()) for m in mutations])
+    return InlineResponse200([mutation2perturb(m) for m in mutations])

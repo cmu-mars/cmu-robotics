@@ -7,13 +7,21 @@ import traceback
 from swagger_server import encoder
 from swagger_client import DefaultApi
 
+from orchestrator import Orchestrator
+from orchestrator.exceptions import *
+
+from swagger_server import config
+from swagger_server.converters import *
+
 if __name__ == '__main__':
     # Parameter parsing, to set up TH
-    if len(sys.argv) != 2:
-      print ("No URI for TH passed in!")
+    if len(sys.argv) != 4:
+      print ("expected th_uri hulk_url bugzoo_url")
       sys.exit(1)
 
     th_uri = sys.argv[1]
+    hulk_url = sys.argv[2]
+    bugzoo_url = sys.argv[3]
 
     # Set up TA server and logging
     app = connexion.App(__name__, specification_dir='./swagger/')
@@ -36,6 +44,22 @@ if __name__ == '__main__':
     thApi = DefaultApi()
     thApi.api_client.host = th_uri
 
+    def progress_cb(candidate, pareto):
+        thApi.status_post(Parameters(adaptation=patch2ca(candidate),
+                                     pareto_set=[ patch2ca(x) for x in pareto ]))
+
+    def done_cb(log, attempts, outcome, pareto, runtime):
+        thApi.done_post(Parameters1(outcome=outcome.name,
+                                    running_time=runtime,
+                                    num_attempts=attempts,
+                                    pareto_set=[ patch2ca(x) for x in pareto ],
+                                    log=[ patch2ca(x) for x in log ]))
+
+    def error_cb(err_code, msg):
+        thApi.error_post(ErrorError(kind=err_code,message=msg))
+
+    config.orc = Orchestrator(hulk_url, bugzoo_url, progress_cb, done_cb, error_cb)
+
     def fail_hard(s):
         logger.debug(s)
         thApi.error_post(Parameters(s))
@@ -46,7 +70,7 @@ if __name__ == '__main__':
         logger.debug("posting to /ready")
         ready_resp = thApi.ready_post()
         logger.debug("recieved response from /ready:")
-        logger.debug("%s" % resp)
+        logger.debug(str(ready_resp))
     except Exception as e:
         logger.debug("Failed to connect with th")
         logger.debug(traceback.format_exc())

@@ -92,7 +92,7 @@ if __name__ == '__main__':
             data = json.load(ready)
             ready_resp = InlineResponse200(data["start-loc"], data["target-loc"], data["use-adaptation"], data["start-configuration"], data["utility-function"])
             logger.info("started TA in disconnected mode")
-        
+
 
     ## build CP object without a gazebo instance, need to set later
     cp = CP3(None)
