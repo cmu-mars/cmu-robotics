@@ -2,6 +2,8 @@
 
 import connexion
 import sys
+import logging
+import traceback
 from swagger_server import encoder
 from swagger_client import DefaultApi
 
