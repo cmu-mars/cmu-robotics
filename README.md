@@ -18,9 +18,6 @@ Inside each CP directory, you'll find at least:
   the Swagger definitions and then filling in the resulting stubs to
   mesh with the underlying subsystems.
 
-* a simple script called `smoke.sh` to exercise each endpoint on each TA
-  with some happy-path parameters, assuming it's running on localhost.
-
 * a `docker-compose.yml` that specifies how to composes our system
   with the LL TH image
 
