@@ -224,7 +224,7 @@ def start_post():
             if 'successfully' in result.sequence:
                 swagger_server.config.logger.debug("received notification that the goal has been completed successfully")
 
-            if not swagger_server.config.adapting:
+            if not swagger_server.config.use_adaptation:
                 send_done("done callback")
 
         result , msg = swagger_server.config.cp.do_instructions(swagger_server.config.cp.start,

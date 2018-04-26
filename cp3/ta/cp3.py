@@ -102,6 +102,7 @@ class BaseSystem:
 		self.gazebo.set_charging_srv(False)
 		if not wait:
 			self.ig.send_goal(goal = goal, done_cb=done_cb, active_cb=active_cb)
+			return True, "Sent goal"
 		else:
 			self.ig.send_goal(goal)
 			result = self.ig.wait_for_result(timeout=rospy.Duration(60*15))
