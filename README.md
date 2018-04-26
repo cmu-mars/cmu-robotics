@@ -194,7 +194,7 @@ lives at `CMU_ROBOTICS` on the file system.
     docker build -t cmu-mars/cp3_rb -f Dockerfile-cp3 .
     ```
 
-6. Build `cmu-mars/cp3:
+6. Build `cmu-mars/cp3`:
 
     ``` shell
     cd CMU_ROBOTICS/cp3/ta
