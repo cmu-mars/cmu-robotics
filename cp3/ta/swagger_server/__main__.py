@@ -46,7 +46,6 @@ if __name__ == '__main__':
     app.app.json_encoder = JSONEncoder ## this may be busted; see CP2. depends on codegen version
     app.add_api('swagger.yaml', arguments={'title': 'CP3'}, strict_validation=True)
 
-
     ## capture the ambient logger
     logger = logging.getLogger('werkzeug')
     logger.setLevel(logging.DEBUG)
@@ -104,6 +103,7 @@ if __name__ == '__main__':
             cp.map_server.is_waypoint(ready_resp.start_loc)):
         fail_hard("response from /ready includes invalid waypoint names")
 
+    ## todo: will this update config as well?
     cp.start = ready_resp.start_loc
     cp.target = ready_resp.target_loc
 
@@ -158,7 +158,8 @@ if __name__ == '__main__':
     except Exception as e:
         fail_hard("failed to connect to gazebo: %s" % e)
 
-    ## todo: for RR2, need to also process use_adaptation and the utility function
+    ## todo: for RR3, do things with  utility function
+
     if ready_resp.use_adaptation:
         try:
             rainbow_log = open(os.path.expanduser("~/rainbow.log"),'w')
@@ -179,7 +180,6 @@ if __name__ == '__main__':
 
     sub_voltage = rospy.Subscriber("/energy_monitor/energy_level", Float64, energy_cb)
 
-    logger.debug("starting TA REST interface")
     if th_connected and not ready_resp.use_adaptation:
         logger.debug("sending live status message")
         ## todo: i have no idea what rospy is going to say the sim
