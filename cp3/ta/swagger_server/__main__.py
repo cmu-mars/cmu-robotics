@@ -67,6 +67,7 @@ if __name__ == '__main__':
     ## build the TH API object from the client stubs
     thApi = DefaultApi()
     thApi.api_client.host = th_uri
+    config.thApi = thApi
 
     def fail_hard(s):
         logger.debug(s)
@@ -93,6 +94,7 @@ if __name__ == '__main__':
             ready_resp = InlineResponse200(data["start-loc"], data["target-loc"], data["use-adaptation"], data["start-configuration"], data["utility-function"])
             logger.info("started TA in disconnected mode")
 
+    config.use_adaptation = ready_resp.use_adaptation
 
     ## build CP object without a gazebo instance, need to set later
     cp = CP3(None)
@@ -180,24 +182,12 @@ if __name__ == '__main__':
 
     sub_voltage = rospy.Subscriber("/energy_monitor/energy_level", Float64, energy_cb)
 
-    def send_live():
-        ## send status live after gazebo interface comes up
+    logger.debug("starting TA REST interface")
+    if th_connected and not ready_resp.use_adaptation:
         logger.debug("sending live status message")
         ## todo: i have no idea what rospy is going to say the sim
         ## time is. probably 0.
-        live_resp = thApi.status_post(Parameters1("live","CP3 TA ready to recieve inital perturbs and start",rospy.Time.now().secs,None,None,None))
-
-    # @manager.command
-    # def runserver():
-    #     print("Running server")
-    #     app.run(port=5000, host='0.0.0.0')
-    #     send_live()
-
-    # class CP3TA(Server):
-    #     def __call__(self, app, *args, **kwargs):
-
-
-    logger.debug("starting TA REST interface")
-    if th_connected:
+        live_resp = thApi.status_post(Parameters1("live","CP3 TA ready to recieve inital perturbs and start in non-adaptive case",rospy.Time.now().secs,None,None,None))
+        config.logger.debug("repsonse from TH to live: %s" % response)
         send_live()
     app.run(port=5000, host='0.0.0.0')

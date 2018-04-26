@@ -16,3 +16,12 @@ logger = None
 # whether or not /start has been hit at least once yet, so that it can
 # return an error if it's hit multiple times
 started = False
+
+# connections to the TH
+thApi = None
+
+# number of adaptations
+adaptations = 0
+
+# are we in adapting mode or not?
+use_adaptation = False

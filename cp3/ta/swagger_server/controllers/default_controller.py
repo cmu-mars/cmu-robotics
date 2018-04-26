@@ -19,6 +19,30 @@ from swagger_server.models.cp3_internal_status import CP3InternalStatus  # noqa:
 import rospy
 import swagger_server.config
 
+def send_done(src):
+    config.logger.debug("sending done from %s" % src)
+    x , y = config.cp.gazebo.get_turtlebot_state()
+    response = config.thApi.done_post(Parameters2(final_x = x,
+                                                  final_y = y,
+                                                  final_sim_time = rospy.Time.now().secs,
+                                                  final_charge = config.battery,
+                                                  collisions = [], ## todo placeholder value
+                                                  num_adaptations = config.adaptations,
+                                                  final_utility = 0 ## todo placeholder value
+                                                  ))
+    config.logger.debug("response from done: %s" % response)
+
+def send_status(src, code, msg):
+        config.logger.debug("sending status %s from %s" % (code,src))
+        response = config.thApi.status_post(Parameters1(status = code,
+                                                        message = msg,
+                                                        sim_time = rospy.Time.now().secs,
+                                                        plan = [], ## todo placeholder value
+                                                        config = [], ## todo placeholder value
+                                                        sensors = [] ## todo placeholder value
+                                                        ))
+        config.logger.debug("repsonse from TH to status: %s" % response)
+
 def internal_status_post(CP3InternalStatus):  # noqa: E501
     """internal_status_post
 
@@ -32,38 +56,51 @@ def internal_status_post(CP3InternalStatus):  # noqa: E501
     if connexion.request.is_json:
         CP3InternalStatus = CP3InternalStatus.from_dict(connexion.request.get_json())  # noqa: E501
 
-    if CP3.InternalStatus.status == "RAINBOW_READY":
-        ## i think the sending of live has to happen once we get this,
-        ## not just once we bring up the TA interface; check with
-        ## bradley tomorrow. this possibly depends on if
-        ## /ready:adapting == true. or maybe this is the difference
-        ## between live and mission-running.
+    config.logger.debug("TA internal status end point hit with status %s and message %s"
+                        % (CP3InternalStatus.status, CP3InternalStatus.message))
 
-        ## send status "live"
-        pass
+    if CP3.InternalStatus.status == "RAINBOW_READY":
+        send_status("internal status, rainbow ready",
+                    "live",
+                    "CP3 TA ready to recieve inital perturbs in adaptive case after getting RAINBOW_READY")
+        if not config.use_adaptation:
+            config.logger.debug("[WARN] internal status got a rainbow ready when not in the adaptive case")
+
     elif CP3.InternalStatus.status == "MISSION_SUCCEEDED":
-        ## send a done
-        pass
+        config.logger.debug("TA internal status got MISSION_SUCCEEDED")
+        if config.use_adaptation:
+            send_done("internal status, mission succeeded")
+        else:
+            config.logger.debug("[WARN] TA internal status got MISSION_SUCCEEDED in non-adapting case")
+
     elif CP3.InternalStatus.status == "MISSION_FAILED":
-        ## send a done
-        pass
+        if config.use_adaptation:
+            send_done("internal status, mission failed")
+        else:
+            config.logger.debug("[WARN] TA internal status got MISSION_FAILED in non-adapting case")
+
     elif CP3.InternalStatus.status == "ADAPTING":
-        ## send a status "adapting"
-        pass
+        config.adaptations = config.adaptations + 1
+        send_status("internal status, adapting",
+                    "adapting",
+                    "DAS is now adapting")
+
     elif CP3.InternalStatus.status == "ADAPTED":
-        ## send a status "adapted"
-        pass
+        send_status("internal status, adapted",
+                    "adapted",
+                    "DAS has now adapted")
+
     elif CP3.InternalStatus.status == "ADAPTED_FAILED":
-        ## send an error?
-        pass
+        send_status("internal status, adapted_failed",
+                    "adapted",
+                    "DAS has now adapted after a failure with message %s" % CP3InternalStatus.message)
+
     elif CP3.InternalStatus.status == "FINAL_UTILITY":
-        ## update a field in config to store this for a future done
-        ## message
-        pass
+        config.logger.debug("ignoring until RR3") ## todo
+
     elif CP3.InternalStatus.status == "PLAN":
-        ## update data structure for observe? although we don't return
-        ## the plan in observe now.
-        pass
+        config.logger.debug("ignoring until RR3") ## todo
+
 def observe_get():
     """
     observe_get
@@ -96,7 +133,9 @@ def perturb_light_post(Parameters):
     if connexion.request.is_json:
         Parameters = Parameters0.from_dict(connexion.request.get_json())
 
-    ## todo: check if the lights are in LIGHTSET
+    if not config.cp.map_server.is_light(Parameters.id):
+        ret = InlineResponse4001(rospy.Time.now().secs, "invalid light name")
+        return ret , 400
 
     if config.cp.gazebo.enable_light(Parameters.id, Parameters.state):
         ret = InlineResponse200()
@@ -183,12 +222,16 @@ def start_post():
         def done_cb(terminal, result):
             """ callback for when the bot is at the target """
             if 'successfully' in result.sequence:
-                config.logger.debug("received notification that the goal has been completed!")
-                ## todo: this is one thing that should trigger posting
-                ## to /done with a bunch of stuff i don't have yet
+                config.logger.debug("received notification that the goal has been completed successfully")
 
-        result , msg = config.cp.do_instructions(cp.start, cp.target,
-                                                 False, active_cb, done_cb)
+            if not config.adapting:
+                send_done("done callback")
+
+        result , msg = config.cp.do_instructions(config.cp.start,
+                                                 config.cp.target,
+                                                 False,
+                                                 active_cb,
+                                                 done_cb)
         config.started = True
         return {} , 200
     else:
