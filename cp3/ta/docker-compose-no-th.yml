@@ -10,7 +10,7 @@
 #       container to the wider internal network (i.e., not the host machine).
 #       Ports may be forwarded to the host network using the "ports" command.
 #
-version: '3'
+version: '2'
 services:
   cp3_ta:
     image: cmu-mars/cp3
