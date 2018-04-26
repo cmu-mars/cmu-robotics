@@ -88,7 +88,7 @@ if __name__ == '__main__':
         logger.debug("Failed to connect with th")
         logger.debug(traceback.format_exc())
         th_connected = False
-        with open(os.path.expanduser("~/ready")) as ready:
+        with open(os.path.expanduser(sys.argv[1])) as ready:
             data = json.load(ready)
             ready_resp = InlineResponse200(data["start-loc"], data["target-loc"], data["use-adaptation"], data["start-configuration"], data["utility-function"])
             logger.info("started TA in disconnected mode")
@@ -198,6 +198,9 @@ if __name__ == '__main__':
 
 
     logger.debug("starting TA REST interface")
+
     if th_connected:
         send_live()
+
+    print("Starting the TA webserver")
     app.run(port=5000, host='0.0.0.0')
