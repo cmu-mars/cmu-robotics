@@ -83,6 +83,8 @@ class GazeboInterface:
         self.X_MAP_TO_GAZEBO_TRANSLATION = xtrans
         self.Y_MAP_TO_GAZEBO_TRANSLATION = ytrans
 
+        self.cached_lights_off = set()
+
         try:
             rospy.wait_for_service('/gazebo/get_model_state', timeout=timeout)
             #rospy.wait_for_service('/gazebo/spawn_gazebo_model')
@@ -268,9 +270,17 @@ class GazeboInterface:
             color.b = 0
         color.a = 255
         resp = self.enable_lights(light, color, 0.25, 0.0, 0.0)
+
+        if resp.success:
+            if enablement:
+                self.cached_lights_off.remove(light)
+            else:
+                self.cached_lights_off.add(light)
         return resp.success
 
 
+    def get_lights_off(self):
+        return self.cached_lights_off
 
     def enable_headlamp(self, enablement):
         return self.set_headlamp_srv(enablement)
