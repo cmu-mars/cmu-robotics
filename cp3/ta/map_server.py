@@ -90,3 +90,11 @@ class MapServer():
             if "status" in light and light["status"]=="on":
                 off.append(light["light-id"])
         return off
+
+    def is_light(self,name):
+        if self.lights is None:
+            return False
+        for light in self.lights:
+            if light["light-id"] == name:
+                return True
+        return False
