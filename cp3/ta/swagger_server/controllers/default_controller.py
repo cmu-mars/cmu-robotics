@@ -17,31 +17,31 @@ from ..util import deserialize_date, deserialize_datetime
 from swagger_server.models.cp3_internal_status import CP3InternalStatus  # noqa: E501
 
 import rospy
-import swagger_server.config
+import swagger_server.config ## todo: maybe an easier way to do this; i don't know
 
 def send_done(src):
-    config.logger.debug("sending done from %s" % src)
-    x , y = config.cp.gazebo.get_turtlebot_state()
-    response = config.thApi.done_post(Parameters2(final_x = x,
+    swagger_server.config.logger.debug("sending done from %s" % src)
+    x , y , w , v = swagger_server.config.cp.gazebo.get_turtlebot_state()
+    response = swagger_server.config.thApi.done_post(Parameters2(final_x = x,
                                                   final_y = y,
                                                   final_sim_time = rospy.Time.now().secs,
-                                                  final_charge = config.battery,
+                                                  final_charge = swagger_server.config.battery,
                                                   collisions = [], ## todo placeholder value
-                                                  num_adaptations = config.adaptations,
+                                                  num_adaptations = swagger_server.config.adaptations,
                                                   final_utility = 0 ## todo placeholder value
                                                   ))
-    config.logger.debug("response from done: %s" % response)
+    swagger_server.config.logger.debug("response from done: %s" % response)
 
 def send_status(src, code, msg):
-        config.logger.debug("sending status %s from %s" % (code,src))
-        response = config.thApi.status_post(Parameters1(status = code,
-                                                        message = msg,
-                                                        sim_time = rospy.Time.now().secs,
-                                                        plan = [], ## todo placeholder value
-                                                        config = [], ## todo placeholder value
-                                                        sensors = [] ## todo placeholder value
-                                                        ))
-        config.logger.debug("repsonse from TH to status: %s" % response)
+        swagger_server.config.logger.debug("sending status %s from %s" % (code,src))
+        response = swagger_server.config.thApi.status_post(Parameters1(status = code,
+                                                                       message = msg,
+                                                                       sim_time = rospy.Time.now().secs,
+                                                                       plan = [], ## todo placeholder value
+                                                                       config = [], ## todo placeholder value
+                                                                       sensors = [] ## todo placeholder value
+        ))
+        swagger_server.config.logger.debug("repsonse from TH to status: %s" % response)
 
 def internal_status_post(CP3InternalStatus):  # noqa: E501
     """internal_status_post
@@ -56,31 +56,31 @@ def internal_status_post(CP3InternalStatus):  # noqa: E501
     if connexion.request.is_json:
         CP3InternalStatus = CP3InternalStatus.from_dict(connexion.request.get_json())  # noqa: E501
 
-    config.logger.debug("TA internal status end point hit with status %s and message %s"
-                        % (CP3InternalStatus.status, CP3InternalStatus.message))
+    swagger_server.config.logger.debug("TA internal status end point hit with status %s and message %s"
+                                       % (CP3InternalStatus.status, CP3InternalStatus.message))
 
     if CP3.InternalStatus.status == "RAINBOW_READY":
         send_status("internal status, rainbow ready",
                     "live",
                     "CP3 TA ready to recieve inital perturbs in adaptive case after getting RAINBOW_READY")
-        if not config.use_adaptation:
-            config.logger.debug("[WARN] internal status got a rainbow ready when not in the adaptive case")
+        if not swagger_server.config.use_adaptation:
+            swagger_server.config.logger.debug("[WARN] internal status got a rainbow ready when not in the adaptive case")
 
     elif CP3.InternalStatus.status == "MISSION_SUCCEEDED":
-        config.logger.debug("TA internal status got MISSION_SUCCEEDED")
-        if config.use_adaptation:
+        swagger_server.config.logger.debug("TA internal status got MISSION_SUCCEEDED")
+        if swagger_server.config.use_adaptation:
             send_done("internal status, mission succeeded")
         else:
-            config.logger.debug("[WARN] TA internal status got MISSION_SUCCEEDED in non-adapting case")
+            swagger_server.config.logger.debug("[WARN] TA internal status got MISSION_SUCCEEDED in non-adapting case")
 
     elif CP3.InternalStatus.status == "MISSION_FAILED":
-        if config.use_adaptation:
+        if swagger_server.config.use_adaptation:
             send_done("internal status, mission failed")
         else:
-            config.logger.debug("[WARN] TA internal status got MISSION_FAILED in non-adapting case")
+            swagger_server.config.logger.debug("[WARN] TA internal status got MISSION_FAILED in non-adapting case")
 
     elif CP3.InternalStatus.status == "ADAPTING":
-        config.adaptations = config.adaptations + 1
+        swagger_server.config.adaptations = swagger_server.config.adaptations + 1
         send_status("internal status, adapting",
                     "adapting",
                     "DAS is now adapting")
@@ -96,10 +96,10 @@ def internal_status_post(CP3InternalStatus):  # noqa: E501
                     "DAS has now adapted after a failure with message %s" % CP3InternalStatus.message)
 
     elif CP3.InternalStatus.status == "FINAL_UTILITY":
-        config.logger.debug("ignoring until RR3") ## todo
+        swagger_server.config.logger.debug("ignoring until RR3") ## todo
 
     elif CP3.InternalStatus.status == "PLAN":
-        config.logger.debug("ignoring until RR3") ## todo
+        swagger_server.config.logger.debug("ignoring until RR3") ## todo
 
 def observe_get():
     """
@@ -108,7 +108,7 @@ def observe_get():
 
     :rtype: InlineResponse2003
     """
-    x , y = config.cp.gazebo.get_turtlebot_state()
+    x , y , w , z= swagger_server.config.cp.gazebo.get_turtlebot_state()
 
     if x == None or y == None:
         return {} , 400 ## todo: api doesn't specify any payload here
@@ -116,9 +116,9 @@ def observe_get():
     ret = InlineResponse2003()
     ret.x = x
     ret.y = y
-    ret.battery = config.battery
+    ret.battery = swagger_server.config.battery
     ret.sim_time = rospy.Time.now().secs
-    ret.lights = config.cp.map_server.lights_on()
+    ret.lights = swagger_server.config.cp.map_server.lights_on()
     return ret
 
 def perturb_light_post(Parameters):
@@ -133,11 +133,11 @@ def perturb_light_post(Parameters):
     if connexion.request.is_json:
         Parameters = Parameters0.from_dict(connexion.request.get_json())
 
-    if not config.cp.map_server.is_light(Parameters.id):
+    if not swagger_server.config.cp.map_server.is_light(Parameters.id):
         ret = InlineResponse4001(rospy.Time.now().secs, "invalid light name")
         return ret , 400
 
-    if config.cp.gazebo.enable_light(Parameters.id, Parameters.state):
+    if swagger_server.config.cp.gazebo.enable_light(Parameters.id, Parameters.state):
         ret = InlineResponse200()
         ret.sim_time = rospy.Time.now().secs
         return ret
@@ -157,7 +157,7 @@ def perturb_nodefail_post(Parameters):
     if connexion.request.is_json:
         Parameters = Parameters2.from_dict(connexion.request.get_json())
 
-    retval , message = config.cp.kill_node(Parameters.id)
+    retval , message = swagger_server.config.cp.kill_node(Parameters.id)
 
     if retval:
         ret = InlineResponse2002()
@@ -183,19 +183,19 @@ def perturb_sensor_post(Parameters):
 
     res = None
     if Parameters.id == "kinect" and Parameters.state:
-        res = config.cp.gazebo.set_kinect_mode('on')
+        res = swagger_server.config.cp.gazebo.set_kinect_mode('on')
     elif Parameters.id == "kinect" and not Parameters.state:
-        res = config.cp.gazebo.set_kinect_mode('off')
+        res = swagger_server.config.cp.gazebo.set_kinect_mode('off')
 
     elif Parameters.id == "lidar" and Parameters.state:
-        res = config.cp.gazebo.set_lidar_mode('on')
+        res = swagger_server.config.cp.gazebo.set_lidar_mode('on')
     elif Parameters.id == "lidar" and not Parameters.state:
-        res = config.cp.gazebo.set_lidar_mode('off')
+        res = swagger_server.config.cp.gazebo.set_lidar_mode('off')
 
     elif Parameters.id == "camera" and Parameters.state:
-        res = config.cp.gazebo.set_kinect_mode('image-only')
+        res = swagger_server.config.cp.gazebo.set_kinect_mode('image-only')
     elif Parameters.id == "camera" and not Parameters.state:
-        res = config.cp.gazebo.set_kinect_mode('off')
+        res = swagger_server.config.cp.gazebo.set_kinect_mode('off')
 
     if res:
         ret = InlineResponse2001()
@@ -214,25 +214,25 @@ def start_post():
 
     :rtype: None
     """
-    if not config.started:
+    if not swagger_server.config.started:
         def active_cb():
             """ callback for when the bot is made active """
-            config.logger.debug("received notification that goal is active")
+            swagger_server.config.logger.debug("received notification that goal is active")
 
         def done_cb(terminal, result):
             """ callback for when the bot is at the target """
             if 'successfully' in result.sequence:
-                config.logger.debug("received notification that the goal has been completed successfully")
+                swagger_server.config.logger.debug("received notification that the goal has been completed successfully")
 
-            if not config.adapting:
+            if not swagger_server.config.adapting:
                 send_done("done callback")
 
-        result , msg = config.cp.do_instructions(config.cp.start,
-                                                 config.cp.target,
-                                                 False,
-                                                 active_cb,
-                                                 done_cb)
-        config.started = True
+        result , msg = swagger_server.config.cp.do_instructions(swagger_server.config.cp.start,
+                                                                swagger_server.config.cp.target,
+                                                                False,
+                                                                active_cb,
+                                                                done_cb)
+        swagger_server.config.started = True
         return {} , 200
     else:
         ret = InlineResponse400("/start called more than once")
