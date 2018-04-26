@@ -1,21 +1,41 @@
 import connexion
-from swagger_server.models.inline_response200 import InlineResponse200
-from swagger_server.models.inline_response2001 import InlineResponse2001
-from swagger_server.models.inline_response2002 import InlineResponse2002
-from swagger_server.models.inline_response2003 import InlineResponse2003
-from swagger_server.models.inline_response400 import InlineResponse400
-from swagger_server.models.inline_response4001 import InlineResponse4001
-from swagger_server.models.inline_response4002 import InlineResponse4002
-from swagger_server.models.inline_response4003 import InlineResponse4003
-from swagger_server.models.parameters0 import Parameters0
-from swagger_server.models.parameters1 import Parameters1
-from swagger_server.models.parameters2 import Parameters2
+import six
+
+from swagger_server.models.battery_params import BatteryParams  # noqa: E501
+from swagger_server.models.cp1_internal_status import CP1InternalStatus  # noqa: E501
+from swagger_server.models.inline_response200 import InlineResponse200  # noqa: E501
+from swagger_server.models.inline_response2001 import InlineResponse2001  # noqa: E501
+from swagger_server.models.inline_response2002 import InlineResponse2002  # noqa: E501
+from swagger_server.models.inline_response2003 import InlineResponse2003  # noqa: E501
+from swagger_server.models.inline_response400 import InlineResponse400  # noqa: E501
+from swagger_server.models.inline_response4001 import InlineResponse4001  # noqa: E501
+from swagger_server.models.inline_response4002 import InlineResponse4002  # noqa: E501
+from swagger_server.models.inline_response4003 import InlineResponse4003  # noqa: E501
+from swagger_server.models.place_params import PlaceParams  # noqa: E501
+from swagger_server.models.remove_params import RemoveParams  # noqa: E501
+from swagger_server import util
+
+## todo remove?
 from datetime import date, datetime
 from typing import List, Dict
 from six import iteritems
 from ..util import deserialize_date, deserialize_datetime
 
 import swagger_server.config as config
+
+def internal_post(CP1InternalStatus):  # noqa: E501
+    """internal_post
+
+    reports any internal status (including the error that may occured) from the backend that might be sent to the TA for internal bookeeping or forwarding to the TH # noqa: E501
+
+    :param CP1InternalStatus:
+    :type CP1InternalStatus: dict | bytes
+
+    :rtype: None
+    """
+    if connexion.request.is_json:
+        CP1InternalStatus = CP1InternalStatus.from_dict(connexion.request.get_json())  # noqa: E501
+    return 'do some magic!'
 
 def observe_get():
     """
@@ -44,7 +64,7 @@ def perturb_battery_post(Parameters=None):
     :rtype: InlineResponse2002
     """
     if connexion.request.is_json:
-        Parameters = Parameters2.from_dict(connexion.request.get_json())
+        BatteryParams = BatteryParams.from_dict(connexion.request.get_json())  # noqa: E501
 
     if Parameters.charge > config.ready_response.max_charge:
         ret = InlineResponse4002()
@@ -66,7 +86,7 @@ def perturb_place_obstacle_post(Parameters=None):
     :rtype: InlineResponse200
     """
     if connexion.request.is_json:
-        Parameters = Parameters0.from_dict(connexion.request.get_json())
+        PlaceParams = PlaceParams.from_dict(connexion.request.get_json())  # noqa: E501
 
     # todo: dynamic check goes here against parameter x and y
 
@@ -90,7 +110,7 @@ def perturb_remove_obstacle_post(Parameters=None):
     :rtype: InlineResponse2001
     """
     if connexion.request.is_json:
-        Parameters = Parameters1.from_dict(connexion.request.get_json())
+        RemoveParams = RemoveParams.from_dict(connexion.request.get_json())  # noqa: E501
 
     # this is a bit of a hack for RR1 -- this is the only name we ever give
     # out so it's the only one we can accept
