@@ -10,16 +10,6 @@ ENV GPG_KEY=0D96DF4D4110E5C43FBFB17F2D347EA6AA65421D
 ENV PYTHON_VERSION=3.6.3
 
 RUN sudo apt-get update
-#    runDeps="$(   scanelf --needed --nobanner --recursive /usr/local    | awk '{ gsub(/,/, "\nso:", $2); print "so:" $2 }'    | sort -u    | xargs -r apt info --installed    | sort -u  )"  && \
-#    sudo apt-get install -y $runDeps  && \
-# install Gazebo
-
-# Do we need all this below?
-#RUN sudo apt-get install -y ros-kinetic-gazebo-ros-pkgs \
-#                            ros-kinetic-gazebo-ros-control \
-#                            ros-kinetic-kobuki-gazebo \
-#                            apt-utils
-
 RUN sudo apt-get install ros-kinetic-gazebo-msgs
 
 ENV ROS_NAVIGATION_MSGS_VERSION 1.13.0
@@ -31,9 +21,7 @@ RUN wget -q "https://github.com/ros-planning/navigation_msgs/archive/${ROS_NAVIG
     mv navigation_msgs/* ~/catkin_ws/src && \
     rm -rf navigation_msgs
 
-RUN sudo apt-get install -y python3
-
-RUN sudo apt-get install -y python3-pip
+RUN sudo apt-get install -y python3 python3-pip
 
 RUN sudo mkdir -p /usr/src/app
 RUN sudo chown mars /usr/src/app
@@ -44,8 +32,6 @@ COPY requirements.txt /usr/src/app/
 RUN sudo pip3 install --no-cache-dir -r requirements.txt
 
 RUN sudo pip3 install catkin_pkg rospkg numpy psutil defusedxml flask-script
-
-
 
 COPY . /usr/src/app
 
