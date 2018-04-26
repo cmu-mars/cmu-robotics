@@ -52,7 +52,7 @@ if __name__ == '__main__':
     logger.setLevel(logging.DEBUG)
     handler = logging.FileHandler('access.log')
     logger.addHandler(handler)
-    swagger_server.config.logger = logger
+    config.logger = logger
 
     ## log every HTTP request we see
     def log_request_info():
@@ -64,7 +64,7 @@ if __name__ == '__main__':
     ## build the TH API object from the client stubs
     thApi = DefaultApi()
     thApi.api_client.host = th_uri
-    swagger_server.config.thApi = thApi
+    config.thApi = thApi
 
     def fail_hard(s):
         logger.debug(s)
@@ -91,11 +91,11 @@ if __name__ == '__main__':
             ready_resp = InlineResponse200(data["start-loc"], data["target-loc"], data["use-adaptation"], data["start-configuration"], data["utility-function"])
             logger.info("started TA in disconnected mode")
 
-    swagger_server.config.use_adaptation = ready_resp.use_adaptation
+    config.use_adaptation = ready_resp.use_adaptation
 
     ## build CP object without a gazebo instance, need to set later
     cp = CP3(None)
-    swagger_server.config.cp = cp
+    config.cp = cp
 
     ## check dynamic invariants on ready message
     if ready_resp.start_loc == ready_resp.target_loc:
@@ -176,7 +176,7 @@ if __name__ == '__main__':
     def energy_cb(msg):
         """call back to update the global battery state from the ros topic"""
         ## todo: Ian: This is now float -- check if we need to convert to Int64
-        swagger_server.config.battery = msg.data
+        config.battery = msg.data
 
     sub_voltage = rospy.Subscriber("/energy_monitor/energy_level", Float64, energy_cb)
 
@@ -188,7 +188,7 @@ if __name__ == '__main__':
 
         ## todo: maybe use the send_status function in default_controller?
         live_resp = thApi.status_post(Parameters1("live","CP3 TA ready to recieve inital perturbs and start in non-adaptive case",rospy.Time.now().secs,[],[],[]))
-        swagger_server.config.logger.debug("repsonse from TH to live: %s" % response)
+        config.logger.debug("repsonse from TH to live: %s" % response)
 
     logger.debug("starting TA REST interface")
 
