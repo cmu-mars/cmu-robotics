@@ -43,7 +43,7 @@ EXPOSE 8080
 
 ADD entrypoint.sh .
 
-ADD test-ready.json /home/mars/
+## ADD test-ready.json /home/mars/ ## at the moment, CP1 isn't written to have a TA-less debugging mode
 
 ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
 
