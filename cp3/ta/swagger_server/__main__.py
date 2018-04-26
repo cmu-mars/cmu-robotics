@@ -153,6 +153,7 @@ if __name__ == '__main__':
         ## todo: CP3.convert_to_class(cp) ## appears a lot in cli.py but i don't know what it means
         ## todo: this could be totally busted
         cp.gazebo = gazebo
+        cp.init()
         start_coords = cp.map_server.waypoint_to_coords(ready_resp.start_loc)
         gazebo.set_turtlebot_position(start_coords['x'], start_coords['y'], 0)
     except Exception as e:
