@@ -30,10 +30,7 @@ from swagger_client.models.parameters_1 import Parameters1
 from swagger_client.models.parameters_2 import Parameters2
 
 from cp3 import CP3
-#from flask_script import Manager, Server
 from swagger_server import config
-
-
 
 
 if __name__ == '__main__':
@@ -89,7 +86,7 @@ if __name__ == '__main__':
         logger.debug("Failed to connect with th")
         logger.debug(traceback.format_exc())
         th_connected = False
-        with open(os.path.expanduser("~/ready")) as ready:
+        with open(os.path.expanduser(sys.argv[1])) as ready:
             data = json.load(ready)
             ready_resp = InlineResponse200(data["start-loc"], data["target-loc"], data["use-adaptation"], data["start-configuration"], data["utility-function"])
             logger.info("started TA in disconnected mode")
@@ -187,7 +184,11 @@ if __name__ == '__main__':
         logger.debug("sending live status message")
         ## todo: i have no idea what rospy is going to say the sim
         ## time is. probably 0.
-        live_resp = thApi.status_post(Parameters1("live","CP3 TA ready to recieve inital perturbs and start in non-adaptive case",rospy.Time.now().secs,None,None,None))
+
+        live_resp = thApi.status_post(Parameters1("live","CP3 TA ready to recieve inital perturbs and start in non-adaptive case",rospy.Time.now().secs,[],[],[]))
         config.logger.debug("repsonse from TH to live: %s" % response)
-        send_live()
+
+    logger.debug("starting TA REST interface")
+
+    print("Starting the TA webserver")
     app.run(port=5000, host='0.0.0.0')

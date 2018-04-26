@@ -56,6 +56,9 @@ ENV PYTHONUNBUFFERED 0
 EXPOSE 8080
 
 ADD entrypoint.sh .
+
+ADD test-ready.json /home/mars/
+
 ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
 
 CMD ["python3", "-m", "swagger_server"]
