@@ -77,8 +77,7 @@ if __name__ == '__main__':
         logger.debug("posting to /ready")
         ready_resp = thApi.ready_post()
         th_connected = True
-        logger.debug("recieved response from /ready:")
-        logger.debug("%s" % resp)
+        logger.debug("recieved response from /ready: %s" % ready_resp)
     except Exception as e:
         ## this isn't a call to fail_hard because the TH isn't
         ## responding at all; we have to hope that LL notices the log
