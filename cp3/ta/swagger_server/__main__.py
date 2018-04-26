@@ -185,6 +185,7 @@ if __name__ == '__main__':
         ## todo: i have no idea what rospy is going to say the sim
         ## time is. probably 0.
 
+        ## todo: maybe use the send_status function in default_controller?
         live_resp = thApi.status_post(Parameters1("live","CP3 TA ready to recieve inital perturbs and start in non-adaptive case",rospy.Time.now().secs,[],[],[]))
         config.logger.debug("repsonse from TH to live: %s" % response)
 
