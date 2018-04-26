@@ -23,6 +23,8 @@ from ..util import deserialize_date, deserialize_datetime
 
 import swagger_server.config as config
 
+import rospy
+
 def internal_post(CP1InternalStatus):  # noqa: E501
     """internal_post
 
@@ -35,6 +37,9 @@ def internal_post(CP1InternalStatus):  # noqa: E501
     """
     if connexion.request.is_json:
         CP1InternalStatus = CP1InternalStatus.from_dict(connexion.request.get_json())  # noqa: E501
+
+     # todo -- mirror cp3, roughly
+
     return 'do some magic!'
 
 def observe_get():
@@ -46,10 +51,10 @@ def observe_get():
     """
 
     ret = InlineResponse2003()
-    ret.x = 0.0
-    ret.y = 0.0
-    ret.battery = 5
-    ret.sim_time = 5
+    ret.x = 0.0 #todo
+    ret.y = 0.0 #todo
+    ret.battery = config.battery
+    ret.sim_time = rospy.Time.now().secs
 
     return ret
 
@@ -66,13 +71,10 @@ def perturb_battery_post(Parameters=None):
     if connexion.request.is_json:
         BatteryParams = BatteryParams.from_dict(connexion.request.get_json())  # noqa: E501
 
-    if Parameters.charge > config.ready_response.max_charge:
-        ret = InlineResponse4002()
-        ret.message = "battery cannot be set to a charge higher than the max charge given in the response to /ready"
-        return ret , 400
+    # todo actually set the battery
 
     ret = InlineResponse2002()
-    ret.sim_time = 0
+    ret.sim_time = rospy.Time.now().secs
     return ret
 
 
@@ -88,15 +90,14 @@ def perturb_place_obstacle_post(Parameters=None):
     if connexion.request.is_json:
         PlaceParams = PlaceParams.from_dict(connexion.request.get_json())  # noqa: E501
 
-    # todo: dynamic check goes here against parameter x and y
+    # todo: dynamic check goes here against parameter x and y? maybe
+    # the obstacle will just fail to place
+
+    # todo place obstacle
 
     ret = InlineResponse200()
-    ret.obstacleid = "obs1"
-    ret.topleft_x = 0.0
-    ret.topleft_y = 0.0
-    ret.botright_x = 0.0
-    ret.botright_y = 0.0
-    ret.sim_time = 0
+    ret.obstacleid = "obs1" # todo get names
+    ret.sim_time = rospy.Time.now().secs
     return ret
 
 
@@ -121,7 +122,7 @@ def perturb_remove_obstacle_post(Parameters=None):
         return ret , 400
 
     ret = InlineResponse2001()
-    ret.sim_time = 0
+    ret.sim_time = rospy.Time.now().secs
     return ret
 
 
@@ -132,4 +133,7 @@ def start_post():
 
     :rtype: None
     """
+
+    #todo
+
     return {}
