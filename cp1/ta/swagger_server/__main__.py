@@ -24,9 +24,8 @@ from rainbow_interface import RainbowInterface
 
 from swagger_client.rest import ApiException
 from swagger_client import DefaultApi
-from swagger_client.models.parameters import Parameters
-from swagger_client.models.parameters_1 import Parameters1
-from swagger_client.models.parameters_2 import Parameters2
+from swagger_client.models.errorparams import Errorparams
+from swagger_client.models.statusparams import Statusparams
 
 import swagger_server.config as config
 
@@ -64,7 +63,7 @@ if __name__ == '__main__':
     def fail_hard(s):
         logger.debug(s)
         if th_connected:
-            thApi.error_post(Parameters(s)) ## todo: possibly the wrong class here
+            thApi.error_post(Errorparams(error="other-error",message=s))
         raise Exception(s)
 
     ## start the sequence diagram: post to ready to get configuration data
@@ -136,11 +135,12 @@ if __name__ == '__main__':
     sub_voltage = rospy.Subscriber("/energy_monitor/energy_level", Float64, energy_cb)
 
     if not ready_resp.level == "c":
-        logger.debug("sending live status message")
-        ## todo: i have no idea what rospy is going to say the sim
-        ## time is. probably 0.
-        live_resp = ??? ## thApi.status_post(Parameters1("live","CP3 TA ready to recieve inital perturbs and start in non-adaptive case",rospy.Time.now().secs,[],[],[])) ## todo placeholder value
-        config.logger.debug("repsonse from TH to live: %s" % response)
+        ## in cp3 , here we send live but we don't have that status message at all for CP1
+        # logger.debug("sending live status message")
+        # ## todo: i have no idea what rospy is going to say the sim
+        # ## time is. probably 0.
+        # live_resp = thApi.status_post(Parameters1("live","CP3 TA ready to recieve inital perturbs and start in non-adaptive case",rospy.Time.now().secs,[],[],[])) ## todo placeholder value
+        # config.logger.debug("repsonse from TH to live: %s" % response)
 
     logger.debug("starting TA REST interface")
 
