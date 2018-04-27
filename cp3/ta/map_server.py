@@ -97,7 +97,7 @@ class MapServer():
         off = []
         for light in self.lights:
 
-            if "status" in light and light["status"]=="on":
+            if "status" in light and light["status"]=="off":
                 off.append(light["light-id"])
         return off
 
