@@ -30,10 +30,10 @@ turtlebot has reached the goal and that the mission has been completed.  note th
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**Parameters**  <br>*optional*|[Parameters](#done-post-parameters)|
+|**Body**|**doneparams**  <br>*optional*|[doneparams](#done-post-doneparams)|
 
-<a name="done-post-parameters"></a>
-**Parameters**
+<a name="done-post-doneparams"></a>
+**doneparams**
 
 |Name|Description|Schema|
 |---|---|---|
@@ -75,10 +75,10 @@ used by the TA to indicate to the TH that a non-recoverable error has occurred a
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**Parameters**  <br>*optional*|[Parameters](#error-post-parameters)|
+|**Body**|**errorparams**  <br>*optional*|[errorparams](#error-post-errorparams)|
 
-<a name="error-post-parameters"></a>
-**Parameters**
+<a name="error-post-errorparams"></a>
+**errorparams**
 
 |Name|Description|Schema|
 |---|---|---|
@@ -130,16 +130,16 @@ used by the TA to periodically indicate its current state to the TH
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**Parameters**  <br>*optional*|[Parameters](#status-post-parameters)|
+|**Body**|**statusparams**  <br>*optional*|[statusparams](#status-post-statusparams)|
 
-<a name="status-post-parameters"></a>
-**Parameters**
+<a name="status-post-statusparams"></a>
+**statusparams**
 
 |Name|Description|Schema|
 |---|---|---|
 |**charge**  <br>*required*|current turtlebot battery charge in mWh. cannot be more than the maximum specified in the response from `/ready`.  <br>**Minimum value** : `0`|integer|
 |**sim-time**  <br>*required*|the internal simulation time at the time that the status message was sent  <br>**Minimum value** : `0`|integer|
-|**status**  <br>*required*|one of the possible status codes<br><br> * learning-started - the learning phase has started<br><br> * learning-done - the learning phase has been<br><br> * adapt-started - the SUT has started adapting and<br>                   cannot be perturbed<br><br> * adapt-done - the SUT has finished adapting<br><br> * charging-started - the turtlebot is currently charging<br><br> * charging-done - the turtlebot has stopped charging<br><br> * at-waypoint - the turtlebot has arrived at one of the<br>   waypoints in the list received from /ready|enum (learning-started, learning-done, adapt-started, adapt-done, charging-started, charging-done, at-waypoint)|
+|**status**  <br>*required*|one of the possible status codes<br><br> * learning-started - the learning phase has started<br><br> * learning-done - the learning phase has been<br><br> * adapt-started - the SUT has started adapting and<br>                   cannot be perturbed<br><br> * adapt-done - the SUT has finished adapting<br><br> * charging-started - the turtlebot is currently charging<br><br> * charging-done - the turtlebot has stopped charging<br><br> * at-waypoint - the turtlebot has arrived at one of the<br>   waypoints in the list received from /ready<br><br> * live - the system is ready to recieve perturbs|enum (learning-started, learning-done, adapt-started, adapt-done, charging-started, charging-done, at-waypoint, live)|
 |**x**  <br>*required*|current x-coordinate of the turtlebot|number (float)|
 |**y**  <br>*required*|current y-coordinate of the turtlebot|number (float)|
 
