@@ -30,8 +30,8 @@ from swagger_client.models.statusparams import Statusparams
 import swagger_server.config as config
 
 from learn import Learn ## todo: this may not work
-import cli ## todo: this may not work
-from bot_controller import BotController
+import cp1_utils ## todo: this may not work
+from bot_controller import BotController ## todo: this may not work
 
 if __name__ == '__main__':
     # Parameter parsing, to set up TH
@@ -147,8 +147,8 @@ if __name__ == '__main__':
     logger.debug("initializing cp1_ta ros node")
     rospy.init_node("cp1_ta")
 
-    cli.init("cp1_ta")
-    cli.launch_cp1_base()
+    cp1_utils.init("cp1_ta")
+    cp1_utils.launch_cp1_base()
 
     logger.debug("waiting for move_base (emulates watching for odom_recieved)")
     move_base = actionlib.SimpleActionClient("move_base", MoveBaseAction)

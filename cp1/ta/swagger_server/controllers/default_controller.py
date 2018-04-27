@@ -38,6 +38,16 @@ def internal_post(CP1InternalStatus):  # noqa: E501
     if connexion.request.is_json:
         CP1InternalStatus = CP1InternalStatus.from_dict(connexion.request.get_json())  # noqa: E501
 
+
+    if CP1InternalStatus.message == "learning-started":
+    elif CP1InternalStatus.message == "learning-done":
+    elif CP1InternalStatus.message == "adapt-started":
+    elif CP1InternalStatus.message == "adapt-done":
+    elif CP1InternalStatus.message == "charging-started":
+    elif CP1InternalStatus.message == "charging-done":
+    elif CP1InternalStatus.message == "parsing-error":
+    elif CP1InternalStatus.message == "learning-error":
+    elif CP1InternalStatus.message ==  "other-error":
      # todo -- mirror cp3, roughly
 
     return 'do some magic!'
