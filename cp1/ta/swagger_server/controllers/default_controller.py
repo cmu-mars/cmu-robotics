@@ -42,29 +42,43 @@ def internal_post(CP1InternalStatus):  # noqa: E501
                         % (CP1InternalStatus.status, CP1InternalStatus.message))
 
     if CP1InternalStatus.status == "learning-started":
-        config.logger.debug("internal got a deprecated message status which is being ignored")
+        config.logger.debug("internal got a deprecated status which is being ignored")
+        pass
     elif CP1InternalStatus.status == "learning-done":
-        config.logger.debug("internal got a deprecated message status which is being ignored")
+        config.logger.debug("internal got a deprecated status which is being ignored")
+        pass
     elif CP1InternalStatus.status == "adapt-started":
+        ## send to TH; does this ever happen or only from rainbow as below?
     elif CP1InternalStatus.status == "adapt-done":
+        ## send to TH; does this ever happen or only from rainbow as below?
     elif CP1InternalStatus.status == "charging-started":
+        ## send to TH
     elif CP1InternalStatus.status == "charging-done":
+        ## send to TH
     elif CP1InternalStatus.status == "parsing-error":
-        config.logger.debug("internal got a deprecated message status which is being ignored")
+        config.logger.debug("internal got a deprecated status which is being ignored")
+        pass
     elif CP1InternalStatus.status == "learning-error":
-        config.logger.debug("internal got a deprecated message status which is being ignored")
+        config.logger.debug("internal got a deprecated status which is being ignored")
+        pass
     elif CP1InternalStatus.status ==  "other-error":
+        ## send error to the TH
 
     ## these are the literal constants that come from rainbow. the
     ## constants above are from the API definition; there's some
     ## overlap and this is a little messy
     elif CP1InternalStatus.status == "RAINBOW_READY":
+        ## send live, log if not in C
     elif CP1InternalStatus.status == "MISSION_SUCCEEDED":
+        ## not clear because of mission sequencer
     elif CP1InternalStatus.status == "MISSION_FAILED":
+        ## not clear because of mission sequencer
     elif CP1InternalStatus.status == "ADAPTING":
+        ## send adapt-started
     elif CP1InternalStatus.status == "ADAPTED":
+        ## send adapt-done
     elif CP1InternalStatus.status == "ADAPTED_FAILED":
-
+        ## not clear
 
 def observe_get():
     """

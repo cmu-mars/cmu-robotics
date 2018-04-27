@@ -28,6 +28,7 @@ from swagger_client.models.errorparams import Errorparams
 from swagger_client.models.statusparams import Statusparams
 
 import swagger_server.config as config
+import swagger_server.comms as comms
 
 from learn import Learn ## todo: this may not work
 import cp1_utils ## todo: this may not work
@@ -109,23 +110,6 @@ if __name__ == '__main__':
 
     config.level = ready_resp.level
 
-    def send_status(src, code, x=None, y=None):
-        ## todo, this is pretty hacky; really we want to make x, y
-        ## optional in the API def and only send them if the robot's
-        ## been started
-        if x = None:
-            x = -1.0
-        if y = None:
-            y = -1.0
-
-        config.logger.debug("sending status %s from %s" % (code,src))
-        response = thApi.status_post(Statusparams(status=code,
-                                                  x = x, ## todo these could be computed instead of taken as args
-                                                  y = y,
-                                                  charge = config.battery, # todo may be none?
-                                                  sim_time = rospy.Time.now().secs))
-        config.logger.debug("repsonse from TH to status: %s" % response)
-
     if ready_resp.level == "c":
         try:
             Learn.get_true_model()
@@ -134,14 +118,14 @@ if __name__ == '__main__':
             thApi.error_post(Errorparams(error="parsing-error",message="exception raised: %s" % e))
             raise e
 
-        send_status("__main__", "learning-started")
+        comms.send_status("__main__", "learning-started")
         try:
             result = Learn.start_learning()
         except Exception as e:
             logger.debug("learning raised an exception; notifying the TH and then crashing")
             thApi.error_post(Errorparams(error="learning-error",message="exception raised: %s" % e))
             raise e
-        send_status("__main__", "learning-done")
+        comms.send_status("__main__", "learning-done")
         Learn.dump_learned_model()
 
     ## ros launch
@@ -189,7 +173,7 @@ if __name__ == '__main__':
         except Exception as e:
             fail_hard("failed to connecto to rainbow: %s " %e)
     else:
-        send_status("__main__ in level %s" % ready_resp.level, "live")
+        comms.send_status("__main__ in level %s" % ready_resp.level, "live")
 
     logger.debug("starting TA REST interface")
     app.run(host='0.0.0.0',port=5000)
