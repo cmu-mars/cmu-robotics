@@ -15,6 +15,8 @@ from swagger_server.models.place_params import PlaceParams  # noqa: E501
 from swagger_server.models.remove_params import RemoveParams  # noqa: E501
 from swagger_server import util
 
+from swagger_client.models.done_tasksfinished import DoneTasksfinished
+
 ## todo remove?
 from datetime import date, datetime
 from typing import List, Dict
@@ -22,6 +24,7 @@ from six import iteritems
 from ..util import deserialize_date, deserialize_datetime
 
 import swagger_server.config as config
+import swagger_server.comms as comms
 
 import rospy
 
@@ -161,10 +164,25 @@ def start_post():
 
     :rtype: None
     """
+    if not config.started:
+        config.started = True
 
-    if config.level == "c":
-        config.bot_cont.go_instructions_multiple_tasks_adaptive( , )
+        def at_waypoint_cb(name_of_waypoint):
+            config.logger.debug("at_waypoint callback called with %s" % name_of_waypoint)
+            x , y , ig1 , ig2 = config.bot_cont.gazebo.get_bot_state()
+            config.tasks_finished.insert(0,DoneTasksfinished(x=x,
+                                                             y=y,
+                                                             sim_time=rospy.Time.now().secs,
+                                                             name=name_of_waypoint))
+        def active_cb():
+            config.logger.debug("received notification that goal is active")
+
+        def done_cb(terminal, result):
+
+
+            ## this is dead code
+        if config.level == "c":
+            config.bot_cont.go_instructions_multiple_tasks_adaptive( , )
+        else:
     else:
-
-
-    return {}
+        return InlineResponse4003("/start called more than once")

@@ -19,3 +19,6 @@ bot_cont = None
 
 ## level
 level = None
+
+## waypoints for done message
+tasks_finished = []
