@@ -28,6 +28,7 @@ services:
     container_name: cp3_ta
     hostname: cp3_ta
     environment:
+      - "ROS_MASTER_URI=http://cp3_ta:11311"
       - "ROS_HOSTNAME=cp3_ta"
       - "TA_PORT=${TA_PORT}"
     ports:
