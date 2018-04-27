@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import connexion
 import sys
 import logging
@@ -28,10 +27,17 @@ if __name__ == '__main__':
     app.app.json_encoder = encoder.JSONEncoder
     app.add_api('swagger.yaml', arguments={'title': 'CP2'}, strict_validation=True)
 
+    # FIXME why are we hijacking the werkzeug logger?
+    handler_stream = logging.StreamHandler(sys.stdout)
     logger = logging.getLogger('werkzeug')
     logger.setLevel(logging.DEBUG)
     handler = logging.FileHandler('access.log')
     logger.addHandler(handler)
+    logger.addHandler(logging.StreamHandler())
+
+    logger_orc = logging.getLogger('orchestrator')
+    logger_orc.setLevel(logging.DEBUG)
+    logger_orc.addHandler(handler_stream)
 
     def log_request_info():
         logger.debug('Headers: %s', connexion.request.headers)
@@ -40,9 +46,9 @@ if __name__ == '__main__':
     app.app.before_request(log_request_info)
 
     # Connect to th
-    logger.debug("connecting to the TH")
+    logger.debug("connecting to the TH: %s", th_uri)
     thApi = DefaultApi()
-    thApi.api_client.host = th_uri
+    thApi.api_client.configuration.host = th_uri
 
     def progress_cb(candidate, pareto):
         thApi.status_post(Parameters(adaptation=patch2ca(candidate),

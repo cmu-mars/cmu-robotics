@@ -133,6 +133,7 @@ lives at `CMU_ROBOTICS` on the file system.
 
 
 ### Building CP2
+
 1. Clone the CP2 Orchestrator repo, `git clone
    git@github.com:cmu-mars/p2c2-orchestrator.git` somewhere on the
    file system, which we'll call `CP2_ORC`.
@@ -140,18 +141,10 @@ lives at `CMU_ROBOTICS` on the file system.
 2. Build `cmu-mars/orchestrator`:
 
     ``` shell
-    cd CP2_ORC
-    docker build -t cmu-mars/orchestrator .
+    docker build -t cmu-mars/orchestrator CP2_ORC
     ```
 
-3. Build `cmu-mars/cp2`:
-
-    ``` shell
-    cd CMU_ROBOTICS/cp2/ta
-    docker build -t cmu-mars/cp2 .
-    ```
-
-4. Compose `cmu-mars/cp2` with the TH:
+3. Compose `cmu-mars/cp2` with the TH:
 
     ``` shell
     cd CMU_ROBOTICS/cp2/ta
