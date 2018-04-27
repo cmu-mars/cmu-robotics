@@ -24,11 +24,9 @@ $ . PATH_TO_BUGZOO_VENV/bin/activate
 (bugzoo) $ bugzoo bug build --force mars:base
 ```
 
-Finally, we need to build the images specified in the `docker-compose` file,
-along with an additional base image:
+Finally, we need to build the images specified in the `docker-compose` file:
 
 ```
-$ docker build -t cmu-mars/orchestrator git://github.com/cmu-mars/p2c2-orchestrator.git@rr2
 $ docker-compose build
 ```
 
