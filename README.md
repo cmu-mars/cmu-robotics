@@ -92,7 +92,7 @@ lives at `CMU_ROBOTICS` on the file system.
 4. Build `cmu-mars/gazebo` (note that this container is shared with CP3):
 
     ``` shell
-    cd CMU_ROBOTICS/mars-gazebo-p2
+    cd CMU_ROBOTICS/cp-gazebo-p2
     docker build -t cmu-mars/gazebo .
     ```
 
@@ -152,7 +152,7 @@ Instructions for building and interacting with CP2 can be found at:
 3. Build `cmu-mars/gazebo` (note that this container is shared with CP1):
 
     ``` shell
-    cd CMU_ROBOTICS/mars-gazebo-p2
+    cd CMU_ROBOTICS/cp-gazebo-p2
     docker build -t cmu-mars/gazebo .
     ```
 
