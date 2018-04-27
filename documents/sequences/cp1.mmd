@@ -7,10 +7,6 @@ sequenceDiagram
         TA ->>+ TH: /ready
         TH -->>- TA: configuration data
 
-        TA ->>+ TH: /status live
-        Note right of TA: system live, ready for initial perturbs
-        TH -->>- TA: ack. status
-
 	opt level == c
 	        TA ->>+ TH: /status learning-started
         	TH -->>- TA: ack. status
@@ -18,6 +14,10 @@ sequenceDiagram
         	TA ->>+ TH: /status learning-done
 		TH -->>- TA: ack. status
 	end
+
+        TA ->>+ TH: /status live
+        Note right of TA: system live, ready for initial perturbs
+        TH -->>- TA: ack. status
 
         opt initial perturbs
             opt for any X

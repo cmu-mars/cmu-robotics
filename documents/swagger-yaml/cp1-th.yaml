@@ -146,6 +146,8 @@ paths:
 
                    * at-waypoint - the turtlebot has arrived at one of the
                      waypoints in the list received from /ready
+
+                   * live - the system is ready to recieve perturbs
                 type: string
                 enum:
                   - learning-started
@@ -155,6 +157,7 @@ paths:
                   - charging-started
                   - charging-done
                   - at-waypoint
+                  - live
               x:
                 description: current x-coordinate of the turtlebot
                 type: number

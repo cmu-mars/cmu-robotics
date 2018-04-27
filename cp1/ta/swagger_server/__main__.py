@@ -62,8 +62,7 @@ if __name__ == '__main__':
     ## todo: utils module some how? copied from CP3
     def fail_hard(s):
         logger.debug(s)
-        if th_connected:
-            thApi.error_post(Errorparams(error="other-error",message=s))
+        thApi.error_post(Errorparams(error="other-error",message=s))
         raise Exception(s)
 
     ## start the sequence diagram: post to ready to get configuration data
@@ -105,6 +104,9 @@ if __name__ == '__main__':
     logger.debug("initializing cp1_ta ros node")
     rospy.init_node("cp1_ta")
 
+    if ready_resp.level == "c":
+        ## todo: start learning here, maybe fail
+
     ## todo: instead of sleeping, listen to a topic for whatever indicated "odom recieved"
     logger.debug("waiting for move_base (emulates watching for odom_recieved)")
     move_base = actionlib.SimpleActionClient("move_base", MoveBaseAction)
@@ -132,7 +134,7 @@ if __name__ == '__main__':
         ## todo: this may be the wrong format (int vs float)
         config.battery = msg.data
 
-    sub_voltage = rospy.Subscriber("/energy_monitor/energy_level", Float64, energy_cb)
+    sub_mwh = rospy.Subscriber("/energy_monitor/energy_level_mwh", Float64, energy_cb)
 
     if not ready_resp.level == "c":
         ## in cp3 , here we send live but we don't have that status message at all for CP1
