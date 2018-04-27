@@ -131,27 +131,13 @@ lives at `CMU_ROBOTICS` on the file system.
     TH_PORT=8081 TA_PORT=8080 docker-compose up
     ```
 
-
 ### Building CP2
 
-1. Clone the CP2 Orchestrator repo, `git clone
-   git@github.com:cmu-mars/p2c2-orchestrator.git` somewhere on the
-   file system, which we'll call `CP2_ORC`.
-
-2. Build `cmu-mars/orchestrator`:
-
-    ``` shell
-    docker build -t cmu-mars/orchestrator CP2_ORC
-    ```
-
-3. Compose `cmu-mars/cp2` with the TH:
-
-    ``` shell
-    cd CMU_ROBOTICS/cp2/ta
-    TH_PORT=8081 TA_PORT=8080 docker-compose up
-    ```
+Instructions for building and interacting with CP2 can be found at:
+[cp2/ta/README.md](cp2/ta/README.md).
 
 ### Building CP3
+
 1. Clone the CP3 base repo, `git clone
    git@github.com:cmu-mars/cp3_base.git` somewhere on the file system,
    which we'll call `CP3_BASE`.
