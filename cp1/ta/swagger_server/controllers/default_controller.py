@@ -47,10 +47,8 @@ def internal_post(CP1InternalStatus):  # noqa: E501
 
     if CP1InternalStatus.status == "learning-started":
         config.logger.debug("internal got a deprecated status which is being ignored")
-        pass
     elif CP1InternalStatus.status == "learning-done":
         config.logger.debug("internal got a deprecated status which is being ignored")
-        pass
     elif CP1InternalStatus.status == "adapt-started":
         comms.send_status("internal", "adapt-started")
     elif CP1InternalStatus.status == "adapt-done":
@@ -61,19 +59,17 @@ def internal_post(CP1InternalStatus):  # noqa: E501
         comms.send_status("internal", "charging-done")
     elif CP1InternalStatus.status == "parsing-error":
         config.logger.debug("internal got a deprecated status which is being ignored")
-        pass
     elif CP1InternalStatus.status == "learning-error":
         config.logger.debug("internal got a deprecated status which is being ignored")
-        pass
     elif CP1InternalStatus.status ==  "other-error":
-        config.logger.debug("sending error to the TH because of message %s" % message)
-        resp = config.thApi.error_post(Errorparams(error="other-error",message=message))
+        config.logger.debug("sending error to the TH because of message %s" % CP1InternalStatus.message)
+        resp = config.thApi.error_post(Errorparams(error="other-error",message=CP1InternalStatus.message))
 
     ## these are the literal constants that come from rainbow. the
     ## constants above are from the API definition; there's some
     ## overlap and this is a little messy
     elif CP1InternalStatus.status == "RAINBOW_READY":
-        comms.send_status("internal, rainbow ready in level %s" % ready_resp.level, "live", ?? , ??)
+        comms.send_status("internal, rainbow ready in level %s" % config.ready_resp.level, "live", False)
     elif CP1InternalStatus.status == "MISSION_SUCCEEDED":
         config.logger.debug("internal got a rainbow mission message which is being ignored")
     elif CP1InternalStatus.status == "MISSION_FAILED":
@@ -156,8 +152,8 @@ def perturb_remove_obstacle_post(Parameters=None):
     if config.bot_cont.gazebo.remove_obstacle(RemoveParams.obstacleid):
         return InlineResponse2001(sim_time=rospy.Time.now().secs)
     else:
-        return InlineReponse4001(cause="bad-obstacleid",
-                                 message="asked to remove an obstacle with a name we didn't issue")
+        return InlineResponse4001(cause="bad-obstacleid",
+                                  message="asked to remove an obstacle with a name we didn't issue")
 
 def start_post():
     """
@@ -176,13 +172,13 @@ def start_post():
                                                              y=y,
                                                              sim_time=rospy.Time.now().secs,
                                                              name=name_of_waypoint))
-            send_status("at-waypoint callback", "at-waypoint")
+            comms.send_status("at-waypoint callback", "at-waypoint")
 
         def active_cb():
             config.logger.debug("received notification that goal is active")
 
         def totally_done_cb(terminal, result):
-            send_done("totally_done callback",
+            comms.send_done("totally_done callback",
                       "mission sequencer indicated that all missions are done",
                       "at-goal")
 

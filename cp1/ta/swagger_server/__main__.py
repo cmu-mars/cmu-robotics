@@ -19,7 +19,10 @@ import threading
 import requests
 import time
 import random
+import actionlib
 
+from std_msgs.msg import Float64
+from move_base_msgs.msg import MoveBaseAction
 from rainbow_interface import RainbowInterface
 
 from swagger_client.rest import ApiException
@@ -30,15 +33,16 @@ from swagger_client.models.statusparams import Statusparams
 import swagger_server.config as config
 import swagger_server.comms as comms
 
-from learner import Learn ## todo: this may not work
-import cp1_utils ## todo: this may not work
+
+import learner ## todo: this may not work
+from cp1_utils import * ## todo: this may not work
 from bot_controller import BotController ## todo: this may not work
 
 if __name__ == '__main__':
     # Parameter parsing, to set up TH
     if len(sys.argv) != 2:
-      print ("No URI TH passed in!")
-      sys.exit(1)
+        print ("No URI TH passed in!")
+        sys.exit(1)
 
     th_uri = sys.argv[1]
 
@@ -112,7 +116,7 @@ if __name__ == '__main__':
 
     if ready_resp.level == "c":
         try:
-            Learn.get_true_model()
+            learner.Learn.get_true_model()
         except Exception as e:
             logger.debug("parsing raised an exception; notifying the TH and then crashing")
             thApi.error_post(Errorparams(error="parsing-error",message="exception raised: %s" % e))
@@ -120,13 +124,13 @@ if __name__ == '__main__':
 
         comms.send_status("__main__", "learning-started", False)
         try:
-            result = Learn.start_learning()
+            result = learner.Learn.start_learning()
         except Exception as e:
             logger.debug("learning raised an exception; notifying the TH and then crashing")
             thApi.error_post(Errorparams(error="learning-error",message="exception raised: %s" % e))
             raise e
         comms.send_status("__main__", "learning-done", False)
-        Learn.dump_learned_model()
+        learner.Learn.dump_learned_model()
 
     ## ros launch
     # Init me as a node
