@@ -37,7 +37,7 @@ def send_status(src, code, msg):
         response = swagger_server.config.thApi.status_post(Parameters1(status = code,
                                                                        message = msg,
                                                                        sim_time = rospy.Time.now().secs,
-                                                                       plan = [], ## todo placeholder value
+                                                                       plan = plan=cp.instruction_server.get_path(ready_resp.start_loc,ready_resp.target_loc), ## todo check
                                                                        config = swagger_server.config.nodes,
                                                                        sensors = swagger_server.config.sensors
         ))

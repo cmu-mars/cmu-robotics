@@ -194,7 +194,12 @@ if __name__ == '__main__':
         ## time is. probably 0.
 
         ## todo: maybe use the send_status function in default_controller?
-        live_resp = thApi.status_post(Parameters1("live","CP3 TA ready to recieve inital perturbs and start in non-adaptive case",rospy.Time.now().secs,[],config.nodes,config.sensors)) ## todo placeholder value
+        live_resp = thApi.status_post(Parameters1(status="live",
+                                                  message="CP3 TA ready to recieve inital perturbs and start in non-adaptive case",
+                                                  sim_time=rospy.Time.now().secs,
+                                                  plan=cp.instruction_server.get_path(ready_resp.start_loc,ready_resp.target_loc),
+                                                  config=config.nodes,
+                                                  config=config.sensors))
         config.logger.debug("repsonse from TH to live: %s" % response)
 
     logger.debug("starting TA REST interface")
