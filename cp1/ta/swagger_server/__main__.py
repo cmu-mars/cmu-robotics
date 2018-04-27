@@ -29,6 +29,10 @@ from swagger_client.models.statusparams import Statusparams
 
 import swagger_server.config as config
 
+from learn import Learn ## todo: this may not work
+import cli ## todo: this may not work
+from bot_controller import BotController
+
 if __name__ == '__main__':
     # Parameter parsing, to set up TH
     if len(sys.argv) != 2:
@@ -48,6 +52,9 @@ if __name__ == '__main__':
     handler = logging.FileHandler('access.log')
     logger.addHandler(handler)
 
+    # share logger with endpoints
+    config.logger = logger
+
     def log_request_info():
         logger.debug('Headers: %s', connexion.request.headers)
         logger.debug('Body: %s', connexion.request.get_data())
@@ -56,7 +63,7 @@ if __name__ == '__main__':
 
     # build the TH API object
     thApi = DefaultApi()
-    thApi.api_client.host = th_uri
+    thApi.api_client.configuration.host = th_uri
     config.thApi = thApi
 
     ## todo: utils module some how? copied from CP3
@@ -100,14 +107,49 @@ if __name__ == '__main__':
     fo.write('%s' %ready_resp) #todo: this may or may not be JSON; check once we can run it
     fo.close()
 
+    def send_status(src, code, x=None, y=None):
+        ## todo, this is pretty hacky; really we want to make x, y
+        ## optional in the API def and only send them if the robot's
+        ## been started
+        if x = None:
+            x = -1.0
+        if y = None:
+            y = -1.0
+
+        config.logger.debug("sending status %s from %s" % (code,src))
+        response = thApi.status_post(Statusparams(status=code,
+                                                  x = x, ## todo these could be computed instead of taken as args
+                                                  y = y,
+                                                  charge = config.battery, # todo may be none?
+                                                  sim_time = rospy.Time.now().secs))
+        config.logger.debug("repsonse from TH to status: %s" % response)
+
+    if ready_resp.level == "c":
+        try:
+            Learn.get_true_model()
+        except Exception as e:
+            logger.debug("parsing raised an exception; notifying the TH and then crashing")
+            thApi.error_post(Errorparams(error="parsing-error",message="exception raised: %s" % e))
+            raise e
+
+        send_status("__main__", "learning-started")
+        try:
+            result = Learn.start_learning()
+        except Exception as e:
+            logger.debug("learning raised an exception; notifying the TH and then crashing")
+            thApi.error_post(Errorparams(error="learning-error",message="exception raised: %s" % e))
+            raise e
+        send_status("__main__", "learning-done")
+        Learn.dump_learned_model()
+
+    ## ros launch
     # Init me as a node
     logger.debug("initializing cp1_ta ros node")
     rospy.init_node("cp1_ta")
 
-    if ready_resp.level == "c":
-        ## todo: start learning here, maybe fail
+    cli.init("cp1_ta")
+    cli.launch_cp1_base()
 
-    ## todo: instead of sleeping, listen to a topic for whatever indicated "odom recieved"
     logger.debug("waiting for move_base (emulates watching for odom_recieved)")
     move_base = actionlib.SimpleActionClient("move_base", MoveBaseAction)
     ## todo: Ian - should this wait for some period (e.g., timeout=60s), otherwise we will wait forever
@@ -115,8 +157,18 @@ if __name__ == '__main__':
     if not move_base_started:
         fail_hard("fatal error: navigation stack has failed to start")
 
-    ## TODO: start gazebo interface??
+    bot_cont = BotController()
+    config.bot_cont = bot_cont
 
+    ## subscribe to rostopics
+    def energy_cb(msg):
+        """call back to update the global battery state from the ros topic"""
+        ## todo: this may be the wrong format (int vs float)
+        config.battery = msg.data
+
+    sub_mwh = rospy.Subscriber("/energy_monitor/energy_level_mwh", Float64, energy_cb)
+
+    ## start up rainbow if we're adapting, otherwise send the live message directly
     if ready_resp.level == "c":
         try:
             rainbow_log = open(os.path.expanduser("~/rainbow.log"),'w')
@@ -127,24 +179,8 @@ if __name__ == '__main__':
                 fail_hard("did not connect to rainbow in a timely fashion")
         except Exception as e:
             fail_hard("failed to connecto to rainbow: %s " %e)
-
-    ## subscribe to rostopics
-    def energy_cb(msg):
-        """call back to update the global battery state from the ros topic"""
-        ## todo: this may be the wrong format (int vs float)
-        config.battery = msg.data
-
-    sub_mwh = rospy.Subscriber("/energy_monitor/energy_level_mwh", Float64, energy_cb)
-
-    if not ready_resp.level == "c":
-        ## in cp3 , here we send live but we don't have that status message at all for CP1
-        # logger.debug("sending live status message")
-        # ## todo: i have no idea what rospy is going to say the sim
-        # ## time is. probably 0.
-        # live_resp = thApi.status_post(Parameters1("live","CP3 TA ready to recieve inital perturbs and start in non-adaptive case",rospy.Time.now().secs,[],[],[])) ## todo placeholder value
-        # config.logger.debug("repsonse from TH to live: %s" % response)
+    else:
+        send_status("__main__ in level %s" % ready_resp.level, "live")
 
     logger.debug("starting TA REST interface")
-
-    # Start the TA listening
     app.run(host='0.0.0.0',port=5000)
