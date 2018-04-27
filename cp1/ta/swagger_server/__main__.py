@@ -20,77 +20,16 @@ import requests
 import time
 import random
 
+from rainbow_interface import RainbowInterface
+
 from swagger_client.rest import ApiException
 from swagger_client import DefaultApi
-from swagger_client.models.parameters import Parameters
-from swagger_client.models.parameters_1 import Parameters1
-from swagger_client.models.parameters_2 import Parameters2
+from swagger_client.models.errorparams import Errorparams
+from swagger_client.models.statusparams import Statusparams
 
 import swagger_server.config as config
 
-# Function to mimic wait for ta to be up, send ready, then status, then error, then wait
-# and send done
-def fake_semantics(thApi, port):
-    def fake_ta():
-        not_started = True
-        while not_started:
-            print('Checking to see if TA is up on port ' + str(port))
-            try:
-                r = requests.get('http://0.0.0.0:' + str(port) + '/')
-                print(r.status_code)
-                if r.status_code == 200 or r.status_code == 404:
-                    print('Server started; Starting to push th')
-                    not_started=False
-            except:
-                print('server not yet started')
-            time.sleep(2)
-
-        try:
-            logger.debug("Sending ready");
-            response = thApi.ready_post()
-            logger.debug('Received response from th/ready:')
-            logger.debug ('%s' %response)
-            config.ready_response = response
-
-            # check to make sure that all adjacent waypoints are disequal
-            waypoints = response.target_locs
-
-            if not waypoints:
-              logger.debug("malformed response from ready: target_locs must not be empty; posting to error")
-              thApi.error_post(parameters=Parameters("ready error", "target_locs must not be empty"))
-
-            waypoints.insert(0,response.start_loc)
-            if any(map(eq, waypoints, waypoints[1:])):
-              logger.debug("malformed response from ready: start_loc @ target_locs has adjacent equal elements; posting to error")
-              thApi.error_post(parameters=Parameters("ready error", "start_loc @ target_locs has adjacent equal elements"))
-        except Exception as e:
-            logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
-            logger.debug(traceback.format_exc())
-
-
-        try:
-            logger.debug("Sending status")
-            response = thApi.status_post(parameters=Parameters1("learning-started", 14.5, 30.5, 0.54, 0.35, 42000, 72, 50))
-        except Exception as e:
-            logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
-            logger.debug(traceback.format_exc())
-
-        wait_time = random.randint(5,60)
-        print ('TA sleeping for ' + str(wait_time) + 's before sending done')
-        time.sleep(wait_time)
-
-        try:
-            logger.debug("Sending done")
-            response = thApi.done_post(parameters=Parameters2(14.5, 25.9, 0.54, 0.35, 4000, 72, 72, [45,72], "at-goal", "test finished successfully"))
-        except Exception as e:
-            logger.error('Fatal: could not connect to TH -- see last logger entry to determine which one')
-        logger.debug(traceback.format_exc())
-    print ('Starting fake semantics')
-    thread = threading.Thread(target=fake_ta)
-    thread.start()
-
 if __name__ == '__main__':
-
     # Parameter parsing, to set up TH
     if len(sys.argv) != 2:
       print ("No URI TH passed in!")
@@ -100,9 +39,10 @@ if __name__ == '__main__':
 
     # Set up TA server and logging
     app = connexion.App(__name__, specification_dir='./swagger/')
-    app.app.json_encoder = JSONEncoder
+    app.app.json_encoder = JSONEncoder ## possibly busted; unclear
     app.add_api('swagger.yaml', arguments={'title': 'CP1'}, strict_validation=True)
 
+    # capture the logger
     logger = logging.getLogger('werkzeug')
     logger.setLevel(logging.DEBUG)
     handler = logging.FileHandler('access.log')
@@ -114,24 +54,95 @@ if __name__ == '__main__':
 
     app.app.before_request(log_request_info)
 
-    # Connect to th
+    # build the TH API object
     thApi = DefaultApi()
     thApi.api_client.host = th_uri
+    config.thApi = thApi
 
-    # Hack: Try sending stuff to TH
+    ## todo: utils module some how? copied from CP3
+    def fail_hard(s):
+        logger.debug(s)
+        if th_connected:
+            thApi.error_post(Errorparams(error="other-error",message=s))
+        raise Exception(s)
+
+    ## start the sequence diagram: post to ready to get configuration data
     try:
-      logger.debug("Sending test parsing-error to th")
-      thApi.error_post(parameters=Parameters("parsing-error", "This is a test error post to th"))
+        logger.debug("posting to /ready")
+        ready_resp = thApi.ready_post()
+        logger.debug("recieved response from /ready: %s" % ready_resp)
     except Exception as e:
-      logger.debug("Failed to connect with th")
-      logger.debug(traceback.format_exc())
+        ## this isn't a call to fail_hard because the TH isn't
+        ## responding at all; we have to hope that LL notices the log
+        ## output and that this happens only very rarely if at all
+        logger.debug("failed to connect with th")
+        raise e
 
+    ## dynamic checks on ready response
+    if ready_resp.target_locs == []:
+        fail_hard("malformed response from ready: target_locs must not be the empty list")
 
+    if ready_resp.start_loc == ready_resp.target_locs[0]:
+        fail_hard("malformed response from ready: start-loc must not be the same as the first item of target-locs")
+
+    ## todo: probably in a util file
+    def check_adj(l):
+        for x , y in zip(l, l[1:]):
+            if x == y:
+                return False
+        return True
+
+    if not check_adj(ready_resp.target_locs):
+        fail_hard("malformed response from ready: target-locs contains adjacent equal elements")
+
+    ## once the response is checked, write it to ~/ready
+    logger.debug("writing checked /ready message to ~/ready")
+    fo = open(os.path.expanduser('~/ready'), 'w')
+    fo.write('%s' %ready_resp) #todo: this may or may not be JSON; check once we can run it
+    fo.close()
 
     # Init me as a node
+    logger.debug("initializing cp1_ta ros node")
     rospy.init_node("cp1_ta")
 
-    fake_semantics(thApi,5000)
+    ## todo: instead of sleeping, listen to a topic for whatever indicated "odom recieved"
+    logger.debug("waiting for move_base (emulates watching for odom_recieved)")
+    move_base = actionlib.SimpleActionClient("move_base", MoveBaseAction)
+    ## todo: Ian - should this wait for some period (e.g., timeout=60s), otherwise we will wait forever
+    move_base_started = move_base.wait_for_server()
+    if not move_base_started:
+        fail_hard("fatal error: navigation stack has failed to start")
+
+    ## TODO: start gazebo interface??
+
+    if ready_resp.level == "c":
+        try:
+            rainbow_log = open(os.path.expanduser("~/rainbow.log"),'w')
+            rainbow = RainbowInterface()
+            rainbow.launchRainbow("cp1", rainbow_log)
+            ok = rainbow.startRainbow()
+            if not ok:
+                fail_hard("did not connect to rainbow in a timely fashion")
+        except Exception as e:
+            fail_hard("failed to connecto to rainbow: %s " %e)
+
+    ## subscribe to rostopics
+    def energy_cb(msg):
+        """call back to update the global battery state from the ros topic"""
+        ## todo: this may be the wrong format (int vs float)
+        config.battery = msg.data
+
+    sub_voltage = rospy.Subscriber("/energy_monitor/energy_level", Float64, energy_cb)
+
+    if not ready_resp.level == "c":
+        ## in cp3 , here we send live but we don't have that status message at all for CP1
+        # logger.debug("sending live status message")
+        # ## todo: i have no idea what rospy is going to say the sim
+        # ## time is. probably 0.
+        # live_resp = thApi.status_post(Parameters1("live","CP3 TA ready to recieve inital perturbs and start in non-adaptive case",rospy.Time.now().secs,[],[],[])) ## todo placeholder value
+        # config.logger.debug("repsonse from TH to live: %s" % response)
+
+    logger.debug("starting TA REST interface")
 
     # Start the TA listening
     app.run(host='0.0.0.0',port=5000)

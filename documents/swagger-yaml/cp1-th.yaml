@@ -80,7 +80,7 @@ paths:
         test upon notification of an error.
       parameters:
         - in: body
-          name: Parameters
+          name: errorparams
           schema:
             type: object
             required:
@@ -117,7 +117,7 @@ paths:
         used by the TA to periodically indicate its current state to the TH
       parameters:
         - in: body
-          name: Parameters
+          name: statusparams
           schema:
             type: object
             required:
@@ -190,7 +190,7 @@ paths:
         and not use this end point.
       parameters:
         - in: body
-          name: Parameters
+          name: doneparams
           schema:
             type: object
             required:

@@ -13,7 +13,7 @@ paths:
         the map
       parameters:
         - in: body
-          name: Parameters
+          name: PlaceParams
           schema:
             type: object
             required:
@@ -73,7 +73,7 @@ paths:
         the map
       parameters:
         - in: body
-          name: Parameters
+          name: RemoveParams
           schema:
             type: object
             required:
@@ -125,7 +125,7 @@ paths:
         battery.
       parameters:
         - in: body
-          name: Parameters
+          name: BatteryParams
           schema:
             type: object
             required:
