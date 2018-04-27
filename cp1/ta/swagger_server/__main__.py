@@ -118,14 +118,14 @@ if __name__ == '__main__':
             thApi.error_post(Errorparams(error="parsing-error",message="exception raised: %s" % e))
             raise e
 
-        comms.send_status("__main__", "learning-started")
+        comms.send_status("__main__", "learning-started", False)
         try:
             result = Learn.start_learning()
         except Exception as e:
             logger.debug("learning raised an exception; notifying the TH and then crashing")
             thApi.error_post(Errorparams(error="learning-error",message="exception raised: %s" % e))
             raise e
-        comms.send_status("__main__", "learning-done")
+        comms.send_status("__main__", "learning-done", False)
         Learn.dump_learned_model()
 
     ## ros launch
@@ -145,6 +145,8 @@ if __name__ == '__main__':
 
     ## build controller object
     bot_cont = BotController()
+    bot_cont.level = ready_resp.level
+
     config.bot_cont = bot_cont
 
     ## todo: check that things are actually waypoint names
@@ -158,6 +160,8 @@ if __name__ == '__main__':
         """call back to update the global battery state from the ros topic"""
         ## todo: this may be the wrong format (int vs float)
         config.battery = msg.data
+        if msg.data <= 0:
+            comms.send_done("energy call back", "", "out-of-battery")
 
     sub_mwh = rospy.Subscriber("/energy_monitor/energy_level_mwh", Float64, energy_cb)
 

@@ -15,6 +15,7 @@ from swagger_server.models.place_params import PlaceParams  # noqa: E501
 from swagger_server.models.remove_params import RemoveParams  # noqa: E501
 from swagger_server import util
 
+from swagger_client.models.errorparams import Errorparams
 from swagger_client.models.done_tasksfinished import DoneTasksfinished
 
 ## todo remove?
@@ -51,13 +52,13 @@ def internal_post(CP1InternalStatus):  # noqa: E501
         config.logger.debug("internal got a deprecated status which is being ignored")
         pass
     elif CP1InternalStatus.status == "adapt-started":
-        ## send to TH; does this ever happen or only from rainbow as below?
+        comms.send_status("internal", "adapt-started")
     elif CP1InternalStatus.status == "adapt-done":
-        ## send to TH; does this ever happen or only from rainbow as below?
+        comms.send_status("internal", "adapt-done")
     elif CP1InternalStatus.status == "charging-started":
-        ## send to TH
+        comms.send_status("internal", "charging-started")
     elif CP1InternalStatus.status == "charging-done":
-        ## send to TH
+        comms.send_status("internal", "charging-done")
     elif CP1InternalStatus.status == "parsing-error":
         config.logger.debug("internal got a deprecated status which is being ignored")
         pass
@@ -65,23 +66,24 @@ def internal_post(CP1InternalStatus):  # noqa: E501
         config.logger.debug("internal got a deprecated status which is being ignored")
         pass
     elif CP1InternalStatus.status ==  "other-error":
-        ## send error to the TH
+        config.logger.debug("sending error to the TH because of message %s" % message)
+        resp = config.thApi.error_post(Errorparams(error="other-error",message=message))
 
     ## these are the literal constants that come from rainbow. the
     ## constants above are from the API definition; there's some
     ## overlap and this is a little messy
     elif CP1InternalStatus.status == "RAINBOW_READY":
-        ## send live, log if not in C
+        comms.send_status("internal, rainbow ready in level %s" % ready_resp.level, "live", ?? , ??)
     elif CP1InternalStatus.status == "MISSION_SUCCEEDED":
-        ## not clear because of mission sequencer
+        config.logger.debug("internal got a rainbow mission message which is being ignored")
     elif CP1InternalStatus.status == "MISSION_FAILED":
-        ## not clear because of mission sequencer
+        config.logger.debug("internal got a rainbow mission message which is being ignored")
     elif CP1InternalStatus.status == "ADAPTING":
-        ## send adapt-started
+        comms.send_status("internal", "adapt-started")
     elif CP1InternalStatus.status == "ADAPTED":
-        ## send adapt-done
+        comms.send_status("internal", "adapt-done")
     elif CP1InternalStatus.status == "ADAPTED_FAILED":
-        ## not clear
+        comms.send_status("internal, adapted_failed", "adapt-done")
 
 def observe_get():
     """
@@ -170,19 +172,28 @@ def start_post():
         def at_waypoint_cb(name_of_waypoint):
             config.logger.debug("at_waypoint callback called with %s" % name_of_waypoint)
             x , y , ig1 , ig2 = config.bot_cont.gazebo.get_bot_state()
-            config.tasks_finished.insert(0,DoneTasksfinished(x=x,
+            config.tasks_finished.append(DoneTasksfinished(x=x,
                                                              y=y,
                                                              sim_time=rospy.Time.now().secs,
                                                              name=name_of_waypoint))
+            send_status("at-waypoint callback", "at-waypoint")
+
         def active_cb():
             config.logger.debug("received notification that goal is active")
 
+        def totally_done_cb(terminal, result):
+            send_done("totally_done callback",
+                      "mission sequencer indicated that all missions are done",
+                      "at-goal")
+
         def done_cb(terminal, result):
+            config.logger.debug("done cb was used from instruction graph")
 
-
-            ## this is dead code
-        if config.level == "c":
-            config.bot_cont.go_instructions_multiple_tasks_adaptive( , )
-        else:
+        config.bot_cont.start(start=config.ready_response.start_loc,
+                              targets=config.ready_response.target_locs,
+                              active_cb=active_cb,
+                              done_cb = done_cb,
+                              at_waypoint_cb=at_waypoint_cb,
+                              mission_done_cb=totally_done_cb)
     else:
         return InlineResponse4003("/start called more than once")
