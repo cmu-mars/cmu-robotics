@@ -149,7 +149,13 @@ if __name__ == '__main__':
 
     config.bot_cont = bot_cont
 
-    ## todo: check that things are actually waypoint names
+    ## check that things are actually waypoint names
+    if not bot_cont.map_server.is_waypoint(ready_resp.start_loc):
+        fail_hard("name of start location is not a waypoint: %s" % ready_resp.start_loc)
+
+    for name in ready_resp.target_locs:
+        if not bot_cont.map_server.is_waypoint(name):
+            fail_hard("name of target location is not a waypoint: %s" % name)
 
     ## put the robot in the right place
     start_coords = bot_cont.map_server.waypoint_to_coords(ready_resp.start_loc)
