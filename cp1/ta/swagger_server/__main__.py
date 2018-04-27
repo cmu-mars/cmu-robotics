@@ -34,8 +34,9 @@ import swagger_server.config as config
 import swagger_server.comms as comms
 
 import learner ## todo: this may not work
-import cp1_utils ## todo: this may not work
-from bot_controller import BotController ## todo: this may not work
+# import cp1_utils ## todo: this may not work
+from cp1controllers import *
+# from bot_controller import BotController ## todo: this may not work
 
 if __name__ == '__main__':
     # Parameter parsing, to set up TH
@@ -73,7 +74,9 @@ if __name__ == '__main__':
     ## todo: utils module some how? copied from CP3
     def fail_hard(s):
         logger.debug(s)
-        thApi.error_post(Errorparams(error="other-error",message=s))
+        err = Errorparams(error="other-error", message=s)
+        print ("%s" % err)
+        result = thApi.error_posterr) ## this doesn't work for bizarre positional argument reasons
         raise Exception(s)
 
     ## start the sequence diagram: post to ready to get configuration data

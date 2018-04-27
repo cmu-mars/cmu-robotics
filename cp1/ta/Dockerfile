@@ -31,7 +31,7 @@ COPY requirements.txt /usr/src/app/
 
 RUN sudo pip3 install --no-cache-dir -r requirements.txt
 
-RUN sudo pip3 install catkin_pkg rospkg
+RUN sudo pip3 install catkin_pkg rospkg psutil
 
 COPY . /usr/src/app
 
