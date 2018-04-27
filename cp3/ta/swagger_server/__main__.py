@@ -116,12 +116,20 @@ if __name__ == '__main__':
 
     launch_file = ready_resp.start_configuration
 
+
     ## todo: this is possibly unnecesscary if we renamed the aruco
     ## file to match the start-configuration string and then just
     ## trust the static checking that this response will be well
     ## formed. the files exist in cp3_base/cp3_base/launch
     if(ready_resp.start_configuration == "aruco-camera"):
-        launch_file = "aruco"
+        config.nodes = ["aruco-camera"]
+        config.sensors = ["camera"]
+        launch_file = "aruco-kinect"
+    else:
+        c = launch_file.split("-")
+        config.nodes = [launch_file]
+        config.sensors = [c[1]]
+
 
     logger.debug("launching cp3-%s.launch" % launch_file)
     rl_child = subprocess.Popen(["roslaunch", "cp3_base", "cp3-" + launch_file + ".launch"],
@@ -187,7 +195,7 @@ if __name__ == '__main__':
         ## time is. probably 0.
 
         ## todo: maybe use the send_status function in default_controller?
-        live_resp = thApi.status_post(Parameters1("live","CP3 TA ready to recieve inital perturbs and start in non-adaptive case",rospy.Time.now().secs,[],[],[])) ## todo placeholder value
+        live_resp = thApi.status_post(Parameters1("live","CP3 TA ready to recieve inital perturbs and start in non-adaptive case",rospy.Time.now().secs,[],config.nodes,config.sensors)) ## todo placeholder value
         config.logger.debug("repsonse from TH to live: %s" % response)
 
     logger.debug("starting TA REST interface")

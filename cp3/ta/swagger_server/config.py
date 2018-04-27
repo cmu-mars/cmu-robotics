@@ -25,3 +25,8 @@ adaptations = 0
 
 # are we in adapting mode or not?
 use_adaptation = False
+
+#what is our config
+nodes = []
+
+sensors = []
