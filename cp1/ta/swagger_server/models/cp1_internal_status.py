@@ -72,7 +72,7 @@ class CP1InternalStatus(Model):
         :param status: The status of this CP1InternalStatus.
         :type status: str
         """
-        allowed_values = ["learning-started", "learning-done", "adapt-started", "adapt-done", "charging-started", "charging-done", "parsing-error", "learning-error", "other-error"]  # noqa: E501
+        allowed_values = ["learning-started", "learning-done", "adapt-started", "adapt-done", "charging-started", "charging-done", "parsing-error", "learning-error", "other-error", "RAINBOW_READY", "MISSION_SUCCEEDED", "MISSION_FAILED", "ADAPTING", "ADAPTED", "ADAPTED_FAILED"]  # noqa: E501
         if status not in allowed_values:
             raise ValueError(
                 "Invalid value for `status` ({0}), must be one of {1}"

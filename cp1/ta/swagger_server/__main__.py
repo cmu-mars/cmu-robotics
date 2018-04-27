@@ -33,9 +33,8 @@ from swagger_client.models.statusparams import Statusparams
 import swagger_server.config as config
 import swagger_server.comms as comms
 
-
 import learner ## todo: this may not work
-from cp1_utils import * ## todo: this may not work
+import cp1_utils ## todo: this may not work
 from bot_controller import BotController ## todo: this may not work
 
 if __name__ == '__main__':
