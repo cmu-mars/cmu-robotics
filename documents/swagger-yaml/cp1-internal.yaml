@@ -48,6 +48,12 @@ paths:
                   - parsing-error
                   - learning-error
                   - other-error
+                  - RAINBOW_READY
+                  - MISSION_SUCCEEDED
+                  - MISSION_FAILED
+                  - ADAPTING
+                  - ADAPTED
+                  - ADAPTED_FAILED
               message:
                 type: string
                 description: >-
