@@ -107,6 +107,8 @@ if __name__ == '__main__':
     fo.write('%s' %ready_resp) #todo: this may or may not be JSON; check once we can run it
     fo.close()
 
+    config.level = ready_resp.level
+
     def send_status(src, code, x=None, y=None):
         ## todo, this is pretty hacky; really we want to make x, y
         ## optional in the API def and only send them if the robot's
@@ -157,8 +159,15 @@ if __name__ == '__main__':
     if not move_base_started:
         fail_hard("fatal error: navigation stack has failed to start")
 
+    ## build controller object
     bot_cont = BotController()
     config.bot_cont = bot_cont
+
+    ## todo: check that things are actually waypoint names
+
+    ## put the robot in the right place
+    start_coords = bot_cont.map_server.waypoint_to_coords(ready_resp.start_loc)
+    bot_cont.gazebo.set_bot_position(start_coords['x'], start_coords['y'], 0)
 
     ## subscribe to rostopics
     def energy_cb(msg):

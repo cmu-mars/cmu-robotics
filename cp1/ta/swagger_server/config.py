@@ -16,3 +16,6 @@ logger = None
 
 # bot controller
 bot_cont = None
+
+## level
+level = None

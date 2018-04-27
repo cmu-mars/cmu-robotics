@@ -38,19 +38,33 @@ def internal_post(CP1InternalStatus):  # noqa: E501
     if connexion.request.is_json:
         CP1InternalStatus = CP1InternalStatus.from_dict(connexion.request.get_json())  # noqa: E501
 
+    config.logger.debug("TA internal status end point hit with status %s and message %s"
+                        % (CP1InternalStatus.status, CP1InternalStatus.message))
 
-    if CP1InternalStatus.message == "learning-started":
-    elif CP1InternalStatus.message == "learning-done":
-    elif CP1InternalStatus.message == "adapt-started":
-    elif CP1InternalStatus.message == "adapt-done":
-    elif CP1InternalStatus.message == "charging-started":
-    elif CP1InternalStatus.message == "charging-done":
-    elif CP1InternalStatus.message == "parsing-error":
-    elif CP1InternalStatus.message == "learning-error":
-    elif CP1InternalStatus.message ==  "other-error":
-     # todo -- mirror cp3, roughly
+    if CP1InternalStatus.status == "learning-started":
+        config.logger.debug("internal got a deprecated message status which is being ignored")
+    elif CP1InternalStatus.status == "learning-done":
+        config.logger.debug("internal got a deprecated message status which is being ignored")
+    elif CP1InternalStatus.status == "adapt-started":
+    elif CP1InternalStatus.status == "adapt-done":
+    elif CP1InternalStatus.status == "charging-started":
+    elif CP1InternalStatus.status == "charging-done":
+    elif CP1InternalStatus.status == "parsing-error":
+        config.logger.debug("internal got a deprecated message status which is being ignored")
+    elif CP1InternalStatus.status == "learning-error":
+        config.logger.debug("internal got a deprecated message status which is being ignored")
+    elif CP1InternalStatus.status ==  "other-error":
 
-    return 'do some magic!'
+    ## these are the literal constants that come from rainbow. the
+    ## constants above are from the API definition; there's some
+    ## overlap and this is a little messy
+    elif CP1InternalStatus.status == "RAINBOW_READY":
+    elif CP1InternalStatus.status == "MISSION_SUCCEEDED":
+    elif CP1InternalStatus.status == "MISSION_FAILED":
+    elif CP1InternalStatus.status == "ADAPTING":
+    elif CP1InternalStatus.status == "ADAPTED":
+    elif CP1InternalStatus.status == "ADAPTED_FAILED":
+
 
 def observe_get():
     """
@@ -59,10 +73,11 @@ def observe_get():
 
     :rtype: InlineResponse2003
     """
+    x , y , ig1 , ig2 = config.bot_cont.gazebo.get_bot_state()
 
     ret = InlineResponse2003()
-    ret.x = 0.0 #todo
-    ret.y = 0.0 #todo
+    ret.x = x
+    ret.y = y
     ret.battery = config.battery
     ret.sim_time = rospy.Time.now().secs
 
@@ -81,11 +96,10 @@ def perturb_battery_post(Parameters=None):
     if connexion.request.is_json:
         BatteryParams = BatteryParams.from_dict(connexion.request.get_json())  # noqa: E501
 
-    # todo actually set the battery
-
-    ret = InlineResponse2002()
-    ret.sim_time = rospy.Time.now().secs
-    return ret
+    if config.bot_cont.gazebo.set_charge(BatteryParams.charge):
+        return InlineResponse2002(sim_time = rospy.Time.now().secs)
+    else:
+        return InlineResponse4002(message = "setting the battery failed") , 400
 
 
 def perturb_place_obstacle_post(Parameters=None):
@@ -100,16 +114,13 @@ def perturb_place_obstacle_post(Parameters=None):
     if connexion.request.is_json:
         PlaceParams = PlaceParams.from_dict(connexion.request.get_json())  # noqa: E501
 
-    # todo: dynamic check goes here against parameter x and y? maybe
-    # the obstacle will just fail to place
-
-    # todo place obstacle
-
-    ret = InlineResponse200()
-    ret.obstacleid = "obs1" # todo get names
-    ret.sim_time = rospy.Time.now().secs
-    return ret
-
+    result = config.bot_cont.gazebo.place_obstacle(PlaceParams.x, PlaceParams.y)
+    if result:
+        return InlineResponse200(obstacleid = result, sim_time = rospy.Time.now().secs)
+    else:
+        ## todo: we can't really distinguish between reasons for
+        ## failure here so the API is a little bit too big
+        return InlineResponse4001(cause = "other-error", message="obstacle placement failed")
 
 def perturb_remove_obstacle_post(Parameters=None):
     """
@@ -123,18 +134,11 @@ def perturb_remove_obstacle_post(Parameters=None):
     if connexion.request.is_json:
         RemoveParams = RemoveParams.from_dict(connexion.request.get_json())  # noqa: E501
 
-    # this is a bit of a hack for RR1 -- this is the only name we ever give
-    # out so it's the only one we can accept
-    if not Parameters.obstacleid == "obs1":
-        ret = InlineReponse4001()
-        ret.cause = "bad-obstacleid"
-        ret.message = "got an obstacle ID other than 'obs1'"
-        return ret , 400
-
-    ret = InlineResponse2001()
-    ret.sim_time = rospy.Time.now().secs
-    return ret
-
+    if config.bot_cont.gazebo.remove_obstacle(RemoveParams.obstacleid):
+        return InlineResponse2001(sim_time=rospy.Time.now().secs)
+    else:
+        return InlineReponse4001(cause="bad-obstacleid",
+                                 message="asked to remove an obstacle with a name we didn't issue")
 
 def start_post():
     """
@@ -144,6 +148,9 @@ def start_post():
     :rtype: None
     """
 
-    #todo
+    if config.level == "c":
+        config.bot_cont.go_instructions_multiple_tasks_adaptive( , )
+    else:
+
 
     return {}
