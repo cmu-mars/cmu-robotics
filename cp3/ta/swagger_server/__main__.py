@@ -62,7 +62,7 @@ if __name__ == '__main__':
 
     ## build the TH API object from the client stubs
     thApi = DefaultApi()
-    thApi.api_client.host = th_uri
+    thApi.api_client.configuration.host = th_uri
     config.thApi = thApi
 
     def fail_hard(s):
