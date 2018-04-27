@@ -38,8 +38,8 @@ def send_status(src, code, msg):
                                                                        message = msg,
                                                                        sim_time = rospy.Time.now().secs,
                                                                        plan = [], ## todo placeholder value
-                                                                       config = [], ## todo placeholder value
-                                                                       sensors = [] ## todo placeholder value
+                                                                       config = swagger_server.config.nodes,
+                                                                       sensors = swagger_server.config.sensors
         ))
         swagger_server.config.logger.debug("repsonse from TH to status: %s" % response)
 
