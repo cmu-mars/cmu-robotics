@@ -54,10 +54,10 @@ set the level of the battery in a currently running test. consistent with the mo
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**Parameters**  <br>*optional*|[Parameters](#perturb-battery-post-parameters)|
+|**Body**|**BatteryParams**  <br>*optional*|[BatteryParams](#perturb-battery-post-batteryparams)|
 
-<a name="perturb-battery-post-parameters"></a>
-**Parameters**
+<a name="perturb-battery-post-batteryparams"></a>
+**BatteryParams**
 
 |Name|Description|Schema|
 |---|---|---|
@@ -97,10 +97,10 @@ if the test is running, then place an instance of the obstacle on the map
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**Parameters**  <br>*optional*|[Parameters](#perturb-place-obstacle-post-parameters)|
+|**Body**|**PlaceParams**  <br>*optional*|[PlaceParams](#perturb-place-obstacle-post-placeparams)|
 
-<a name="perturb-place-obstacle-post-parameters"></a>
-**Parameters**
+<a name="perturb-place-obstacle-post-placeparams"></a>
+**PlaceParams**
 
 |Name|Description|Schema|
 |---|---|---|
@@ -143,10 +143,10 @@ if the test is running, remove a previously placed obstacle from the map
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**Parameters**  <br>*optional*|[Parameters](#perturb-remove-obstacle-post-parameters)|
+|**Body**|**RemoveParams**  <br>*optional*|[RemoveParams](#perturb-remove-obstacle-post-removeparams)|
 
-<a name="perturb-remove-obstacle-post-parameters"></a>
-**Parameters**
+<a name="perturb-remove-obstacle-post-removeparams"></a>
+**RemoveParams**
 
 |Name|Description|Schema|
 |---|---|---|

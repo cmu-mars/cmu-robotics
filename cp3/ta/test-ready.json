@@ -1,0 +1,6 @@
+{"start-configuration" : "amcl-kinect",
+  "start-loc" : "l1",
+  "target-loc" : "l8",
+  "use-adaptation" : true,
+  "utility-function" : "favor-timeliness"
+}

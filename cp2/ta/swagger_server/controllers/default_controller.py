@@ -1,139 +1,120 @@
 import connexion
-from swagger_server.models.inline_response200 import InlineResponse200
-from swagger_server.models.inline_response2001 import InlineResponse2001
-from swagger_server.models.inline_response400 import InlineResponse400
-from swagger_server.models.inline_response2001_resourceconsumption import InlineResponse2001Resourceconsumption
-from swagger_server.models.parameters0 import Parameters0
-from swagger_server.models.parameters1 import Parameters1
-from swagger_server.models.parameters2 import Parameters2
-from swagger_server.models.source_line import SourceLine
-from swagger_server.models.perturbation import Perturbation
-from swagger_server.models.compilation_outcome import CompilationOutcome
-from swagger_server.models.degradation import Degradation
-from swagger_server.models.test_qo_s import TestQoS
-from swagger_server.models.test_outcome import TestOutcome
-from swagger_server.models.candidate_adaptation import CandidateAdaptation
-from datetime import date, datetime
-from typing import List, Dict
-from six import iteritems
-from ..util import deserialize_date, deserialize_datetime
+import six
 
+from swagger_server.models.error import Error  # noqa: E501
+from swagger_server.models.inline_response200 import InlineResponse200  # noqa: E501
+from swagger_server.models.inline_response2001 import InlineResponse2001  # noqa: E501
+from swagger_server.models.inline_response2001_resourceconsumption import InlineResponse2001Resourceconsumption  # noqa: E501
+from swagger_server.models.parameters import Parameters  # noqa: E501
+from swagger_server.models.perturbation import Perturbation  # noqa: E501
+from swagger_server.models.perturbation_params import PerturbationParams  # noqa: E501
+from swagger_server.models.source_line import SourceLine  # noqa: E501
+from swagger_server import util
 
-def adapt_post(Parameters):
-    """
-    adapt_post
-    Used to trigger the code adaptation process.
+from orchestrator import Orchestrator
+from orchestrator.exceptions import *
+
+from swagger_server import config
+from swagger_server.converters import *
+
+def adapt_post(Parameters):  # noqa: E501
+    """adapt_post
+
+    Triggers the code adaptation process. # noqa: E501
+
     :param Parameters:
     :type Parameters: dict | bytes
 
     :rtype: None
     """
     if connexion.request.is_json:
-        Parameters = Parameters1.from_dict(connexion.request.get_json())
+        Parameters = Parameters.from_dict(connexion.request.get_json())  # noqa: E501
 
-    return {} , 200
+    try:
+        config.orc.adapt(Parameters.time_limit, Parameters.attempt_limit)
+        return '', 202
+    except OrchestratorError as err:
+        return err.to_response()
 
 
-def lines_get():
+def files_get():  # noqa: E501
+    """files_get
+
+    Returns a list of all the source files that may be subject to perturbation. # noqa: E501
+
+
+    :rtype: List[str]
     """
-    lines_get
-    Returns a list of all the source lines at which perturbations may be injected.
+    return config.orc.files
+
+
+def lines_get():  # noqa: E501
+    """lines_get
+
+    Returns a list of all the source lines at which perturbations may be injected. # noqa: E501
+
 
     :rtype: List[SourceLine]
     """
+    return [SourceLine(line.filename, line.num) for line in config.orc.lines]
 
-    dummy_line = SourceLine()
-    dummy_line.file = "main.cpp"
-    dummy_line.number = 500
+def observe_get():  # noqa: E501
+    """observe_get
 
-    return [ dummy_line ]
+    Returns the current status of the SUT. # noqa: E501
 
-
-def observe_get():
-    """
-    observe_get
-    Returns the current status of the SUT.
 
     :rtype: InlineResponse2001
     """
+    num_attempts, time_spent = orc.resource_usage
+    jsn_patches = orc.patches
 
-    rc = InlineResponse2001Resourceconsumption()
-    rc.num_attempts = 5
-    rc.time_spent = 43.2
-
-    co = CompilationOutcome()
-    co.time_taken = 500.0
-    co.successful = True
-
-    d = Degradation()
-
-    q = TestQoS()
-    q.duration = {}
-    q.proximity = {}
-    q.collisions = {}
-
-    to = TestOutcome()
-    to.test_id = "a"
-    to.time_taken = "509"
-    to.timed_out = False
-    to.crashed = False
-    to.qos = q
-
-    ca = CandidateAdaptation()
-    ca.diff = "1c1\n< a\n---\n> b\n"
-    ca.complilation_outcome = co
-    ca.degradation = d
-    ca.test_outcomes = [ to ]
+    resources = InlineResponse2001Resourceconsumption()
+    resources.num_attempts = num_attempts
+    resources.time_spent = time_spent
 
     ret = InlineResponse2001()
-    ret.stage = "awaiting-perturbation"
-    ret.resource_consumption = rc
-    ret.pareto_set = [ ca ]
+    ret.stage = orc.state.name
+    ret.resource_consumption = resources
+    ret.pareto_set = [ patch2ca(patch) for patch in config.orc.patches ]
 
     return ret
 
+def perturb_post(perturb_params):  # noqa: E501
+    """perturb_post
 
-def perturb_post(Parameters):
-    """
-    perturb_post
-    Applies a set of perturbations, given as a list of JSON objects, to the SUT. This endpoint should be used to prepare a test scenario for evaluation.
-    :param Parameters:
-    :type Parameters: dict | bytes
+    Applies a given perturbation to the SUT. The resulting perturbed system will become Baseline B, provided that the system builds and fails at least one test. # noqa: E501
+
+    :param perturb_params:
+    :type perturb_params: dict | bytes
 
     :rtype: None
     """
     if connexion.request.is_json:
-        Parameters = Parameters2.from_dict(connexion.request.get_json())
-    if not Parameters.perturbations:
-        ret = InlineResponse400()
-        ret.message = "perturbations list cannot be empty"
-        return ret , 400
-    return {} , 200
+        perturb_params = Perturbation.from_dict(connexion.request.get_json())  # noqa: E501
 
+    mutation = perturb2mutation(perturb_params)
+    try:
+        config.orc.perturb(mutation)
+        return '', 204
+    except OrchestratorError as err:
+        return err.to_response()
 
-def perturbations_get(Parameters):
-    """
-    perturbations_get
-    Returns a list of possible perturbations of an (optionally) specified shape and complexity that can be performed at a given line in the program. This endpoint should be used to select a suitable (set of) perturbation(s) for a test scenario.
-    :param Parameters:
-    :type Parameters: dict | bytes
+def perturbations_get(perturbation_params):  # noqa: E501
+    """perturbations_get
+
+    Returns a list of possible perturbations of an (optionally) specified shape and complexity that can be performed at a given line in the program. This endpoint should be used to select a suitable (set of) perturbation(s) for a test scenario. # noqa: E501
+
+    :param perturbation_params:
+    :type perturbation_params: dict | bytes
 
     :rtype: InlineResponse200
     """
     if connexion.request.is_json:
-        Parameters = Parameters0.from_dict(connexion.request.get_json())
+        pp = PerturbationParams.from_dict(connexion.request.get_json())  # noqa: E501
 
-    # this is an RR1 hack; really we need a list of all the files that we
-    # can perturb, but this is the only one that's valid at the moment
-    # because it's the only one that i hard coded above
-    if not Parameters.file == "main.cpp":
-        ret = InlineResponse400()
-        ret.message = "unknown file name %s" % Parameters.file
-        return ret , 400
+    mutations = config.orc.perturbations(filename=pp.file,
+                                           line_num=pp.line,
+                                           op_name=pp.shape)
 
-    inner = Perturbation()
-    inner.kind = "swap arguments"
-
-    ret = InlineResponse200()
-    ret.perturbations = [ inner ]
-    return ret
+    return InlineResponse200([mutation2perturb(m) for m in mutations])

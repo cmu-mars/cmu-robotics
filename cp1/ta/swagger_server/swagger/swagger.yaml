@@ -14,10 +14,10 @@ paths:
       operationId: "perturb_place_obstacle_post"
       parameters:
       - in: "body"
-        name: "Parameters"
+        name: "PlaceParams"
         required: false
         schema:
-          $ref: "#/definitions/Parameters"
+          $ref: "#/definitions/PlaceParams"
       responses:
         200:
           description: "the obstacle has been placed in the running test"
@@ -35,10 +35,10 @@ paths:
       operationId: "perturb_remove_obstacle_post"
       parameters:
       - in: "body"
-        name: "Parameters"
+        name: "RemoveParams"
         required: false
         schema:
-          $ref: "#/definitions/Parameters_1"
+          $ref: "#/definitions/RemoveParams"
       responses:
         200:
           description: "the obstacle has been removed from the running test"
@@ -57,10 +57,10 @@ paths:
       operationId: "perturb_battery_post"
       parameters:
       - in: "body"
-        name: "Parameters"
+        name: "BatteryParams"
         required: false
         schema:
-          $ref: "#/definitions/Parameters_2"
+          $ref: "#/definitions/BatteryParams"
       responses:
         200:
           description: "the battery has been set to the requested level"
@@ -100,13 +100,91 @@ paths:
         400:
           description: "encountered an error while computing the observation"
       x-swagger-router-controller: "swagger_server.controllers.default_controller"
+  /internal:
+    post:
+      description: "reports any internal status (including the error that may occured)\
+        \ from the backend that might be sent to the TA for internal bookeeping or\
+        \ forwarding to the TH"
+      operationId: "internal_post"
+      parameters:
+      - in: "body"
+        name: "CP1InternalStatus"
+        required: true
+        schema:
+          $ref: "#/definitions/CP1InternalStatus"
+      responses:
+        200:
+          description: "TA acknowledges the status of the SUT"
+        400:
+          description: "TA has encountered an error in processing the status of the\
+            \ SUT."
+      x-swagger-router-controller: "swagger_server.controllers.default_controller"
 definitions:
   inline_response_400_3:
     properties:
       message:
         type: "string"
         description: "human readable information about the error, if any can be provided"
-  Parameters:
+  CP1InternalStatus:
+    type: "object"
+    required:
+    - "message"
+    - "status"
+    properties:
+      status:
+        type: "string"
+        description: "one of the possible status codes * learning-started - the learning\
+          \ phase has started * learning-done - the learning phase has been * adapt-started\
+          \ - the SUT has started adapting and cannot be perturbed * adapt-done -\
+          \ the SUT has finished adapting * charging-started - the turtlebot is currently\
+          \ charging * charging-done - the turtlebot has stopped charging * parsing-error\
+          \ - one or more of the function descriptions failed to parse * learning-error\
+          \ - an error was encountered in learning one or more of the hidden functions\
+          \ * other-error - an error was encountered that is not covered by the other\
+          \ error codees"
+        enum:
+        - "learning-started"
+        - "learning-done"
+        - "adapt-started"
+        - "adapt-done"
+        - "charging-started"
+        - "charging-done"
+        - "parsing-error"
+        - "learning-error"
+        - "other-error"
+        - "RAINBOW_READY"
+        - "MISSION_SUCCEEDED"
+        - "MISSION_FAILED"
+        - "ADAPTING"
+        - "ADAPTED"
+        - "ADAPTED_FAILED"
+      message:
+        type: "string"
+        description: "human readable text describing the status, if any"
+      sim-time:
+        type: "integer"
+        description: "the simulation time the status message was produced, for some\
+          \ siutations like learning-* we do not have simulation time because the\
+          \ simulation has not been started"
+        minimum: 0
+    example:
+      sim-time: 0
+      message: "message"
+      status: "learning-started"
+  BatteryParams:
+    type: "object"
+    required:
+    - "charge"
+    properties:
+      charge:
+        type: "number"
+        description: "the level to which the battery should be set, in mWh. cannot\
+          \ be more than the maximum charge for the power model specified in the THs\
+          \ response to `/ready`."
+        minimum: 0
+    example:
+      charge: 0.080082819046101150206595775671303272247314453125
+  PlaceParams:
     type: "object"
     required:
     - "x"
@@ -120,7 +198,10 @@ definitions:
         type: "number"
         format: "float"
         description: "the y-coordinate of the center of the obstacle placement position"
-  Parameters_1:
+    example:
+      x: 0.8008282
+      y: 6.0274563
+  RemoveParams:
     type: "object"
     required:
     - "obstacleid"
@@ -129,16 +210,8 @@ definitions:
         type: "string"
         description: "the obstacle ID given by /perturb/place-obstacle of the obstacle\
           \ to be removed."
-  Parameters_2:
-    type: "object"
-    required:
-    - "charge"
-    properties:
-      charge:
-        type: "number"
-        description: "the level to which the battery should be set, in mWh. cannot\
-          \ be more than the maximum given in the TH response to `/ready`."
-        minimum: 0
+    example:
+      obstacleid: "obstacleid"
   inline_response_200_1:
     required:
     - "sim-time"
@@ -146,42 +219,23 @@ definitions:
       sim-time:
         type: "integer"
         description: "the simulation time when the obstacle was placed"
+    example:
+      sim-time: 0
   inline_response_200:
     required:
-    - "botright-x"
-    - "botright-y"
     - "obstacleid"
     - "sim-time"
-    - "topleft-x"
-    - "topleft-y"
     properties:
       obstacleid:
         type: "string"
         description: "a unique identifier for this particular placed obstacle, so\
           \ that it can be removed in the future"
-      topleft-x:
-        type: "number"
-        format: "float"
-        description: "the x-coordinate of the top left corner of the bounding box\
-          \ of the placed obstacle"
-      topleft-y:
-        type: "number"
-        format: "float"
-        description: "the y-coordinate of the top left corner of the bounding box\
-          \ of the placed obstacle"
-      botright-x:
-        type: "number"
-        format: "float"
-        description: "the x-coordinate of the bottom right corner of the bounding\
-          \ box of the placed obstacle"
-      botright-y:
-        type: "number"
-        format: "float"
-        description: "the y-coordinate of the bottom right corner of the bounding\
-          \ box of the placed obstacle"
       sim-time:
         type: "integer"
         description: "the simulation time when the obstacle was placed"
+    example:
+      sim-time: 0
+      obstacleid: "obstacleid"
   inline_response_200_2:
     required:
     - "sim-time"
@@ -189,6 +243,8 @@ definitions:
       sim-time:
         type: "integer"
         description: "the simulation time when the battery was set"
+    example:
+      sim-time: 0
   inline_response_200_3:
     required:
     - "battery"
@@ -214,6 +270,11 @@ definitions:
         type: "integer"
         description: "the time when this observation was computed, in simulation seconds"
         minimum: 0
+    example:
+      sim-time: 0
+      x: 0.8008282
+      y: 6.0274563
+      battery: 0
   inline_response_400_2:
     required:
     - "message"

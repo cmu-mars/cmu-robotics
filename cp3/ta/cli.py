@@ -48,6 +48,7 @@ if __name__ == "__main__":
 
     po_parser = argparse.ArgumentParser(prog=parser.prog + " place_obstacle")
     po_parser.add_argument('height', nargs='?', type=str, help="The height of the obstacle (must match one of the models)")
+
     po_parser.add_argument('x', type=float, help='The x location relative to the map to place the obstacle')
     po_parser.add_argument('y', type=float, help='The y location relative to the map to place the obstacle')
 
@@ -589,8 +590,6 @@ if __name__ == "__main__":
         #     append_write = 'a' if os.path.exists(filename) else 'w'
         #     with open(filename , append_write) as f:
         #         f.write("%s,%s,%s,%s\n" %(cargs.config, (end-start).to_sec(),hit,result))
-
-
 
 
 

@@ -67,6 +67,7 @@ class GazeboInterface:
         self.set_light_properties = rospy.ServiceProxy('/gazebo/set_light_properties', SetLightProperties)
         self.spawn_model = rospy.ServiceProxy('/gazebo/spawn_sdf_model', SpawnModel)
         self.delete_model = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
+
         self.enable_lights = rospy.ServiceProxy('/gazebo/set_light_properties', SetLightProperties)
         self.set_kinect_srv = rospy.ServiceProxy("/mobile_base/kinect/mode", SetKinectMode)
         self.set_lidar_srv = rospy.ServiceProxy("/mobile_base/lidar/mode", SetLidarMode)
@@ -81,6 +82,8 @@ class GazeboInterface:
 
         self.X_MAP_TO_GAZEBO_TRANSLATION = xtrans
         self.Y_MAP_TO_GAZEBO_TRANSLATION = ytrans
+
+        self.cached_lights_off = set()
 
         try:
             rospy.wait_for_service('/gazebo/get_model_state', timeout=timeout)
@@ -254,6 +257,7 @@ class GazeboInterface:
             rospy.logerr("Could not removes obstacle. Message %s"%e)
             return False
 
+
     def enable_light(self, light, enablement):
         color = ColorRGBA()
         if enablement:
@@ -266,9 +270,17 @@ class GazeboInterface:
             color.b = 0
         color.a = 255
         resp = self.enable_lights(light, color, 0.25, 0.0, 0.0)
+
+        if resp.success:
+            if enablement:
+                self.cached_lights_off.remove(light)
+            else:
+                self.cached_lights_off.add(light)
         return resp.success
 
 
+    def get_lights_off(self):
+        return self.cached_lights_off
 
     def enable_headlamp(self, enablement):
         return self.set_headlamp_srv(enablement)
@@ -297,8 +309,9 @@ class GazeboInterface:
             mode = False
         return self.set_charging_srv(charging)
 
-    def set_voltage(self, voltage):
-        return self.set_voltage_srv(voltage)
+
+    def set_charge(self, charge):
+        return self.set_charging_srv(charge)
 
     def place_markers(self, markers):
         mid = 0
