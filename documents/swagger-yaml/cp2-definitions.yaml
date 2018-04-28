@@ -1,0 +1,188 @@
+definitions:
+  CandidateAdaptation:
+    type: object
+    required:
+      - diff
+      - compilation-outcome
+      - test-outcomes
+    properties:
+      diff:
+        type: string
+        description: >-
+          A description of the change to the code, given in the form of a diff.
+      compilation-outcome:
+        type: object
+        $ref: '#/definitions/CompilationOutcome'
+        description: >-
+          A description of the outcome of attempting to compile this adaptation.
+      test-outcomes:
+        type: array
+        items:
+          $ref: '#/definitions/TestOutcome'
+        description: >-
+          A summary of the outcomes for each of the test cases that this
+          adaptation was evaluated against.
+
+  TestOutcome:
+    type: object
+    required:
+      - test-id
+      - time-taken
+      - passed
+    properties:
+      test-id:
+        type: string
+        description: >-
+          A unique identifier for the test to which this outcome belongs.
+      time-taken:
+        type: number
+        format: float
+        minimum: 0
+        description: >-
+          The number of seconds taken to complete the test.
+      passed:
+        type: boolean
+        description: >-
+          Indicates whether or not the test passed.
+
+  CompilationOutcome:
+    type: object
+    required:
+      - time-taken
+      - successful
+    properties:
+      time-taken:
+        type: number
+        format: float
+        minimum: 0
+        description: The number of seconds taken to compile this adaptation.
+      successful:
+        type: boolean
+        description: >-
+          A flag indicating whether the compilation of this adaptation was
+          successful or not.
+
+  Error:
+    type: object
+    required:
+      - error
+    properties:
+      error:
+        type: object
+        required:
+          - kind
+          - message
+        properties:
+          kind:
+            type: string
+            enum:
+              - NeutralPerturbation
+              - FailedToComputeCoverage
+              - NotReadyToPerturb
+              - NotReadyToAdapt
+              - FileNotFound
+              - LineNotFound
+              - OperatorNotFound
+              - NoSearchLimits
+              - UnexpectedError
+            example: NeutralPerturbation
+            description: The kind of error that occurred.
+          message:
+            type: string
+            example: "invalid perturbation: no test failures."
+            description: >-
+                Human-readable information about the error, if any can be
+                provided.
+
+  SourceLocation:
+    type: object
+    required:
+      - file
+      - line
+      - column
+    properties:
+      file:
+        type: string
+        description: >-
+          The file at which this source location resides.
+      line:
+        type: integer
+        minimum: 1
+        description: >-
+          The one-indexed line number of this location.
+      column:
+        type: integer
+        minimum: 1
+        description: >-
+          The one-indexed column number of this location.
+
+  SourceLine:
+    type: object
+    required:
+      - file
+      - number
+    properties:
+      file:
+        type: string
+        description: >-
+          The file to which this line belongs.
+      number:
+        type: integer
+        minimum: 1
+        description: >-
+          The one-indexed number of this line in the file.
+
+  SourceRange:
+    type: object
+    required:
+      - start
+      - stop
+    properties:
+      start:
+        $ref: '#/definitions/SourceLocation'
+        description: >-
+          The location that marks the start of this source range.
+      stop:
+        $ref: '#/definitions/SourceLocation'
+        description: >-
+          The location that marks the end of this source range.
+
+  PerturbationKind:
+    type: string
+    enum:
+      - delete-void-function-call
+      - flip-arithmetic-operator
+      - flip-boolean-operator
+      - flip-relational-operator
+      - undo-transformation
+      - delete-conditional-control-flow
+      - flip-signedness
+    description: >-
+      A description of the kind of the perturbation.
+
+  Perturbation:
+    type: object
+    required:
+      - kind
+      - at
+      - transformation-index
+      - arguments
+    properties:
+      kind:
+        $ref: '#/definitions/PerturbationKind'
+      at:
+        $ref: '#/definitions/SourceRange'
+        description: >-
+          The range of code that is deleted or replaced by the perturbation.
+      replacement:
+        type: string
+        description: >-
+          The body of the source code that should replaced the source code
+          given by the location range associated with this perturbation.
+      transformation-index:
+        type: integer
+        minimum: 1
+      arguments:
+        type: object
+        additionalProperties:
+          type: string

@@ -13,14 +13,6 @@
       # - "TH_PORT=`echo ${TH_URI} | awk -F ':' '{print $NF}'`"
 version: '2'
 services:
-  roscore:
-    image: ros:kinetic
-    container_name: roscore
-    hostname: roscore
-    expose:
-      - 11311
-    command: roscore
-
   cp1_th:
     image: docker.darpa-brass.com/ll/cmur-harness
     container_name: cp1_th
@@ -43,7 +35,6 @@ services:
     ports:
       - ${TA_PORT}:5000
     depends_on:
-      - roscore
       - cp1_th
     expose:
       - 5000

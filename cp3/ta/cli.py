@@ -48,6 +48,7 @@ if __name__ == "__main__":
 
     po_parser = argparse.ArgumentParser(prog=parser.prog + " place_obstacle")
     po_parser.add_argument('height', nargs='?', type=str, help="The height of the obstacle (must match one of the models)")
+
     po_parser.add_argument('x', type=float, help='The x location relative to the map to place the obstacle')
     po_parser.add_argument('y', type=float, help='The y location relative to the map to place the obstacle')
 
@@ -77,6 +78,7 @@ if __name__ == "__main__":
     go_parser.add_argument('-i', '--illuminance', action='store_true', help="Track illuminance and report max and min")
     go_parser.add_argument('-u', '--launch', action='store_true', help="Attempt to launch the ros configuration as well")
     go_parser.add_argument('-b', '--bumps', action="store_true", help="Track robot bumping into something")
+    go_parser.add_argument('--no_publish', action="store_true", help="Do not publish location")
     go_parser.add_argument('start', nargs='?', help='The waypoint label of the start')
     go_parser.add_argument('target', help='The wapoint lable of the target')
 
@@ -284,10 +286,11 @@ if __name__ == "__main__":
                     for id in gargs.lights.split(','):
                         result = cp.gazebo.enable_light(id, False) 
 
-                location = cp.map_server.waypoint_to_coords(gargs.start)
-                heading = cp.instruction_server.get_start_heading(gargs.start, gargs.target)
-                result = cp.gazebo.set_turtlebot_position(location["x"], location["y"], heading)
-                rospy.sleep(10)
+                if not gargs.no_publish:
+                    location = cp.map_server.waypoint_to_coords(gargs.start)
+                    heading = cp.instruction_server.get_start_heading(gargs.start, gargs.target)
+                    result = cp.gazebo.set_turtlebot_position(location["x"], location["y"], heading)
+                    rospy.sleep(10)
                 start = rospy.Time.now()
                 result, message = cp.do_instructions(gargs.start, gargs.target, True)
             except Exception as e:
@@ -587,8 +590,6 @@ if __name__ == "__main__":
         #     append_write = 'a' if os.path.exists(filename) else 'w'
         #     with open(filename , append_write) as f:
         #         f.write("%s,%s,%s,%s\n" %(cargs.config, (end-start).to_sec(),hit,result))
-
-
 
 
 

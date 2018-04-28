@@ -28,12 +28,14 @@ class MapServer():
     def is_waypoint(self, waypoint_id):
         """ given a string, determine if it is actually a waypoint id """
         waypoint_list = self.get_waypoint(waypoint_id)
-        if len(waypoint_list) > 1: 
+        if len(waypoint_list) > 1:
             raise ValueError('non-unique waypoint identifiers in the map file')
         return len(waypoint_list) == 1
 
+
     def get_waypoint(self, waypoint_id):
-        return filter(lambda waypoint: waypoint["node-id"] == waypoint_id, self.waypoint_list)
+        l = [x for x in self.waypoint_list if x["node-id"]==waypoint_id]  #filter(lambda waypoint: waypoint["node-id"] == waypoint_id, self.waypoint_list)
+        return l
 
     def __coords_on_line(self, x, y, sx, sy, ex, ey):
         tolerance = 2
@@ -60,7 +62,7 @@ class MapServer():
         waypoint = waypoint[0]
 
         if wp2 not in waypoint["connected-to"]:
-            return [] 
+            return []
 
         if wp1 + "_" + wp2 in self.light_db:
             return self.light_db[wp1 + "_" + wp2]
@@ -73,10 +75,36 @@ class MapServer():
                 return []
             waypoint2 = waypoint2[0]
             for light in self.lights:
-                if self.__coords_on_line(light["coord"]["x"], light["coord"]["y"], 
+                if self.__coords_on_line(light["coord"]["x"], light["coord"]["y"],
                                     waypoint["coords"]["x"], waypoint["coords"]["y"],
                                     waypoint2["coords"]["x"], waypoint2["coords"]["y"]):
                     lights.append(light["light-id"])
             return lights
 
+    def lights_on(self):
+        if self.lights is None:
+            return []
+        off = []
+        for light in self.lights:
 
+            if "status" in light and light["status"]=="on":
+                off.append(light["light-id"])
+        return off
+
+    def lights_off(self):
+        if self.lights is None:
+            return []
+        off = []
+        for light in self.lights:
+
+            if "status" in light and light["status"]=="off":
+                off.append(light["light-id"])
+        return off
+
+    def is_light(self,name):
+        if self.lights is None:
+            return False
+        for light in self.lights:
+            if light["light-id"] == name:
+                return True
+        return False

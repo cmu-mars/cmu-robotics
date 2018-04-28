@@ -15,6 +15,10 @@ sequenceDiagram
 		TH -->>- TA: ack. status
 	end
 
+        TA ->>+ TH: /status live
+        Note right of TA: system live, ready for initial perturbs
+        TH -->>- TA: ack. status
+
         opt initial perturbs
             opt for any X
                  TH ->>+ TA: /perturb/X
