@@ -199,7 +199,7 @@ if __name__ == '__main__':
                                                   sim_time=rospy.Time.now().secs,
                                                   plan=cp.instruction_server.get_path(ready_resp.start_loc,ready_resp.target_loc),
                                                   config=config.nodes,
-                                                  config=config.sensors))
+                                                  sensors=config.sensors))
         config.logger.debug("repsonse from TH to live: %s" % response)
 
     logger.debug("starting TA REST interface")
