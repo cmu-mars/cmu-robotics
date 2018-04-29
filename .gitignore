@@ -3,3 +3,6 @@
 *.swp
 *.swo
 *~
+
+# mac stuff
+.DS_Store

@@ -29,9 +29,14 @@ WORKDIR /usr/src/app
 
 COPY requirements.txt /usr/src/app/
 
+# stuff we need to be installed for python2
+RUN sudo apt-get install -y python-pip
+RUN sudo pip install psutil
+
 RUN sudo pip3 install --no-cache-dir -r requirements.txt
 
-RUN sudo pip3 install catkin_pkg rospkg psutil
+# libs that cp1 backend depends on and since ta is running with poython3 we need them with pip3
+RUN sudo pip3 install catkin_pkg rospkg numpy psutil defusedxml flask-script
 
 COPY . /usr/src/app
 
@@ -43,7 +48,7 @@ EXPOSE 8080
 
 ADD entrypoint.sh .
 
-## ADD test-ready.json /home/mars/ ## at the moment, CP1 isn't written to have a TA-less debugging mode
+ADD test-ready.json /home/mars/
 
 ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
 

@@ -78,53 +78,53 @@ lives at `CMU_ROBOTICS` on the file system.
    git@github.com:cmu-mars/cp1_base.git` somewhere on the file system,
    which we'll call `CP1_BASE`.
 
-2. Clone the CP1 controllers repo, `git clone
+<!-- 2. Clone the CP1 controllers repo, `git clone
    git@github.com:cmu-mars/cp1_controllers.git` somewhere on the file
-   system, which we'll call `CP1_CONT`.
+   system, which we'll call `CP1_CONT`. -->
 
-3. Build `cmu-mars/base` (note that this container is shared with CP3):
+2. Build `cmu-mars/base` (note that this container is shared with CP3):
 
     ``` shell
     cd CMU_ROBOTICS/mars-main-p2
     docker build -t cmu-mars/base .
     ```
 
-4. Build `cmu-mars/gazebo` (note that this container is shared with CP3):
+3. Build `cmu-mars/gazebo` (note that this container is shared with CP3):
 
     ``` shell
     cd CMU_ROBOTICS/cp-gazebo-p2
     docker build -t cmu-mars/gazebo .
     ```
 
-5. Build `cmu-mars/cp1_base`:
+4. Build `cmu-mars/cp1_base`:
 
     ``` shell
     cd CP1_BASE
     docker build -t cmu-mars/cp1_base .
     ```
 
-6. Build `cmu-mars/cp1_controllers`:
+<!-- 6. Build `cmu-mars/cp1_controllers`:
 
     ``` shell
     cd CP1_CONT
     docker build -t cmu-mars/cp1_controllers .
-    ```
+    ``` -->
 
-7. Build `cmu-mars/cp1_rb`:
+5. Build `cmu-mars/cp1_rb`:
 
     ``` shell
     cd CMU_ROBOTICS/rainbow-p2
     docker build -t cmu-mars/cp1_rb -f Dockerfile-cp1 .
     ```
 
-8. Build `cmu-mars/cp1`:
+6. Build `cmu-mars/cp1`:
 
     ``` shell
     cd CMU_ROBOTICS/cp1/ta
     docker build -t cmu-mars/cp1 .
     ```
 
-9. Compose `cmu-mars/cp1` with the TH:
+7. Compose `cmu-mars/cp1` with the TH:
 
     ``` shell
     cd CMU_ROBOTICS/cp1/ta
