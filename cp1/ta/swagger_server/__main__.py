@@ -34,10 +34,11 @@ from swagger_client.models.statusparams import Statusparams
 
 import swagger_server.config as config
 import swagger_server.comms as comms
+from swagger_server.util import *
 
-import learner ## todo: this may not work
-from robotcontrol import *
-# from bot_controller import BotController ## todo: this may not work
+import learner
+import robotcontrol
+from robotcontrol.bot_controller import BotController
 
 if __name__ == '__main__':
     # Parameter parsing, to set up TH
@@ -93,11 +94,11 @@ if __name__ == '__main__':
         logger.debug("failed to connect with th")
         logger.debug(traceback.format_exc())
         th_connected = False
+        ready_file_name = sys.argv[1]
         # Adding test ready info
-        with open(os.path.expanduser(sys.argv[1])) as ready:
+        with open(os.path.expanduser(ready_file_name)) as ready:
             data = json.load(ready)
-            ready_resp = InlineResponse200(data["start-loc"], data["target-locs"], data["power-model"],
-                                           data["level"], data["discharge-budget"])
+            ready_resp = InlineResponse200(level=data["level"], start_loc=data["start-loc"], target_locs=data["target-locs"], power_model=data["power-model"], discharge_budget=data["discharge-budget"])
             logger.info("started TA in disconnected mode")
         # raise e
 
@@ -110,12 +111,6 @@ if __name__ == '__main__':
     if ready_resp.start_loc == ready_resp.target_locs[0]:
         fail_hard("malformed response from ready: start-loc must not be the same as the first item of target-locs")
 
-    ## todo: probably in a util file
-    def check_adj(l):
-        for x , y in zip(l, l[1:]):
-            if x == y:
-                return False
-        return True
 
     if not check_adj(ready_resp.target_locs):
         fail_hard("malformed response from ready: target-locs contains adjacent equal elements")
@@ -149,10 +144,10 @@ if __name__ == '__main__':
     ## ros launch
     # Init me as a node
     logger.debug("initializing cp1_ta ros node")
-    rospy.init_node("cp1_ta")
+    # rospy.init_node("cp1_ta")
 
-    launch_utils.init("cp1_ta")
-    launch_utils.launch_cp1_base()
+    robotcontrol.launch_utils.init("cp1_ta")
+    robotcontrol.launch_utils.launch_cp1_base()
 
     logger.debug("waiting for move_base (emulates watching for odom_recieved)")
     move_base = actionlib.SimpleActionClient("move_base", MoveBaseAction)

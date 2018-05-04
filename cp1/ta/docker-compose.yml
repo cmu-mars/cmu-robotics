@@ -30,7 +30,7 @@ services:
     hostname: cp1_ta
     environment:
       - "ROS_HOSTNAME=cp1_ta"
-      - "ROS_MASTER_URI=http://roscore:11311"
+      - "ROS_MASTER_URI=http://cp1_ta:11311"
       - "TA_PORT=${TA_PORT}"
     ports:
       - ${TA_PORT}:5000

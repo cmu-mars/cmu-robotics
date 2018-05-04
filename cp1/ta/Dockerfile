@@ -21,18 +21,13 @@ RUN wget -q "https://github.com/ros-planning/navigation_msgs/archive/${ROS_NAVIG
     mv navigation_msgs/* ~/catkin_ws/src && \
     rm -rf navigation_msgs
 
-RUN sudo apt-get install -y python3 python3-pip
-
 RUN sudo mkdir -p /usr/src/app
 RUN sudo chown mars /usr/src/app
 WORKDIR /usr/src/app
 
 COPY requirements.txt /usr/src/app/
 
-# stuff we need to be installed for python2
-RUN sudo apt-get install -y python-pip
-RUN sudo pip install psutil
-
+RUN sudo apt-get install -y python3 python3-pip
 RUN sudo pip3 install --no-cache-dir -r requirements.txt
 
 # libs that cp1 backend depends on and since ta is running with poython3 we need them with pip3
