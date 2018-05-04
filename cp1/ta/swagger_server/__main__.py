@@ -35,16 +35,17 @@ import swagger_server.comms as comms
 
 import learner ## todo: this may not work
 # import cp1_utils ## todo: this may not work
-from cp1controllers import *
+from robotcontrol import *
 # from bot_controller import BotController ## todo: this may not work
 
 if __name__ == '__main__':
     # Parameter parsing, to set up TH
     if len(sys.argv) != 2:
-        print ("No URI TH passed in!")
+        print("No URI TH passed in!")
         sys.exit(1)
 
     th_uri = sys.argv[1]
+    th_connected = False
 
     # Set up TA server and logging
     app = connexion.App(__name__, specification_dir='./swagger/')
@@ -71,12 +72,11 @@ if __name__ == '__main__':
     thApi.api_client.configuration.host = th_uri
     config.thApi = thApi
 
-    ## todo: utils module some how? copied from CP3
     def fail_hard(s):
         logger.debug(s)
         err = Errorparams(error="other-error", message=s)
-        print ("%s" % err)
-        result = thApi.error_posterr) ## this doesn't work for bizarre positional argument reasons
+        print("%s" % err)
+        result = thApi.error_post(err)
         raise Exception(s)
 
     ## start the sequence diagram: post to ready to get configuration data
@@ -121,7 +121,7 @@ if __name__ == '__main__':
             learner.Learn.get_true_model()
         except Exception as e:
             logger.debug("parsing raised an exception; notifying the TH and then crashing")
-            thApi.error_post(Errorparams(error="parsing-error",message="exception raised: %s" % e))
+            thApi.error_post(Errorparams(error="parsing-error", message="exception raised: %s" % e))
             raise e
 
         comms.send_status("__main__", "learning-started", False)
@@ -129,7 +129,7 @@ if __name__ == '__main__':
             result = learner.Learn.start_learning()
         except Exception as e:
             logger.debug("learning raised an exception; notifying the TH and then crashing")
-            thApi.error_post(Errorparams(error="learning-error",message="exception raised: %s" % e))
+            thApi.error_post(Errorparams(error="learning-error", message="exception raised: %s" % e))
             raise e
         comms.send_status("__main__", "learning-done", False)
         learner.Learn.dump_learned_model()

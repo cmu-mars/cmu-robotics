@@ -36,7 +36,7 @@ RUN sudo pip install psutil
 RUN sudo pip3 install --no-cache-dir -r requirements.txt
 
 # libs that cp1 backend depends on and since ta is running with poython3 we need them with pip3
-RUN sudo pip3 install catkin_pkg rospkg numpy psutil defusedxml flask-script
+# RUN sudo pip3 install catkin_pkg rospkg numpy psutil defusedxml flask-script
 
 COPY . /usr/src/app
 
@@ -47,8 +47,6 @@ ENV PYTHONUNBUFFERED 0
 EXPOSE 8080
 
 ADD entrypoint.sh .
-
-ADD test-ready.json /home/mars/
 
 ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
 
