@@ -30,10 +30,7 @@ from swagger_client.models.parameters_1 import Parameters1
 from swagger_client.models.parameters_2 import Parameters2
 
 from cp3 import CP3
-#from flask_script import Manager, Server
 from swagger_server import config
-
-
 
 
 if __name__ == '__main__':
@@ -48,7 +45,6 @@ if __name__ == '__main__':
     app = connexion.App(__name__, specification_dir='./swagger/')
     app.app.json_encoder = JSONEncoder ## this may be busted; see CP2. depends on codegen version
     app.add_api('swagger.yaml', arguments={'title': 'CP3'}, strict_validation=True)
-
 
     ## capture the ambient logger
     logger = logging.getLogger('werkzeug')
@@ -66,7 +62,8 @@ if __name__ == '__main__':
 
     ## build the TH API object from the client stubs
     thApi = DefaultApi()
-    thApi.api_client.host = th_uri
+    thApi.api_client.configuration.host = th_uri
+    config.thApi = thApi
 
     def fail_hard(s):
         logger.debug(s)
@@ -79,8 +76,7 @@ if __name__ == '__main__':
         logger.debug("posting to /ready")
         ready_resp = thApi.ready_post()
         th_connected = True
-        logger.debug("recieved response from /ready:")
-        logger.debug("%s" % resp)
+        logger.debug("recieved response from /ready: %s" % ready_resp)
     except Exception as e:
         ## this isn't a call to fail_hard because the TH isn't
         ## responding at all; we have to hope that LL notices the log
@@ -93,6 +89,7 @@ if __name__ == '__main__':
             ready_resp = InlineResponse200(data["start-loc"], data["target-loc"], data["use-adaptation"], data["start-configuration"], data["utility-function"])
             logger.info("started TA in disconnected mode")
 
+    config.use_adaptation = ready_resp.use_adaptation
 
     ## build CP object without a gazebo instance, need to set later
     cp = CP3(None)
@@ -106,6 +103,7 @@ if __name__ == '__main__':
             cp.map_server.is_waypoint(ready_resp.start_loc)):
         fail_hard("response from /ready includes invalid waypoint names")
 
+    ## todo: will this update config as well?
     cp.start = ready_resp.start_loc
     cp.target = ready_resp.target_loc
 
@@ -117,12 +115,20 @@ if __name__ == '__main__':
 
     launch_file = ready_resp.start_configuration
 
+
     ## todo: this is possibly unnecesscary if we renamed the aruco
     ## file to match the start-configuration string and then just
     ## trust the static checking that this response will be well
     ## formed. the files exist in cp3_base/cp3_base/launch
     if(ready_resp.start_configuration == "aruco-camera"):
-        launch_file = "aruco"
+        config.nodes = ["aruco-camera"]
+        config.sensors = ["camera"]
+        launch_file = "aruco-kinect"
+    else:
+        c = launch_file.split("-")
+        config.nodes = [launch_file]
+        config.sensors = [c[1]]
+
 
     logger.debug("launching cp3-%s.launch" % launch_file)
     rl_child = subprocess.Popen(["roslaunch", "cp3_base", "cp3-" + launch_file + ".launch"],
@@ -154,12 +160,14 @@ if __name__ == '__main__':
         ## todo: CP3.convert_to_class(cp) ## appears a lot in cli.py but i don't know what it means
         ## todo: this could be totally busted
         cp.gazebo = gazebo
+        cp.init()
         start_coords = cp.map_server.waypoint_to_coords(ready_resp.start_loc)
         gazebo.set_turtlebot_position(start_coords['x'], start_coords['y'], 0)
     except Exception as e:
         fail_hard("failed to connect to gazebo: %s" % e)
 
-    ## todo: for RR2, need to also process use_adaptation and the utility function
+    ## todo: for RR3, do things with  utility function
+
     if ready_resp.use_adaptation:
         try:
             rainbow_log = open(os.path.expanduser("~/rainbow.log"),'w')
@@ -180,27 +188,21 @@ if __name__ == '__main__':
 
     sub_voltage = rospy.Subscriber("/energy_monitor/energy_level", Float64, energy_cb)
 
-    def send_live():
-        ## send status live after gazebo interface comes up
+    if th_connected and not ready_resp.use_adaptation:
         logger.debug("sending live status message")
         ## todo: i have no idea what rospy is going to say the sim
         ## time is. probably 0.
-        live_resp = thApi.status_post(Parameters1("live","CP3 TA ready to recieve inital perturbs and start",rospy.Time.now().secs,None,None,None))
 
-    # @manager.command
-    # def runserver():
-    #     print("Running server")
-    #     app.run(port=5000, host='0.0.0.0')
-    #     send_live()
-
-    # class CP3TA(Server):
-    #     def __call__(self, app, *args, **kwargs):
-
+        ## todo: maybe use the send_status function in default_controller?
+        live_resp = thApi.status_post(Parameters1(status="live",
+                                                  message="CP3 TA ready to recieve inital perturbs and start in non-adaptive case",
+                                                  sim_time=rospy.Time.now().secs,
+                                                  plan=cp.instruction_server.get_path(ready_resp.start_loc,ready_resp.target_loc),
+                                                  config=config.nodes,
+                                                  sensors=config.sensors))
+        config.logger.debug("repsonse from TH to live: %s" % response)
 
     logger.debug("starting TA REST interface")
-
-    if th_connected:
-        send_live()
 
     print("Starting the TA webserver")
     app.run(port=5000, host='0.0.0.0')

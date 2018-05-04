@@ -210,7 +210,7 @@ Returns a list of possible perturbations of an (optionally) specified shape and 
 
 |Name|Description|Schema|
 |---|---|---|
-|**kind**  <br>*required*|The kind of error that occurred.  <br>**Example** : `"NeutralPerturbation"`|enum (NeutralPerturbation, FailedToComputeCoverage, NotReadyToPerturb, NotReadyToAdapt, FileNotFound, LineNotFound, OperatorNotFound, NoSearchLimits)|
+|**kind**  <br>*required*|The kind of error that occurred.  <br>**Example** : `"NeutralPerturbation"`|enum (NeutralPerturbation, FailedToComputeCoverage, NotReadyToPerturb, NotReadyToAdapt, FileNotFound, LineNotFound, OperatorNotFound, NoSearchLimits, UnexpectedError)|
 |**message**  <br>*required*|Human-readable information about the error, if any can be provided.  <br>**Example** : `"invalid perturbation: no test failures."`|string|
 
 

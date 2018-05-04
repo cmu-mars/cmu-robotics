@@ -16,7 +16,7 @@ from map_server import MapServer
 from instruction_db import InstructionDB
 from kobuki_msgs.msg import BumperEvent
 from sensor_msgs.msg import Illuminance
-from std_msgs.msg import UInt32MultiArray
+from std_msgs.msg import UInt32MultiArray, Bool, Int8
 
 
 import psutil
@@ -25,6 +25,7 @@ import transformations as t
 import roslaunch
 from gazebo_interface import GazeboInterface
 import time
+import threading
 
 class BaseSystem:
 
@@ -101,6 +102,7 @@ class BaseSystem:
 		self.gazebo.set_charging_srv(False)
 		if not wait:
 			self.ig.send_goal(goal = goal, done_cb=done_cb, active_cb=active_cb)
+			return True, "Sent goal"
 		else:
 			self.ig.send_goal(goal)
 			result = self.ig.wait_for_result(timeout=rospy.Duration(60*15))
@@ -174,6 +176,88 @@ class CP3(ConverterMixin,BaseSystem):
 			return
 		for l in off:
 			self.gazebo.enable_light(l,False)
+
+	def track_config(self, callback):
+		self.report_config = False
+		self.sensors = set()
+		self.nodes = set()
+		self.config_callback = callback
+		self.kinect_subscriber = rospy.Subscriber("/mobile_base/kinect/status", Int8, self.update_kinect)
+		self.lidar_subscriber = rospy.Subscriber("/mobile_base/lidar/status", Bool, self.update_lidar)
+		self.node_thread = threading.Thread(target=self.update_config)
+		self.lock = threading.Lock()
+		self.node_thread.start()
+
+	def update_kinect(self, mode):
+		with self.lock:
+			sensors = set(self.sensors)
+
+		to_remove = set()
+		to_add = set()
+
+		if mode.data == 2:
+			to_remove.add("kinect")
+			to_add.add("cameras")
+		elif mode.data == 1:
+			to_remove.add("cameras")
+			to_add.add("kinect")
+		else:
+			to_remove.add("kinect")
+			to_remove.add("cameras")
+		sensors = sensors.difference(to_remove)
+		sensors = sensors.union(to_add)
+
+		with self.lock:
+			if not sensors.issubset(self.sensors):
+				self.sensors = self.sensors.union(sensors)
+				self.report_config = True
+
+	def update_lidar(self, on):
+		with self.lock:
+			if on.data and not "lidar" in self.sensors:
+				self.sensors.add("lidar")
+				self.report_config = True
+			elif not on.data and "lidar" in self.sensors:
+				self.sensors.remove("lidar")
+				self.report_config = True
+
+
+	def update_config(self):
+		while not rospy.is_shutdown():
+			n = rosnode.get_node_names()
+			n = [x[1:] for x in n]
+
+			has_amcl = "amcl" in n
+			has_mrpt = "mrpt_localization" in n
+			has_aruco = set(self.NODE_MAP["aruco"]).issubset(n)
+			rc = False
+			if "amcl" in self.nodes and not has_amcl:
+				self.nodes.remove("amcl")
+				rc = True
+			elif has_amcl and not "amcl" in self.nodes:
+				self.nodes.add("amcl")
+				rc = True
+			if "mrpt" in self.nodes and not has_mrpt:
+				self.nodes.remove("mrpt")
+				rc = True
+			elif has_mrpt and not "mrpt" in self.nodes:
+				self.nodes.add("mrpt")
+				rc = True
+			if "arcuo" in self.nodes and not has_aruco:
+				self.nodes.remove("aruco")
+				rc = True
+			elif has_aruco and not "aruco" in self.nodes:
+				self.nodes.add("aruco")
+				rc = True
+
+			if self.config_callback is not None:
+				with self.lock:
+					self.report_config = False
+					n = self.nodes
+					s = self.sensors
+				self.config_callback(s, n)
+			rospy.sleep(1)
+
 
 	def track_bumps(self):
 		self.was_bumped = False

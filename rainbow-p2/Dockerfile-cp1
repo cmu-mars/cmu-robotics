@@ -1,7 +1,7 @@
 # Docker file for Rainbow installation
 
-FROM cmu-mars/cp1_controllers
-    
+FROM cmu-mars/cp1_base
+
 # Install Java
 # ## per https://bugs.launchpad.net/ubuntu/+source/ca-certificates-java/+bug/1396760
 RUN sudo apt-get install -y software-properties-common
@@ -11,11 +11,11 @@ RUN sudo apt-get install -y software-properties-common
 
 RUN sudo apt-get update && \
     sudo apt-get install -y openjdk-8-jre && \
-    sudo /var/lib/dpkg/info/ca-certificates-java.postinst configure 
+    sudo /var/lib/dpkg/info/ca-certificates-java.postinst configure
 
 WORKDIR /home/mars
-    
-RUN mkdir das 
+
+RUN mkdir das
 
 WORKDIR /home/mars/das
 
@@ -29,21 +29,19 @@ RUN wget http://acme.able.cs.cmu.edu/public/BRASS/p2/prism-${PRISM_VER}-linux64.
     echo "export LD_LIBRARY_PATH=~/das/prism-${PRISM_VER}-linux64/lib:\$LD_LIBRARY_PATH" >> ~/.bashrc && \
     cd .. && \
     rm -f prism-${PRISM_VER}-linux64.tar.gz
-    
-WORKDIR /home/mars/das
 
+WORKDIR /home/mars/das
+RUN mkdir rainbow-brass
+WORKDIR /home/mars/das/rainbow-brass
 # Install Rainbow
-#RUN wget http://acme.able.cs.cmu.edu/public/BRASS/p2/rainbow-brass.tgz && \
-#    tar zxf rainbow-brass.tgz && \
-#    find . -name "*.sh" -exec chmod +x {} \; && \
-#    rm -f rainbow-brass.tgz
-COPY . /home/mars/das
+RUN wget http://acme.able.cs.cmu.edu/public/BRASS/p2/rainbow-brass-RR2.tgz && \
+    tar zxf rainbow-brass-RR2.tgz && \
+    find . -name "*.sh" -exec chmod +x {} \; && \
+    rm -f rainbow-brass-RR2.tgz
+#COPY . /home/mars/das
 
 RUN sudo chown -R mars /home/mars/das
 
 RUN find . -name ".sh" -exec chmod +x {} \;
-   
-CMD ["/bin/bash"]
-    
 
-    
+CMD ["/bin/bash"]

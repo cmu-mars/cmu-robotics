@@ -18,13 +18,17 @@ import hulk
 import darjeeling
 
 def patch2ca(pa):
+    outcome_compilation = CompilationOutcome(time_taken=pa.build.time_taken,
+                                             successful=pa.build.successful)
+    outcome_tests = [
+        TestOutcome(test_id=test_id,
+                    time_taken=pa.tests[test_id].time_taken,
+                    passed=pa.tests[test_id].passed)
+        for test_id in pa.tests
+    ]
     return CandidateAdaptation(diff=pa.diff,
-                               compilation_outcome=CompilationOutcome(time_taken=pa.compilation.time_taken,
-                                                                      successful=pa.compilation.successful),
-                               test_outcomes=[ TestOutcome(test_id=outcome.test,
-                                                           time_taken=outcome.time_taken,
-                                                           passed=outcome.passed)
-                                               for outcome in pa.test_outcomes ])
+                               compilation_outcome=outcome_compilation,
+                               test_outcomes=outcome_tests)
 
 def perturb2mutation(pp):
     loc = hulk.FileLocationRange(pp.at.start.file,

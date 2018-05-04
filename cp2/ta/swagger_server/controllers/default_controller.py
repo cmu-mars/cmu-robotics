@@ -56,7 +56,7 @@ def lines_get():  # noqa: E501
 
     :rtype: List[SourceLine]
     """
-    return [ SourceLine(line.filename, line.num)) for line in config.orc.lines ]
+    return [SourceLine(line.filename, line.num) for line in config.orc.lines]
 
 def observe_get():  # noqa: E501
     """observe_get
