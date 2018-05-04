@@ -15,10 +15,10 @@ def send_status(src, code, sendxy=True):
 
     config.logger.debug("sending status %s from %s" % (code,src))
     response = config.thApi.status_post(Statusparams(status=code,
-                                              x = x,
-                                              y = y,
-                                              charge = config.battery, # todo may be none?
-                                              sim_time = rospy.Time.now().secs))
+                                              x=x,
+                                              y=y,
+                                              charge=config.battery, # todo may be none?
+                                              sim_time=rospy.Time.now().secs))
     config.logger.debug("repsonse from TH to status: %s" % response)
 
 def send_done(src, msg, outcome):

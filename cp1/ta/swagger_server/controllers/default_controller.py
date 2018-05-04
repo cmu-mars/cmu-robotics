@@ -61,7 +61,7 @@ def internal_post(CP1InternalStatus):  # noqa: E501
         config.logger.debug("internal got a deprecated status which is being ignored")
     elif CP1InternalStatus.status == "learning-error":
         config.logger.debug("internal got a deprecated status which is being ignored")
-    elif CP1InternalStatus.status ==  "other-error":
+    elif CP1InternalStatus.status == "other-error":
         config.logger.debug("sending error to the TH because of message %s" % CP1InternalStatus.message)
         resp = config.thApi.error_post(Errorparams(error="other-error",message=CP1InternalStatus.message))
 
@@ -131,7 +131,7 @@ def perturb_place_obstacle_post(Parameters=None):
 
     result = config.bot_cont.gazebo.place_obstacle(PlaceParams.x, PlaceParams.y)
     if result:
-        return InlineResponse200(obstacleid = result, sim_time = rospy.Time.now().secs)
+        return InlineResponse200(obstacleid=result, sim_time=rospy.Time.now().secs)
     else:
         ## todo: we can't really distinguish between reasons for
         ## failure here so the API is a little bit too big
@@ -169,9 +169,9 @@ def start_post():
             config.logger.debug("at_waypoint callback called with %s" % name_of_waypoint)
             x , y , ig1 , ig2 = config.bot_cont.gazebo.get_bot_state()
             config.tasks_finished.append(DoneTasksfinished(x=x,
-                                                             y=y,
-                                                             sim_time=rospy.Time.now().secs,
-                                                             name=name_of_waypoint))
+                                                           y=y,
+                                                           sim_time=rospy.Time.now().secs,
+                                                           name=name_of_waypoint))
             comms.send_status("at-waypoint callback", "at-waypoint")
 
         def active_cb():

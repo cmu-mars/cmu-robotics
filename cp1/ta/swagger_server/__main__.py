@@ -9,6 +9,7 @@ from .encoder import JSONEncoder
 import logging
 import traceback
 import os
+import json
 
 import rospy
 from urllib.parse import urlparse
@@ -27,6 +28,7 @@ from rainbow_interface import RainbowInterface
 
 from swagger_client.rest import ApiException
 from swagger_client import DefaultApi
+from swagger_client.models.inline_response_200 import InlineResponse200
 from swagger_client.models.errorparams import Errorparams
 from swagger_client.models.statusparams import Statusparams
 
@@ -34,7 +36,6 @@ import swagger_server.config as config
 import swagger_server.comms as comms
 
 import learner ## todo: this may not work
-# import cp1_utils ## todo: this may not work
 from robotcontrol import *
 # from bot_controller import BotController ## todo: this may not work
 
@@ -74,22 +75,33 @@ if __name__ == '__main__':
 
     def fail_hard(s):
         logger.debug(s)
-        err = Errorparams(error="other-error", message=s)
-        print("%s" % err)
-        result = thApi.error_post(err)
+        if th_connected:
+            err = Errorparams(error="other-error", message=s)
+            result = thApi.error_post(err)
         raise Exception(s)
 
     ## start the sequence diagram: post to ready to get configuration data
     try:
         logger.debug("posting to /ready")
         ready_resp = thApi.ready_post()
-        logger.debug("recieved response from /ready: %s" % ready_resp)
+        th_connected = True
+        logger.debug("received response from /ready: %s" % ready_resp)
     except Exception as e:
         ## this isn't a call to fail_hard because the TH isn't
         ## responding at all; we have to hope that LL notices the log
         ## output and that this happens only very rarely if at all
         logger.debug("failed to connect with th")
-        raise e
+        logger.debug(traceback.format_exc())
+        th_connected = False
+        # Adding test ready info
+        with open(os.path.expanduser(sys.argv[1])) as ready:
+            data = json.load(ready)
+            ready_resp = InlineResponse200(data["start-loc"], data["target-locs"], data["power-model"],
+                                           data["level"], data["discharge-budget"])
+            logger.info("started TA in disconnected mode")
+        # raise e
+
+    print(ready_resp.level)
 
     ## dynamic checks on ready response
     if ready_resp.target_locs == []:
@@ -139,8 +151,8 @@ if __name__ == '__main__':
     logger.debug("initializing cp1_ta ros node")
     rospy.init_node("cp1_ta")
 
-    cp1_utils.init("cp1_ta")
-    cp1_utils.launch_cp1_base()
+    launch_utils.init("cp1_ta")
+    launch_utils.launch_cp1_base()
 
     logger.debug("waiting for move_base (emulates watching for odom_recieved)")
     move_base = actionlib.SimpleActionClient("move_base", MoveBaseAction)
@@ -151,6 +163,9 @@ if __name__ == '__main__':
 
     ## build controller object
     bot_cont = BotController()
+
+    # start tracking battery charge
+    bot_cont.gazebo.track_battery_charge()
     bot_cont.level = ready_resp.level
 
     config.bot_cont = bot_cont
@@ -180,16 +195,17 @@ if __name__ == '__main__':
     ## start up rainbow if we're adapting, otherwise send the live message directly
     if ready_resp.level == "c":
         try:
-            rainbow_log = open(os.path.expanduser("~/rainbow.log"),'w')
+            rainbow_log = open(os.path.expanduser("~/rainbow.log"), 'w')
             rainbow = RainbowInterface()
             rainbow.launchRainbow("cp1", rainbow_log)
             ok = rainbow.startRainbow()
             if not ok:
                 fail_hard("did not connect to rainbow in a timely fashion")
         except Exception as e:
-            fail_hard("failed to connecto to rainbow: %s " %e)
+            fail_hard("failed to connection to rainbow: %s " % e)
     else:
         comms.send_status("__main__ in level %s" % ready_resp.level, "live")
 
     logger.debug("starting TA REST interface")
-    app.run(host='0.0.0.0',port=5000)
+    print("starting TA REST interface")
+    app.run(host='0.0.0.0', port=5000)
