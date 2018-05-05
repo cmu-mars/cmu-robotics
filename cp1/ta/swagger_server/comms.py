@@ -1,7 +1,9 @@
+import rospy
+
 from swagger_client.models.doneparams import Doneparams
 from swagger_client.models.statusparams import Statusparams
-
 import swagger_server.config as config
+
 
 def send_status(src, code, sendxy=True):
     ## todo, this is pretty hacky; really we want to make x, y
@@ -21,12 +23,13 @@ def send_status(src, code, sendxy=True):
                                               sim_time=rospy.Time.now().secs))
     config.logger.debug("repsonse from TH to status: %s" % response)
 
+
 def send_done(src, msg, outcome):
     x , y , ig1 , ig2 = config.bot_cont.gazebo.get_bot_state()
 
     config.logger.debug("sending done from %s" % src)
-    response = config.thApi.done_post(Doneparams(x = x,
-                                                 y = y,
+    response = config.thApi.done_post(Doneparams(x=x,
+                                                 y=y,
                                                  charge=config.battery,
                                                  sim_time=rospy.Time.now().secs,
                                                  tasks_finished=config.tasks_finished,

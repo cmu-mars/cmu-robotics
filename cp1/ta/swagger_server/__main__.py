@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import configparser
 import sys
 import connexion
 #sys.path.append('/usr/src/app')
@@ -10,6 +9,9 @@ import logging
 import traceback
 import os
 import json
+from multiprocessing import Process, Queue
+import subprocess
+
 
 import rospy
 from urllib.parse import urlparse
@@ -37,8 +39,8 @@ import swagger_server.comms as comms
 from swagger_server.util import *
 
 import learner
-import robotcontrol
 from robotcontrol.bot_controller import BotController
+from robotcontrol.launch_utils import *
 
 if __name__ == '__main__':
     # Parameter parsing, to set up TH
@@ -81,16 +83,16 @@ if __name__ == '__main__':
             result = thApi.error_post(err)
         raise Exception(s)
 
-    ## start the sequence diagram: post to ready to get configuration data
+    # start the sequence diagram: post to ready to get configuration data
     try:
         logger.debug("posting to /ready")
         ready_resp = thApi.ready_post()
         th_connected = True
         logger.debug("received response from /ready: %s" % ready_resp)
     except Exception as e:
-        ## this isn't a call to fail_hard because the TH isn't
-        ## responding at all; we have to hope that LL notices the log
-        ## output and that this happens only very rarely if at all
+        # this isn't a call to fail_hard because the TH isn't
+        # responding at all; we have to hope that LL notices the log
+        # output and that this happens only very rarely if at all
         logger.debug("failed to connect with th")
         logger.debug(traceback.format_exc())
         th_connected = False
@@ -104,18 +106,17 @@ if __name__ == '__main__':
 
     print(ready_resp.level)
 
-    ## dynamic checks on ready response
+    # dynamic checks on ready response
     if ready_resp.target_locs == []:
         fail_hard("malformed response from ready: target_locs must not be the empty list")
 
     if ready_resp.start_loc == ready_resp.target_locs[0]:
         fail_hard("malformed response from ready: start-loc must not be the same as the first item of target-locs")
 
-
     if not check_adj(ready_resp.target_locs):
         fail_hard("malformed response from ready: target-locs contains adjacent equal elements")
 
-    ## once the response is checked, write it to ~/ready
+    # once the response is checked, write it to ~/ready
     logger.debug("writing checked /ready message to ~/ready")
     fo = open(os.path.expanduser('~/ready'), 'w')
     fo.write('%s' %ready_resp) #todo: this may or may not be JSON; check once we can run it
@@ -141,22 +142,36 @@ if __name__ == '__main__':
         comms.send_status("__main__", "learning-done", False)
         learner.Learn.dump_learned_model()
 
-    ## ros launch
+    # ros launch
     # Init me as a node
     logger.debug("initializing cp1_ta ros node")
     # rospy.init_node("cp1_ta")
 
-    robotcontrol.launch_utils.init("cp1_ta")
-    robotcontrol.launch_utils.launch_cp1_base()
+    q = Queue()
+    p = Process(target=launch_cp1_base, args=(q, 'default'))
+    p.start()
+
+    # rl_child = subprocess.Popen(["roslaunch", "cp1_base", "cp1-base-test.launch"],
+    #                             stdin=None,
+    #                             stdout=None,
+    #                             stderr=None)
+    # launch_cp1_base()
+    init("cp1_ta")
 
     logger.debug("waiting for move_base (emulates watching for odom_recieved)")
     move_base = actionlib.SimpleActionClient("move_base", MoveBaseAction)
-    ## todo: Ian - should this wait for some period (e.g., timeout=60s), otherwise we will wait forever
-    move_base_started = move_base.wait_for_server()
+
+    move_base_started = False
+    ind = 0
+    while not move_base_started and ind < 12:
+        ind += 1
+        move_base_started = move_base.wait_for_server(rospy.Duration.from_sec(10))
+        rospy.loginfo("waiting for the action server")
+
     if not move_base_started:
         fail_hard("fatal error: navigation stack has failed to start")
 
-    ## build controller object
+    # build controller object
     bot_cont = BotController()
 
     # start tracking battery charge
@@ -165,7 +180,7 @@ if __name__ == '__main__':
 
     config.bot_cont = bot_cont
 
-    ## check that things are actually waypoint names
+    # check that things are actually waypoint names
     if not bot_cont.map_server.is_waypoint(ready_resp.start_loc):
         fail_hard("name of start location is not a waypoint: %s" % ready_resp.start_loc)
 
@@ -173,21 +188,21 @@ if __name__ == '__main__':
         if not bot_cont.map_server.is_waypoint(name):
             fail_hard("name of target location is not a waypoint: %s" % name)
 
-    ## put the robot in the right place
+    # put the robot in the right place
     start_coords = bot_cont.map_server.waypoint_to_coords(ready_resp.start_loc)
     bot_cont.gazebo.set_bot_position(start_coords['x'], start_coords['y'], 0)
 
-    ## subscribe to rostopics
+    # subscribe to rostopics
     def energy_cb(msg):
         """call back to update the global battery state from the ros topic"""
-        ## todo: this may be the wrong format (int vs float)
+        # todo: this may be the wrong format (int vs float)
         config.battery = msg.data
         if msg.data <= 0:
             comms.send_done("energy call back", "", "out-of-battery")
 
     sub_mwh = rospy.Subscriber("/energy_monitor/energy_level_mwh", Float64, energy_cb)
 
-    ## start up rainbow if we're adapting, otherwise send the live message directly
+    # start up rainbow if we're adapting, otherwise send the live message directly
     if ready_resp.level == "c":
         try:
             rainbow_log = open(os.path.expanduser("~/rainbow.log"), 'w')
