@@ -178,6 +178,16 @@ if __name__ == '__main__':
     bot_cont.gazebo.track_battery_charge()
     bot_cont.level = ready_resp.level
 
+    # subscribe to rostopics
+    def energy_cb(msg):
+        """call back to update the global battery state from the ros topic"""
+        # todo: this may be the wrong format (int vs float)
+        config.battery = msg.data
+        if msg.data <= 0:
+            comms.send_done("energy call back", "", "out-of-battery")
+
+    sub_mwh = rospy.Subscriber("/mobile_base/commands/charge_level_mwh", Float64, energy_cb)
+
     config.bot_cont = bot_cont
 
     # check that things are actually waypoint names
@@ -192,16 +202,6 @@ if __name__ == '__main__':
     start_coords = bot_cont.map_server.waypoint_to_coords(ready_resp.start_loc)
     bot_cont.gazebo.set_bot_position(start_coords['x'], start_coords['y'], 0)
 
-    # subscribe to rostopics
-    def energy_cb(msg):
-        """call back to update the global battery state from the ros topic"""
-        # todo: this may be the wrong format (int vs float)
-        config.battery = msg.data
-        if msg.data <= 0:
-            comms.send_done("energy call back", "", "out-of-battery")
-
-    sub_mwh = rospy.Subscriber("/energy_monitor/energy_level_mwh", Float64, energy_cb)
-
     # start up rainbow if we're adapting, otherwise send the live message directly
     if ready_resp.level == "c":
         try:
@@ -213,9 +213,9 @@ if __name__ == '__main__':
                 fail_hard("did not connect to rainbow in a timely fashion")
         except Exception as e:
             fail_hard("failed to connection to rainbow: %s " % e)
-    else:
+    elif th_connected:
         comms.send_status("__main__ in level %s" % ready_resp.level, "live")
 
-    logger.debug("starting TA REST interface")
-    print("starting TA REST interface")
+    logger.debug("Starting TA REST interface")
+    print("Starting TA REST interface")
     app.run(host='0.0.0.0', port=5000)
