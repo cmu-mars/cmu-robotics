@@ -2,7 +2,6 @@
 
 import sys
 import connexion
-#sys.path.append('/usr/src/app')
 
 # from .encoder import JSONEncoder
 import logging
@@ -10,18 +9,7 @@ import traceback
 import os
 import json
 from multiprocessing import Process, Queue
-import subprocess
-
-
 import rospy
-from urllib.parse import urlparse
-
-from operator import eq
-
-import threading
-import requests
-import time
-import random
 import actionlib
 
 from std_msgs.msg import Float64
@@ -102,11 +90,15 @@ if __name__ == '__main__':
         # Adding test ready info
         with open(os.path.expanduser(ready_file_name)) as ready:
             data = json.load(ready)
-            ready_resp = InlineResponse200(level=data["level"], start_loc=data["start-loc"], target_locs=data["target-locs"], power_model=data["power-model"], discharge_budget=data["discharge-budget"])
+            ready_resp = InlineResponse200(
+                level=data["level"], start_loc=data["start-loc"],
+                target_locs=data["target-locs"],
+                power_model=data["power-model"],
+                discharge_budget=data["discharge-budget"])
             logger.info("started TA in disconnected mode")
         # raise e
 
-    print(ready_resp.level)
+    config.ready_response = ready_resp
 
     # dynamic checks on ready response
     if ready_resp.target_locs == []:
@@ -121,7 +113,7 @@ if __name__ == '__main__':
     # once the response is checked, write it to ~/ready
     logger.debug("writing checked /ready message to ~/ready")
     with open(os.path.expanduser('~/ready'), 'w') as ready_file:
-        json.dump(ready_resp, ready_file)
+        json.dump(ready_resp.to_dict(), ready_file)
 
     config.level = ready_resp.level
 

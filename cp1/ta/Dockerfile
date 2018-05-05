@@ -27,6 +27,7 @@ WORKDIR /usr/src/app
 
 COPY requirements.txt /usr/src/app/
 
+
 RUN sudo apt-get install -y python3 python3-pip
 RUN sudo pip3 install --no-cache-dir -r requirements.txt
 
@@ -34,8 +35,8 @@ RUN sudo pip3 install --no-cache-dir -r requirements.txt
 # RUN sudo pip3 install catkin_pkg rospkg numpy psutil defusedxml flask-script
 
 COPY . /usr/src/app
-
 RUN sudo chown -R mars /usr/src/app
+RUN python3 -m pip install --upgrade /usr/src/app
 
 ENV PYTHONUNBUFFERED 0
 
