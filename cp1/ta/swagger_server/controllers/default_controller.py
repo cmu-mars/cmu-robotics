@@ -29,6 +29,7 @@ import swagger_server.comms as comms
 
 import rospy
 
+
 def internal_post(CP1InternalStatus):  # noqa: E501
     """internal_post
 
@@ -81,6 +82,7 @@ def internal_post(CP1InternalStatus):  # noqa: E501
     elif CP1InternalStatus.status == "ADAPTED_FAILED":
         comms.send_status("internal, adapted_failed", "adapt-done")
 
+
 def observe_get():
     """
     observe_get
@@ -88,7 +90,7 @@ def observe_get():
 
     :rtype: InlineResponse2003
     """
-    x , y , ig1 , ig2 = config.bot_cont.gazebo.get_bot_state()
+    x, y, ig1, ig2 = config.bot_cont.gazebo.get_bot_state()
 
     ret = InlineResponse2003()
     ret.x = x
@@ -112,9 +114,9 @@ def perturb_battery_post(Parameters=None):
         BatteryParams = BatteryParams.from_dict(connexion.request.get_json())  # noqa: E501
 
     if config.bot_cont.gazebo.set_charge(BatteryParams.charge):
-        return InlineResponse2002(sim_time = rospy.Time.now().secs)
+        return InlineResponse2002(sim_time=rospy.Time.now().secs)
     else:
-        return InlineResponse4002(message = "setting the battery failed") , 400
+        return InlineResponse4002(message="setting the battery failed"), 400
 
 
 def perturb_place_obstacle_post(Parameters=None):
@@ -135,7 +137,8 @@ def perturb_place_obstacle_post(Parameters=None):
     else:
         ## todo: we can't really distinguish between reasons for
         ## failure here so the API is a little bit too big
-        return InlineResponse4001(cause = "other-error", message="obstacle placement failed")
+        return InlineResponse4001(cause="other-error", message="obstacle placement failed")
+
 
 def perturb_remove_obstacle_post(Parameters=None):
     """
@@ -152,8 +155,9 @@ def perturb_remove_obstacle_post(Parameters=None):
     if config.bot_cont.gazebo.remove_obstacle(RemoveParams.obstacleid):
         return InlineResponse2001(sim_time=rospy.Time.now().secs)
     else:
-        return InlineResponse4001(cause="bad-obstacleid",
+        return InlineResponse4001(cause="bad-obstacle_id",
                                   message="asked to remove an obstacle with a name we didn't issue")
+
 
 def start_post():
     """
@@ -167,7 +171,7 @@ def start_post():
 
         def at_waypoint_cb(name_of_waypoint):
             config.logger.debug("at_waypoint callback called with %s" % name_of_waypoint)
-            x , y , ig1 , ig2 = config.bot_cont.gazebo.get_bot_state()
+            x, y, ig1, ig2 = config.bot_cont.gazebo.get_bot_state()
             config.tasks_finished.append(DoneTasksfinished(x=x,
                                                            y=y,
                                                            sim_time=rospy.Time.now().secs,
@@ -179,8 +183,8 @@ def start_post():
 
         def totally_done_cb(terminal, result):
             comms.send_done("totally_done callback",
-                      "mission sequencer indicated that all missions are done",
-                      "at-goal")
+                            "mission sequencer indicated that all missions are done",
+                            "at-goal")
 
         def done_cb(terminal, result):
             config.logger.debug("done cb was used from instruction graph")
@@ -188,7 +192,7 @@ def start_post():
         config.bot_cont.start(start=config.ready_response.start_loc,
                               targets=config.ready_response.target_locs,
                               active_cb=active_cb,
-                              done_cb = done_cb,
+                              done_cb=done_cb,
                               at_waypoint_cb=at_waypoint_cb,
                               mission_done_cb=totally_done_cb)
     else:

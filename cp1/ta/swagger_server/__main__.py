@@ -3,8 +3,8 @@
 import sys
 import connexion
 #sys.path.append('/usr/src/app')
-#from swagger_server.encoder import JSONEncoder
-from .encoder import JSONEncoder
+
+# from .encoder import JSONEncoder
 import logging
 import traceback
 import os
@@ -26,7 +26,6 @@ import actionlib
 
 from std_msgs.msg import Float64
 from move_base_msgs.msg import MoveBaseAction
-from rainbow_interface import RainbowInterface
 
 from swagger_client.rest import ApiException
 from swagger_client import DefaultApi
@@ -37,9 +36,12 @@ from swagger_client.models.statusparams import Statusparams
 import swagger_server.config as config
 import swagger_server.comms as comms
 from swagger_server.util import *
+from swagger_server.encoder import JSONEncoder
+
 
 import learner
 from robotcontrol.bot_controller import BotController
+from robotcontrol.rainbow_interface import RainbowInterface
 from robotcontrol.launch_utils import *
 
 if __name__ == '__main__':
@@ -53,7 +55,7 @@ if __name__ == '__main__':
 
     # Set up TA server and logging
     app = connexion.App(__name__, specification_dir='./swagger/')
-    app.app.json_encoder = JSONEncoder ## possibly busted; unclear
+    app.app.json_encoder = JSONEncoder
     app.add_api('swagger.yaml', arguments={'title': 'CP1'}, strict_validation=True)
 
     # capture the logger
@@ -118,9 +120,8 @@ if __name__ == '__main__':
 
     # once the response is checked, write it to ~/ready
     logger.debug("writing checked /ready message to ~/ready")
-    fo = open(os.path.expanduser('~/ready'), 'w')
-    fo.write('%s' %ready_resp) #todo: this may or may not be JSON; check once we can run it
-    fo.close()
+    with open(os.path.expanduser('~/ready'), 'w') as ready_file:
+        json.dump(ready_resp, ready_file)
 
     config.level = ready_resp.level
 
@@ -218,4 +219,5 @@ if __name__ == '__main__':
 
     logger.debug("Starting TA REST interface")
     print("Starting TA REST interface")
+    app.debug = True
     app.run(host='0.0.0.0', port=5000)
