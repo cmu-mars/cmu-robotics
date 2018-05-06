@@ -24,4 +24,5 @@ services:
       - ${TA_PORT}:5000
     expose:
       - 5000
-    command: bash -c ". ~/catkin_ws/entrypoint.sh && cd /usr/src/app && python3 -m swagger_server /home/mars/test-ready.json"
+      - 1100
+    command: bash -c ". ~/.bashrc && . ~/catkin_ws/entrypoint.sh && cd /usr/src/app && python3 -m swagger_server /home/mars/test-ready.json"
