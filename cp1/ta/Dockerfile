@@ -1,5 +1,6 @@
 FROM cmu-mars/cp1_rb
 
+RUN . /opt/ros/kinetic/setup.sh
 RUN . ~/catkin_ws/devel/setup.sh
 
 RUN echo ". /opt/ros/kinetic/setup.bash" >> ~/.bashrc
@@ -20,6 +21,8 @@ RUN wget -q "https://github.com/ros-planning/navigation_msgs/archive/${ROS_NAVIG
     rm navigation_msgs/README.md && \
     mv navigation_msgs/* ~/catkin_ws/src && \
     rm -rf navigation_msgs
+
+RUN cd ~/catkin_ws && . /opt/ros/kinetic/setup.sh && catkin_make
 
 RUN sudo mkdir -p /usr/src/app
 RUN sudo chown mars /usr/src/app
@@ -46,4 +49,4 @@ ADD entrypoint.sh .
 
 ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
 
-CMD ["python3", "-m", "swagger_server"]
+#CMD ["python3", "-m", "swagger_server"]

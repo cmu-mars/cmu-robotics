@@ -1,4 +1,8 @@
 import connexion
+import asyncio
+import concurrent.futures
+from multiprocessing import Process, pool
+from threading import Thread
 
 from swagger_server.models.battery_params import BatteryParams  # noqa: E501
 from swagger_server.models.inline_response200 import InlineResponse200  # noqa: E501
@@ -171,24 +175,56 @@ def start_post():
                                                            y=y,
                                                            sim_time=rospy.Time.now().secs,
                                                            name=name_of_waypoint))
-            comms.send_status("at-waypoint callback", "at-waypoint")
+            if config.th_connected:
+                comms.send_status("at-waypoint callback", "at-waypoint")
+            else:
+                rospy.loginfo(config.tasks_finished[-1])
 
         def active_cb():
             config.logger.debug("received notification that goal is active")
 
-        def totally_done_cb(terminal, result):
-            comms.send_done("totally_done callback",
-                            "mission sequencer indicated that all missions are done",
-                            "at-goal")
+        def totally_done_cb(number_of_tasks_accomplished, locs):
+            config.started = False
+            if config.th_connected:
+                comms.send_done("totally_done callback",
+                                "mission sequencer indicated that all missions are done",
+                                "at-goal")
+            else:
+                rospy.loginfo("done!")
 
-        def done_cb(terminal, result):
+        def done_cb(status, result):
             config.logger.debug("done cb was used from instruction graph")
 
-        config.bot_cont.start(start=config.ready_response.start_loc,
-                              targets=config.ready_response.target_locs,
-                              active_cb=active_cb,
-                              done_cb=done_cb,
-                              at_waypoint_cb=at_waypoint_cb,
-                              mission_done_cb=totally_done_cb)
+        # Added multi-threading instead of multi-processing
+        # because the subprocess could not connect to ig_process
+
+        if config.level == "a" or config.level == "b":
+            t = Thread(target=config.bot_cont.go_instructions_multiple_tasks_reactive,
+                       args=(config.ready_response.start_loc,
+                             config.ready_response.target_locs,
+                             active_cb,
+                             done_cb,
+                             at_waypoint_cb,
+                             totally_done_cb,
+                             ))
+        elif config.level == "c":
+            t = Thread(target=config.bot_cont.go_instructions_multiple_tasks_adaptive,
+                       args=(config.ready_response.start_loc,
+                             config.ready_response.target_locs,
+                             active_cb,
+                             done_cb,
+                             at_waypoint_cb,
+                             totally_done_cb,
+                             ))
+        t.start()
+
+
+        # config.bot_cont.go_instructions_multiple_tasks_reactive(start=config.ready_response.start_loc,
+        #                                                             targets=config.ready_response.target_locs,
+        #                                                             active_cb=active_cb,
+        #                                                             done_cb=done_cb,
+        #                                                             at_waypoint_cb=at_waypoint_cb,
+        #                                                             mission_done_cb=totally_done_cb)
+
     else:
         return InlineResponse4003("/start called more than once")

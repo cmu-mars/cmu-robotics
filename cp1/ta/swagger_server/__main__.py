@@ -3,6 +3,8 @@
 import sys
 import connexion
 
+import subprocess
+
 # from .encoder import JSONEncoder
 import logging
 import traceback
@@ -140,15 +142,13 @@ if __name__ == '__main__':
     logger.debug("initializing cp1_ta ros node")
     # rospy.init_node("cp1_ta")
 
-    q = Queue()
-    p = Process(target=launch_cp1_base, args=(q, 'default'))
+    p = Process(target=launch_cp1_base, args=('default',))
     p.start()
-
     # rl_child = subprocess.Popen(["roslaunch", "cp1_base", "cp1-base-test.launch"],
     #                             stdin=None,
     #                             stdout=None,
     #                             stderr=None)
-    # launch_cp1_base()
+
     init("cp1_ta")
 
     logger.debug("waiting for move_base (emulates watching for odom_recieved)")
@@ -174,7 +174,6 @@ if __name__ == '__main__':
     # subscribe to rostopics
     def energy_cb(msg):
         """call back to update the global battery state from the ros topic"""
-        # todo: this may be the wrong format (int vs float)
         config.battery = msg.data
         if msg.data <= 0:
             comms.send_done("energy call back", "", "out-of-battery")
@@ -211,5 +210,6 @@ if __name__ == '__main__':
 
     logger.debug("Starting TA REST interface")
     print("Starting TA REST interface")
-    app.debug = True
+    config.th_connected = th_connected
+    # app.debug = True
     app.run(host='0.0.0.0', port=5000)
