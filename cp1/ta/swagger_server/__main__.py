@@ -1,30 +1,19 @@
 #!/usr/bin/env python3
 
-import configparser
 import sys
 import connexion
-#sys.path.append('/usr/src/app')
-#from swagger_server.encoder import JSONEncoder
-from .encoder import JSONEncoder
+
+# from .encoder import JSONEncoder
 import logging
 import traceback
 import os
 import json
-
+from multiprocessing import Process, Queue
 import rospy
-from urllib.parse import urlparse
-
-from operator import eq
-
-import threading
-import requests
-import time
-import random
 import actionlib
 
 from std_msgs.msg import Float64
 from move_base_msgs.msg import MoveBaseAction
-from rainbow_interface import RainbowInterface
 
 from swagger_client.rest import ApiException
 from swagger_client import DefaultApi
@@ -34,10 +23,14 @@ from swagger_client.models.statusparams import Statusparams
 
 import swagger_server.config as config
 import swagger_server.comms as comms
+from swagger_server.util import *
+from swagger_server.encoder import JSONEncoder
 
-import learner ## todo: this may not work
-from robotcontrol import *
-# from bot_controller import BotController ## todo: this may not work
+
+import learner
+from robotcontrol.bot_controller import BotController
+from robotcontrol.rainbow_interface import RainbowInterface
+from robotcontrol.launch_utils import *
 
 if __name__ == '__main__':
     # Parameter parsing, to set up TH
@@ -50,7 +43,7 @@ if __name__ == '__main__':
 
     # Set up TA server and logging
     app = connexion.App(__name__, specification_dir='./swagger/')
-    app.app.json_encoder = JSONEncoder ## possibly busted; unclear
+    app.app.json_encoder = JSONEncoder
     app.add_api('swagger.yaml', arguments={'title': 'CP1'}, strict_validation=True)
 
     # capture the logger
@@ -80,51 +73,47 @@ if __name__ == '__main__':
             result = thApi.error_post(err)
         raise Exception(s)
 
-    ## start the sequence diagram: post to ready to get configuration data
+    # start the sequence diagram: post to ready to get configuration data
     try:
         logger.debug("posting to /ready")
         ready_resp = thApi.ready_post()
         th_connected = True
         logger.debug("received response from /ready: %s" % ready_resp)
     except Exception as e:
-        ## this isn't a call to fail_hard because the TH isn't
-        ## responding at all; we have to hope that LL notices the log
-        ## output and that this happens only very rarely if at all
+        # this isn't a call to fail_hard because the TH isn't
+        # responding at all; we have to hope that LL notices the log
+        # output and that this happens only very rarely if at all
         logger.debug("failed to connect with th")
         logger.debug(traceback.format_exc())
         th_connected = False
+        ready_file_name = sys.argv[1]
         # Adding test ready info
-        with open(os.path.expanduser(sys.argv[1])) as ready:
+        with open(os.path.expanduser(ready_file_name)) as ready:
             data = json.load(ready)
-            ready_resp = InlineResponse200(data["start-loc"], data["target-locs"], data["power-model"],
-                                           data["level"], data["discharge-budget"])
+            ready_resp = InlineResponse200(
+                level=data["level"], start_loc=data["start-loc"],
+                target_locs=data["target-locs"],
+                power_model=data["power-model"],
+                discharge_budget=data["discharge-budget"])
             logger.info("started TA in disconnected mode")
         # raise e
 
-    print(ready_resp.level)
+    config.ready_response = ready_resp
 
-    ## dynamic checks on ready response
+    # dynamic checks on ready response
     if ready_resp.target_locs == []:
         fail_hard("malformed response from ready: target_locs must not be the empty list")
 
     if ready_resp.start_loc == ready_resp.target_locs[0]:
         fail_hard("malformed response from ready: start-loc must not be the same as the first item of target-locs")
 
-    ## todo: probably in a util file
-    def check_adj(l):
-        for x , y in zip(l, l[1:]):
-            if x == y:
-                return False
-        return True
-
     if not check_adj(ready_resp.target_locs):
         fail_hard("malformed response from ready: target-locs contains adjacent equal elements")
 
-    ## once the response is checked, write it to ~/ready
+    # once the response is checked, write it to ~/ready
     logger.debug("writing checked /ready message to ~/ready")
-    fo = open(os.path.expanduser('~/ready'), 'w')
-    fo.write('%s' %ready_resp) #todo: this may or may not be JSON; check once we can run it
-    fo.close()
+    with open(os.path.expanduser('~/ready'), 'w') as ready_file:
+        json.dump(ready_resp.to_dict(), ready_file)
 
     config.level = ready_resp.level
 
@@ -146,31 +135,55 @@ if __name__ == '__main__':
         comms.send_status("__main__", "learning-done", False)
         learner.Learn.dump_learned_model()
 
-    ## ros launch
+    # ros launch
     # Init me as a node
     logger.debug("initializing cp1_ta ros node")
-    rospy.init_node("cp1_ta")
+    # rospy.init_node("cp1_ta")
 
-    launch_utils.init("cp1_ta")
-    launch_utils.launch_cp1_base()
+    q = Queue()
+    p = Process(target=launch_cp1_base, args=(q, 'default'))
+    p.start()
+
+    # rl_child = subprocess.Popen(["roslaunch", "cp1_base", "cp1-base-test.launch"],
+    #                             stdin=None,
+    #                             stdout=None,
+    #                             stderr=None)
+    # launch_cp1_base()
+    init("cp1_ta")
 
     logger.debug("waiting for move_base (emulates watching for odom_recieved)")
     move_base = actionlib.SimpleActionClient("move_base", MoveBaseAction)
-    ## todo: Ian - should this wait for some period (e.g., timeout=60s), otherwise we will wait forever
-    move_base_started = move_base.wait_for_server()
+
+    move_base_started = False
+    ind = 0
+    while not move_base_started and ind < 12:
+        ind += 1
+        move_base_started = move_base.wait_for_server(rospy.Duration.from_sec(10))
+        rospy.loginfo("waiting for the action server")
+
     if not move_base_started:
         fail_hard("fatal error: navigation stack has failed to start")
 
-    ## build controller object
+    # build controller object
     bot_cont = BotController()
 
     # start tracking battery charge
     bot_cont.gazebo.track_battery_charge()
     bot_cont.level = ready_resp.level
 
+    # subscribe to rostopics
+    def energy_cb(msg):
+        """call back to update the global battery state from the ros topic"""
+        # todo: this may be the wrong format (int vs float)
+        config.battery = msg.data
+        if msg.data <= 0:
+            comms.send_done("energy call back", "", "out-of-battery")
+
+    sub_mwh = rospy.Subscriber("/mobile_base/commands/charge_level_mwh", Float64, energy_cb)
+
     config.bot_cont = bot_cont
 
-    ## check that things are actually waypoint names
+    # check that things are actually waypoint names
     if not bot_cont.map_server.is_waypoint(ready_resp.start_loc):
         fail_hard("name of start location is not a waypoint: %s" % ready_resp.start_loc)
 
@@ -178,21 +191,11 @@ if __name__ == '__main__':
         if not bot_cont.map_server.is_waypoint(name):
             fail_hard("name of target location is not a waypoint: %s" % name)
 
-    ## put the robot in the right place
+    # put the robot in the right place
     start_coords = bot_cont.map_server.waypoint_to_coords(ready_resp.start_loc)
     bot_cont.gazebo.set_bot_position(start_coords['x'], start_coords['y'], 0)
 
-    ## subscribe to rostopics
-    def energy_cb(msg):
-        """call back to update the global battery state from the ros topic"""
-        ## todo: this may be the wrong format (int vs float)
-        config.battery = msg.data
-        if msg.data <= 0:
-            comms.send_done("energy call back", "", "out-of-battery")
-
-    sub_mwh = rospy.Subscriber("/energy_monitor/energy_level_mwh", Float64, energy_cb)
-
-    ## start up rainbow if we're adapting, otherwise send the live message directly
+    # start up rainbow if we're adapting, otherwise send the live message directly
     if ready_resp.level == "c":
         try:
             rainbow_log = open(os.path.expanduser("~/rainbow.log"), 'w')
@@ -203,9 +206,10 @@ if __name__ == '__main__':
                 fail_hard("did not connect to rainbow in a timely fashion")
         except Exception as e:
             fail_hard("failed to connection to rainbow: %s " % e)
-    else:
+    elif th_connected:
         comms.send_status("__main__ in level %s" % ready_resp.level, "live")
 
-    logger.debug("starting TA REST interface")
-    print("starting TA REST interface")
+    logger.debug("Starting TA REST interface")
+    print("Starting TA REST interface")
+    app.debug = True
     app.run(host='0.0.0.0', port=5000)

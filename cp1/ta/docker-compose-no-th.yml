@@ -19,10 +19,10 @@ services:
     hostname: cp1_ta
     environment:
       - "ROS_HOSTNAME=cp1_ta"
-      - "ROS_MASTER_URI=http://roscore:11311"
+      - "ROS_MASTER_URI=http://cp1_ta:11311"
       - "TA_PORT=${TA_PORT}"
     ports:
       - ${TA_PORT}:5000
     expose:
       - 5000
-    command: bash -c "cd /usr/src/app && python3 -m swagger_server /home/mars/test-ready.json"
+    command: bash -c "rm -f /tmp/.X1-lock && . ~/catkin_ws/entrypoint.sh && cd /usr/src/app && python3 -m swagger_server /home/mars/test-ready.json"

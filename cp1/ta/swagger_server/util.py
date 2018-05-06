@@ -133,7 +133,6 @@ def _deserialize_list(data, boxed_type):
             for sub_data in data]
 
 
-
 def _deserialize_dict(data, boxed_type):
     """
     Deserializes a dict and its elements.
@@ -147,3 +146,10 @@ def _deserialize_dict(data, boxed_type):
     """
     return {k: _deserialize(v, boxed_type)
             for k, v in iteritems(data)}
+
+
+def check_adj(l):
+    for x , y in zip(l, l[1:]):
+        if x == y:
+            return False
+    return True
