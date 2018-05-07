@@ -6,3 +6,6 @@
 
 # mac stuff
 .DS_Store
+
+# PyCharm
+.idea/

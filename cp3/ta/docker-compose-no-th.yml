@@ -25,3 +25,4 @@ services:
     expose:
       - 5000
     command: bash -c ". entrypoint.sh && cd /usr/src/app && ./start_exp.sh /home/mars/test-ready.json"
+

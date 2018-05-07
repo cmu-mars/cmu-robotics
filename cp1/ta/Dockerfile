@@ -1,5 +1,6 @@
 FROM cmu-mars/cp1_rb
 
+RUN . /opt/ros/kinetic/setup.sh
 RUN . ~/catkin_ws/devel/setup.sh
 
 RUN echo ". /opt/ros/kinetic/setup.bash" >> ~/.bashrc
@@ -21,7 +22,7 @@ RUN wget -q "https://github.com/ros-planning/navigation_msgs/archive/${ROS_NAVIG
     mv navigation_msgs/* ~/catkin_ws/src && \
     rm -rf navigation_msgs
 
-RUN sudo apt-get install -y python3 python3-pip
+RUN cd ~/catkin_ws && . /opt/ros/kinetic/setup.sh && catkin_make
 
 RUN sudo mkdir -p /usr/src/app
 RUN sudo chown mars /usr/src/app
@@ -29,18 +30,16 @@ WORKDIR /usr/src/app
 
 COPY requirements.txt /usr/src/app/
 
-# stuff we need to be installed for python2
-RUN sudo apt-get install -y python-pip
-RUN sudo pip install psutil
 
+RUN sudo apt-get install -y python3 python3-pip
 RUN sudo pip3 install --no-cache-dir -r requirements.txt
 
 # libs that cp1 backend depends on and since ta is running with poython3 we need them with pip3
-RUN sudo pip3 install catkin_pkg rospkg numpy psutil defusedxml flask-script
+# RUN sudo pip3 install catkin_pkg rospkg numpy psutil defusedxml flask-script
 
 COPY . /usr/src/app
-
 RUN sudo chown -R mars /usr/src/app
+RUN python3 -m pip install --upgrade /usr/src/app
 
 ENV PYTHONUNBUFFERED 0
 
@@ -48,8 +47,6 @@ EXPOSE 8080
 
 ADD entrypoint.sh .
 
-ADD test-ready.json /home/mars/
-
 ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
 
-CMD ["python3", "-m", "swagger_server"]
+#CMD ["python3", "-m", "swagger_server"]

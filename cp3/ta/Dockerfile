@@ -1,5 +1,5 @@
 FROM cmu-mars/cp3_rb
-
+RUN . /opt/ros/kinetic/setup.sh
 RUN . ~/catkin_ws/devel/setup.sh
 
 RUN echo ". /opt/ros/kinetic/setup.bash" >> ~/.bashrc
@@ -21,6 +21,8 @@ RUN wget -q "https://github.com/ros-planning/navigation_msgs/archive/${ROS_NAVIG
     rm navigation_msgs/README.md && \
     mv navigation_msgs/* ~/catkin_ws/src && \
     rm -rf navigation_msgs
+
+RUN cd ~/catkin_ws && . /opt/ros/kinetic/setup.sh && catkin_make
 
 RUN sudo apt-get install -y python3 python3-pip
 
