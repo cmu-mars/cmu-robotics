@@ -61,6 +61,7 @@ RUN git clone https://github.com/cmu-mars/ig-action-server-p15.git   src/ig-inte
 #         cd src/ig-interpreter # &&\
 #         git checkout "${IG_INTERPRETER_REV}"
 
+RUN mkdir ~/instructions
 
 # Install Python Libraries etc
 RUN sudo apt-get install -y python-flask python-ply

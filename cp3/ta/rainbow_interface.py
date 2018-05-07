@@ -63,7 +63,10 @@ class RainbowInterface:
         Starts Rainbow process. Needs to (a) start in background, (b) wait some time until it is up
 
         """
+
         print ("Configuring rainbow for %s"%challenge_problem)
+        os.environ["LD_LIBRARY_PATH"] = os.environ["LD_LIBRARY_PATH"] + ":" + os.path.expanduser("~/das/prism-4.3.1-linux64/lib")
+        print ("LD_LIBRARY_PATH=%s" %os.environ["LD_LIBRARY_PATH"])
         self.target = self.getTarget(challenge_problem)
         if (self.target is not None):
             time.sleep(10)

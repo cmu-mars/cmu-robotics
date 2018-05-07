@@ -38,4 +38,4 @@ services:
     expose:
       - 5000
       - 1100
-    command: bash -c ". ~/catkin_ws/entrypoint.sh && cd /usr/src/app && python3 -u -m swagger_server http://cp3_th:${TH_PORT}"
+    command: bash -c ". entrypoint.sh && cd /usr/src/app && ./start_exp.sh http://cp3_th:${TH_PORT}"
