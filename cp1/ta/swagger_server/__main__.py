@@ -5,12 +5,14 @@ import connexion
 
 import subprocess
 
+
 # from .encoder import JSONEncoder
 import logging
 import traceback
 import os
 import json
 from multiprocessing import Process, Queue
+from threading import Thread
 import rospy
 import actionlib
 
@@ -29,7 +31,7 @@ from swagger_server.util import *
 from swagger_server.encoder import JSONEncoder
 
 
-import learner
+from learner.learn import Learn
 from robotcontrol.bot_controller import BotController
 from robotcontrol.rainbow_interface import RainbowInterface
 from robotcontrol.launch_utils import *
@@ -115,27 +117,38 @@ if __name__ == '__main__':
     # once the response is checked, write it to ~/ready
     logger.debug("writing checked /ready message to ~/ready")
     with open(os.path.expanduser('~/ready'), 'w') as ready_file:
-        json.dump(ready_resp.to_dict(), ready_file)
+        json.dump(dict((k.replace("_", "-"), v) for k, v in ready_resp.to_dict().items()), ready_file)
 
     config.level = ready_resp.level
 
     if ready_resp.level == "c":
+        with open(os.path.expanduser('~/ready'), 'r') as ready_content:
+            ready_json = json.load(ready_content)
+        print(ready_json)
+        model_learner = Learn()
         try:
-            learner.Learn.get_true_model()
+            model_learner.get_true_model()
         except Exception as e:
             logger.debug("parsing raised an exception; notifying the TH and then crashing")
-            thApi.error_post(Errorparams(error="parsing-error", message="exception raised: %s" % e))
+            if th_connected:
+                thApi.error_post(Errorparams(error="parsing-error", message="exception raised: %s" % e))
+            else:
+                rospy.logerr("parsing-error")
             raise e
 
         comms.send_status("__main__", "learning-started", False)
+
         try:
-            result = learner.Learn.start_learning()
+            result = model_learner.start_learning()
         except Exception as e:
             logger.debug("learning raised an exception; notifying the TH and then crashing")
-            thApi.error_post(Errorparams(error="learning-error", message="exception raised: %s" % e))
+            if th_connected:
+                thApi.error_post(Errorparams(error="learning-error", message="exception raised: %s" % e))
+            else:
+                rospy.logerr("learning-error")
             raise e
         comms.send_status("__main__", "learning-done", False)
-        learner.Learn.dump_learned_model()
+        model_learner.dump_learned_model()
 
     # ros launch
     # Init me as a node

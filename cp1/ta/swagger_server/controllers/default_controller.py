@@ -178,6 +178,7 @@ def start_post():
             if config.th_connected:
                 comms.send_status("at-waypoint callback", "at-waypoint")
             else:
+                rospy.loginfo("at-waypoint")
                 rospy.loginfo(config.tasks_finished[-1])
 
         def active_cb():
@@ -190,7 +191,7 @@ def start_post():
                                 "mission sequencer indicated that all missions are done",
                                 "at-goal")
             else:
-                rospy.loginfo("done!")
+                rospy.loginfo("Accomplished {0} tasks".format(number_of_tasks_accomplished))
 
         def done_cb(status, result):
             config.logger.debug("done cb was used from instruction graph")
@@ -217,14 +218,6 @@ def start_post():
                              totally_done_cb,
                              ))
         t.start()
-
-
-        # config.bot_cont.go_instructions_multiple_tasks_reactive(start=config.ready_response.start_loc,
-        #                                                             targets=config.ready_response.target_locs,
-        #                                                             active_cb=active_cb,
-        #                                                             done_cb=done_cb,
-        #                                                             at_waypoint_cb=at_waypoint_cb,
-        #                                                             mission_done_cb=totally_done_cb)
 
     else:
         return InlineResponse4003("/start called more than once")
