@@ -64,6 +64,7 @@ class RainbowInterface:
         Starts Rainbow process. Needs to (a) start in background, (b) wait some time until it is up
 
         """
+
         print ("Configuring rainbow for %s"%challenge_problem)
         os.environ["LD_LIBRARY_PATH"] = os.environ["LD_LIBRARY_PATH"] + ":%s" %LD_PATH
         print ("LD_LIBRARY_PATH=%s" %os.environ["LD_LIBRARY_PATH"])
