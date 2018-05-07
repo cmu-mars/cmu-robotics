@@ -4,9 +4,7 @@ RUN . ~/catkin_ws/devel/setup.sh
 
 RUN echo ". /opt/ros/kinetic/setup.bash" >> ~/.bashrc
 RUN echo ". ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
-# Hack to put python psutils path in for python 2, which ROS is running
-RUN sudo apt-get install -y python-pip
-RUN sudo pip install psutil
+
 
 RUN sudo apt-get install ca-certificates
 ENV GPG_KEY=0D96DF4D4110E5C43FBFB17F2D347EA6AA65421D
@@ -40,7 +38,11 @@ RUN sudo pip3 install catkin_pkg rospkg numpy psutil defusedxml flask-script
 
 COPY . /usr/src/app
 
+ADD start_exp.sh /usr/src/app
+
 RUN sudo chown -R mars /usr/src/app
+RUN chmod +x /usr/src/app/start_exp.sh
+
 
 ENV PYTHONUNBUFFERED 0
 
@@ -48,8 +50,11 @@ EXPOSE 8080
 
 ADD entrypoint.sh .
 
+
+
 ADD test-ready.json /home/mars/
+
 
 ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
 
-#CMD ["python3", "-m", "swagger_server"]
+CMD ["/bin/bash"]

@@ -44,4 +44,8 @@ RUN sudo chown -R mars /home/mars/das
 
 RUN find . -name ".sh" -exec chmod +x {} \;
 
+# This is where the backup plan for setting the instruction graphs puts
+# the new instruction graphs
+RUN mkdir ~/instuctions
+
 CMD ["/bin/bash"]
