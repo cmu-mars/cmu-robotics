@@ -136,7 +136,8 @@ if __name__ == '__main__':
                 rospy.logerr("parsing-error")
             raise e
 
-        comms.send_status("__main__", "learning-started", False)
+        if th_connected:
+            comms.send_status("__main__", "learning-started", sendxy=False, sendtime=False)
 
         try:
             result = model_learner.start_learning()
@@ -147,7 +148,10 @@ if __name__ == '__main__':
             else:
                 rospy.logerr("learning-error")
             raise e
-        comms.send_status("__main__", "learning-done", False)
+
+        if th_connected:
+            comms.send_status("__main__", "learning-done", sendxy=False, sendtime=False)
+
         model_learner.dump_learned_model()
 
     # ros launch

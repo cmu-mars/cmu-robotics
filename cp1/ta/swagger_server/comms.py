@@ -5,7 +5,7 @@ from swagger_client.models.statusparams import Statusparams
 import swagger_server.config as config
 
 
-def send_status(src, code, sendxy=True, sendTime=True):
+def send_status(src, code, sendxy=True, sendtime=True):
     # todo, this is pretty hacky; really we want to make x, y
     # optional in the API def and only send them if the robot's
     # been started, also sending time is optional
@@ -16,7 +16,7 @@ def send_status(src, code, sendxy=True, sendTime=True):
 
     config.logger.debug("sending status %s from %s" % (code, src))
 
-    if sendTime:
+    if sendtime:
         response = config.thApi.status_post(Statusparams(status=code,
                                                          x=x,
                                                          y=y,
@@ -26,7 +26,9 @@ def send_status(src, code, sendxy=True, sendTime=True):
         response = config.thApi.status_post(Statusparams(status=code,
                                                          x=x,
                                                          y=y,
-                                                         charge=config.battery))
+                                                         charge=0,
+                                                         sim_time=0
+                                                         ))
 
     config.logger.debug("response from TH to status: %s" % response)
 
