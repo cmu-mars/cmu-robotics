@@ -34,7 +34,7 @@ from swagger_server.encoder import JSONEncoder
 from learner.learn import Learn
 from robotcontrol.bot_controller import BotController
 from robotcontrol.rainbow_interface import RainbowInterface
-from robotcontrol.launch_utils import *
+from robotcontrol.launch_utils import launch_cp1_base, init
 
 if __name__ == '__main__':
     # Parameter parsing, to set up TH
@@ -221,7 +221,7 @@ if __name__ == '__main__':
             if not ok:
                 fail_hard("did not connect to rainbow in a timely fashion")
         except Exception as e:
-            fail_hard("failed to connection to rainbow: %s " % e)
+            fail_hard("failed to connection to rainbow: %s" % e)
     elif th_connected:
         comms.send_status("__main__ in level %s" % ready_resp.level, "live")
 
