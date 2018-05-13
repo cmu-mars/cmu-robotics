@@ -74,7 +74,7 @@ class RainbowInterface:
         if self.target is not None:
             time.sleep(10)
             print("Starting %s/run-oracle.sh %s"%(RAINBOW_PATH,self.target))
-            subprocess.Popen([RAINBOW_PATH+"/run-oracle.sh", "-d", "-h", "-w", RAINBOW_PATH, self.target], stdout=log)
+            subprocess.Popen([RAINBOW_PATH+"/run-oracle.sh", "-h", "-w", RAINBOW_PATH, self.target], stdout=log)
             time.sleep(120)
 
     def stopRainbow(self):
