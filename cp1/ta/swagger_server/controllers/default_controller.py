@@ -151,7 +151,8 @@ def perturb_remove_obstacle_post(Parameters=None):
     if connexion.request.is_json:
         Parameters = RemoveParams.from_dict(connexion.request.get_json())  # noqa: E501
 
-    if config.bot_cont.gazebo.remove_obstacle(Parameters.obstacleid):
+    result = config.bot_cont.gazebo.remove_obstacle(Parameters.obstacleid)
+    if result:
         return InlineResponse2001(sim_time=rospy.Time.now().secs)
     else:
         return InlineResponse4001(cause="bad-obstacle_id",
