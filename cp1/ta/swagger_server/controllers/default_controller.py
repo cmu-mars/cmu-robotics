@@ -112,7 +112,9 @@ def perturb_battery_post(Parameters=None):
     if connexion.request.is_json:
         Parameters = BatteryParams.from_dict(connexion.request.get_json())  # noqa: E501
 
-    if config.bot_cont.gazebo.set_charge(Parameters.charge):
+    charge = Parameters.charge / (1000 * config.bot_cont.robot_battery.battery_voltage)
+    result = config.bot_cont.gazebo.set_charge(charge)
+    if result:
         return InlineResponse2002(sim_time=rospy.Time.now().secs)
     else:
         return InlineResponse4002(message="setting the battery failed"), 400
