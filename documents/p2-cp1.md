@@ -220,66 +220,87 @@ problem. They are defined as follows:
 
 ### Adaptation space and power model selection
 
-In this challenge problem, we will provide a (feature) model that describe
-the space of adaptation (configuration options and their values). To
-describe the model via an example, the possible variations (and possible
-adaptation actions) determining the configuration of the robot is as
-follows:
+In this challenge problem, we have a (feature) model that describe
+the space of adaptation (configuration options and their values). 
 
-1. *Robot's motion actuator*: Two levels of speed: s1 (half speed), s2
-   (full speed)
-2. *Robot's sensors*: Five different Kinects: k1 (the least expensive one),
-   ..., k5 (the most expensive one)
-3. *Robot's computation*: Five different localization algorithms ranging
-   from the least computational demand for the most inaccurate localization
-   to the most demand for the most accurate: l1 , ..., l5
+```json
+{
+  "localization": [0, 1],
+  "kinect": [0, 1],
+  "thermometer": [0, 1],
+  "barometer": [0, 1],
+  "gps": [0, 1],
+  "laser": [0, 1],
+  "camera": [0, 1],
+  "bumpers": [0, 1],
+  "cliff": [0, 1],
+  "proximity": [0, 1],
+  "sound": [0, 1],
+  "light": [0, 1],
+  "magnetic": [0, 1],
+  "radio": [0, 1],
+  "altitude": [0, 1],
+  "speaker": [0, 1],
+  "voltmeter": [0, 1],
+  "lidar": [0, 1],
+  "carbon-monoxide": [0, 1],
+  "carbon-dioxide": [0, 1]
+}
+
+```
 
 Note that we abstracted different aspects of the robot that are known to be
 the main source of power consumption in robots, i.e., robot's motion
 actuator, sensors, and computationally intensive algorithms in the
 robot. These variations will be implemented by adjusting measurement
-frequencies, spatial resolution, or depth resolution of the Kinect
-sensor. Also, for the localization, we will implement different components
-with different accuracy for localizing the robot.
+frequencies, spatial resolution, or depth resolution of the
+sensors as an example. 
 
-Therefore, the configuration of the robot is encoded by 12 Boolean
-variables
+An example configuration of the robot is encoded by 20 Boolean
+variables:
 
+```json
+{ "config_id": 1,
+  "configuration":
+  {
+    "localization": 1,
+    "kinect": 1,
+    "thermometer": 1,
+    "barometer": 1,
+    "gps": 1,
+    "laser": 1,
+    "camera": 1,
+    "bumpers": 1,
+    "cliff": 1,
+    "proximity": 1,
+    "sound": 1,
+    "light": 1,
+    "magnetic": 1,
+    "radio": 1,
+    "altitude": 1,
+    "speaker": 1,
+    "voltmeter": 1,
+    "lidar": 1,
+    "carbon-monoxide": 1,
+    "carbon-dioxide": 1
+  },
+  "power_load": 60,
+  "speed": 0.4
+}
 ```
-C = [<s1,s2>,<k1,k2,k3,k4,k5>,<l1,l2,l3,l4,l5>]
-```
 
-At each time step in the simulation, ``at most`` one of the variables
-(e.g., s2, k4, l1) corresponding to the three components (e.g., speed,
-Kinect, localization) is enabled and the rest are disabled. For example,
-
-```
-C_t = [<0,1>,<0,0,0,1,0>,<1,0,0,0,0>]
-```
-
-Also, there might be some cases where the robot decide to disable the
-component completely (e.g., when it is in the charging station to charge
-faster):
-
-```
-C_t = [<0,0>,<0,0,0,0,0>,<0,0,0,0,0>]
-```
-
-The total number of possible configuration for the robot is: `3*6*6 = 108`.
+The total number of possible configuration for the robot is: `2^20 = 1M`.
 
 The power consumption model is then specified as:
 
 ```
-$P(s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5) = \beta_0 + \beta_s1*s1 + \beta_s2*s2
-+ \beta_k1*k1 + ... + \beta_k5*k5 +
-\beta_l1*l1 + ... + \beta_l5*l5 +
-\beta_i_1*s1*k1*l1 + \beta_i_2*s1*k1*l2 + ... +
-\beta_i_m*s2*k5*l5$,
+$P(.) = \beta_0 + \beta_o1*o1 + ... + \beta_o20*o20
++ \beta_o12*o1*o2 + ... + \beta_o2019*o20*o19
 ```
 
-where `s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5` are boolean variables, the
+where `o_i` are boolean variables, the
 coefficients for the variables ($\beta_i$) are any positive real numbers
-and the coefficients for the interaction terms ($\beta_{ij}$) are any real
+and the coefficients for the interaction terms ($\beta_{oij}$) are any real
 numbers including negative or zero.
 
 The interaction terms in the power consumption model are important. Let us
@@ -291,7 +312,7 @@ process, therefore, these two variables (i.e., Kinect and Localization)
 might interact. This means that the consumption of the robot is bigger than
 the consumptions of each of the Kinect and Localization individually.
 
-In this challenge problem, both discharge and charge of the robot is
+In this challenge problem, discharge of the robot is
 controlled, not by law of the physics for battery but as an arbitrary
 function that looks similar to power model that exist in the literature but
 with different coefficients that meant to simulate discharge and charge
@@ -300,17 +321,16 @@ components of the robot.
 
 #### Battery dynamics
 
-The battery will be charged and discharged according to the following
-rule. Given a period of time `t` during which the configuration of the
-robot remains unchanged, two power dynamics are considered: *charge* and
-*discharge*. The charge level of the battery at the end of the period is
+The battery will be discharged according to open-circuit battery model that we implemented in [brass_gazebo_battery](https://github.com/cmu-mars/brass_gazebo_battery). This power model simulates the power consumption of a robot. The amount of power consumed by each component of a robot depends on its usage. Given a period of time `dt` during which the configuration of the
+robot remains unchanged, the charge level of the battery at the end of the period is
 calculated by adding the charge delta and subtracting the discharge delta
 from the battery level at the beginning of the time period. The battery
 level cannot go below 0 at any moment.
 
-* *Charge*: `$charge_delta(t) = P_charge(k1,k2,k3,k4,k5,l1,l2,l3,l4,l5)*t$`
-* *Discharge*: `$discharge_delta(t) = P_discharge(s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5)*t$`
-* *Total change*: $new_battery_charge(t, old_battery_charge) = max(0, old_battery_charge + charge_delta(t) - discharge_delta(t))$
+* *Discharge*: `$discharge_delta(t) = P_discharge(.)*dt$`
+* *Total change*: `$new_battery_charge(t, old_battery_charge) = max(0, old_battery_charge - discharge_delta(t))$`
+
+
 
 ## Interface to the Test Harness (API)
 
