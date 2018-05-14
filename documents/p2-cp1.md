@@ -289,7 +289,7 @@ variables:
 }
 ```
 
-The total number of possible configuration for the robot is: `2^20 = 1M`.
+The total number of possible configuration for the robot is: `2^20 = 1M`, which makes a huge configuration space and will make the learning a challenging task.
 
 The power consumption model is then specified as:
 
@@ -503,13 +503,11 @@ battery level once). Each test case is described by the following:
  * Mission schema: Navigation
  * Mission parameters: `A->T1->T2->...->Tn` (the way points or tasks that
    the robot need to accomplish provided by LL)
- * Charge and discharge functions to be selected from a set of predefined
-   models (most likely 100 pre-specified models).
+ * Discharge functions to be selected from a set of [100 predefined
+   models](https://github.com/cmu-mars/cp1_base/tree/master/cp1_base/power_models) with different difficulty level (with different number of options interactions).
  * Perturbations: Obstacles + Battery level change
- * Possible adaptations: possible variations for `Speed, Kinects,
-   Localization algorithms`
- * Evaluation metric: Power consumed, Mission accomplish time, Distance to
-   target location, Number of tasks accomplished
+ * Possible adaptations: possible variations for `path planning, robot reconfiguration, charge battery`
+ * Evaluation metric: Number of tasks accomplished, Mission accomplish time
 
 We also intend to specify some metrics based on which we evaluate how
 ``difficult`` and how ``similar`` two test cases are. Therefore, LL could
@@ -528,3 +526,7 @@ test cases:
 Any two test cases would be different if the difficulty levels of them are
 different. However, if two test cases are similar with respect to the
 difficulty of the test, we consider them identical.
+
+### Backend components
+
+Here is a list of [backend components](https://github.com/search?q=topic%3Acp1+org%3Acmu-mars+fork%3Atrue) for `CP1`.
