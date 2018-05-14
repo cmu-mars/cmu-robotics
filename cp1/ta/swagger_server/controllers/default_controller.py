@@ -217,6 +217,9 @@ def start_post():
                              at_waypoint_cb,
                              totally_done_cb,
                              ))
+        # setting the battery to full charge before starting the mission
+        rospy.loginfo("setting the initial charge right before starting the mission")
+        config.bot_cont.gazebo.set_charge(config.bot_cont.robot_battery.capacity)
         t.start()
 
     else:

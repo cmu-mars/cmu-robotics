@@ -33,7 +33,7 @@ from swagger_server.encoder import JSONEncoder
 
 from learner.learn import Learn
 from robotcontrol.bot_controller import BotController
-from robotcontrol.rainbow_interface import RainbowInterface
+from rainbow_interface import RainbowInterface
 from robotcontrol.launch_utils import launch_cp1_base, init
 
 if __name__ == '__main__':
