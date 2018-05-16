@@ -184,8 +184,8 @@ paths:
                   enum:
                     - amcl-kinect
                     - amcl-lidar
-                    - mprt-kinect
-                    - mprt-lidar
+                    - mrpt-kinect
+                    - mrpt-lidar
                     - aruco-camera
               sensors:
                 description: >-

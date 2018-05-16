@@ -112,7 +112,9 @@ def perturb_battery_post(Parameters=None):
     if connexion.request.is_json:
         Parameters = BatteryParams.from_dict(connexion.request.get_json())  # noqa: E501
 
-    if config.bot_cont.gazebo.set_charge(Parameters.charge):
+    charge = Parameters.charge / (1000 * config.bot_cont.robot_battery.battery_voltage)
+    result = config.bot_cont.gazebo.set_charge(charge)
+    if result:
         return InlineResponse2002(sim_time=rospy.Time.now().secs)
     else:
         return InlineResponse4002(message="setting the battery failed"), 400
@@ -151,7 +153,8 @@ def perturb_remove_obstacle_post(Parameters=None):
     if connexion.request.is_json:
         Parameters = RemoveParams.from_dict(connexion.request.get_json())  # noqa: E501
 
-    if config.bot_cont.gazebo.remove_obstacle(Parameters.obstacleid):
+    result = config.bot_cont.gazebo.remove_obstacle(Parameters.obstacleid)
+    if result:
         return InlineResponse2001(sim_time=rospy.Time.now().secs)
     else:
         return InlineResponse4001(cause="bad-obstacle_id",
@@ -217,9 +220,12 @@ def start_post():
                              at_waypoint_cb,
                              totally_done_cb,
                              ))
+
         # setting the battery to full charge before starting the mission
         rospy.loginfo("setting the initial charge right before starting the mission")
-        config.bot_cont.gazebo.set_charge(config.bot_cont.robot_battery.capacity)
+        full_charge = config.bot_cont.robot_battery.capacity
+        config.bot_cont.gazebo.set_charge(full_charge)
+        # now everything is ready to start the mission
         t.start()
 
     else:

@@ -28,4 +28,4 @@ services:
     expose:
       - 5000
       - 1044
-    command: bash -c "rm -f /tmp/.X1-lock && . ~/.bashrc && . ~/catkin_ws/entrypoint.sh && cd /usr/src/app && python3 -m swagger_server /home/mars/test-ready-c.json"
+    command: bash -c "rm -f /tmp/.X1-lock && . ~/.bashrc && . ~/catkin_ws/entrypoint.sh && cd /usr/src/app && python3 -m swagger_server /home/mars/test-ready-c1c.json"
