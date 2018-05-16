@@ -193,7 +193,10 @@ if __name__ == '__main__':
         """call back to update the global battery state from the ros topic"""
         config.battery = msg.data
         if msg.data <= 0:
-            comms.send_done("energy call back", "", "out-of-battery")
+            if th_connected:
+                comms.send_done("energy call back", "", "out-of-battery")
+            else:
+                rospy.logerr("out-of-battery")
 
     sub_mwh = rospy.Subscriber("/mobile_base/commands/charge_level_mwh", Float64, energy_cb)
 
