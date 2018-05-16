@@ -22,6 +22,7 @@ import time
 import random
 import json
 import os
+import shutil
 
 from swagger_client import DefaultApi
 from swagger_client.models.inline_response_200 import InlineResponse200
@@ -128,7 +129,14 @@ if __name__ == '__main__':
         c = launch_file.split("-")
         config.nodes = [launch_file]
         config.sensors = [c[1]]
-
+    # Check if using marker in world
+    if "USE_STATIC_MARKERS" in os.environ.keys():
+    	if int(os.environ["USE_STATIC_MARKERS"]) == 1:
+            print("Using the world that has the markers statically placed")
+            wo_markers=os.path.expanduser("~/catkin_ws/src/cp3_base/worlds/cp3.world")
+            w_markers=os.path.expanduser("~/catkin_ws/src/cp3_base/worlds/cp3-markers.world")
+            shutil.copy(wo_markers, os.path.expanduser("~/catkin_ws/src/cp3_base/worlds/cp3-orig.world"))
+            shutil.copy(w_markers, wo_markers)
 
     logger.debug("launching cp3-%s.launch" % launch_file)
     rl_child = subprocess.Popen(["roslaunch", "cp3_base", "cp3-" + launch_file + ".launch"],
