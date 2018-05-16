@@ -167,6 +167,8 @@ if __name__ == '__main__':
         fail_hard("failed to connect to gazebo: %s" % e)
 
     ## todo: for RR3, do things with  utility function
+    if not cp.wait_for_odom(30):
+    	fail_hard("failed to set robot position")
 
     if ready_resp.use_adaptation:
         try:

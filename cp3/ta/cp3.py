@@ -21,6 +21,7 @@ from std_msgs.msg import UInt32MultiArray, Bool, Int8
 
 import psutil
 
+#import tf
 import transformations as t
 import roslaunch
 from gazebo_interface import GazeboInterface
@@ -137,6 +138,15 @@ class BaseSystem:
 					return False, self.ig.get_result().sequence
 				else:
 					return False, "IG Failed perhaps because of a timeout"
+
+	def wait_for_odom(self, timeout):
+#		listener=tf.TransformListener()
+		try:
+#			listener.waitForTransform("gazebo_world", "odom", rospy.Time(), rospy.Duration(timeout));
+			print("cp.wait_for_odom doesn't work because this is python3 and ROS is build with python2")
+			return True
+		except:
+			return False
 
 class ConverterMixin:
 	@classmethod
