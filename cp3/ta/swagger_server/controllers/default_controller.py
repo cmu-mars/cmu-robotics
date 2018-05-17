@@ -214,6 +214,7 @@ def start_post():
 
     :rtype: None
     """
+    print("In start")
     if not swagger_server.config.started:
         def active_cb():
             """ callback for when the bot is made active """
@@ -226,12 +227,13 @@ def start_post():
 
             if not swagger_server.config.use_adaptation:
                 send_done("done callback")
-
+        print("Starting instructions")
         result , msg = swagger_server.config.cp.do_instructions(swagger_server.config.cp.start,
                                                                 swagger_server.config.cp.target,
                                                                 False,
                                                                 active_cb,
                                                                 done_cb)
+        print("Seemed to start")
         swagger_server.config.started = True
         return {} , 200
     else:
