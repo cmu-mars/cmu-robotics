@@ -16,6 +16,8 @@ from ..util import deserialize_date, deserialize_datetime
 
 from swagger_server.models.cp3_internal_status import CP3InternalStatus  # noqa: E501
 
+import ast
+
 import rospy
 import swagger_server.config ## todo: maybe an easier way to do this; i don't know
 
@@ -59,46 +61,47 @@ def internal_status_post(CP3InternalStatus):  # noqa: E501
     swagger_server.config.logger.debug("TA internal status end point hit with status %s and message %s"
                                        % (CP3InternalStatus.status, CP3InternalStatus.message))
 
-    if CP3.InternalStatus.status == "RAINBOW_READY":
+    if CP3InternalStatus.status == "RAINBOW_READY":
         send_status("internal status, rainbow ready",
                     "live",
                     "CP3 TA ready to recieve inital perturbs in adaptive case after getting RAINBOW_READY")
         if not swagger_server.config.use_adaptation:
             swagger_server.config.logger.debug("[WARN] internal status got a rainbow ready when not in the adaptive case")
 
-    elif CP3.InternalStatus.status == "MISSION_SUCCEEDED":
+    elif CP3InternalStatus.status == "MISSION_SUCCEEDED":
         swagger_server.config.logger.debug("TA internal status got MISSION_SUCCEEDED")
         if swagger_server.config.use_adaptation:
             send_done("internal status, mission succeeded")
         else:
             swagger_server.config.logger.debug("[WARN] TA internal status got MISSION_SUCCEEDED in non-adapting case")
 
-    elif CP3.InternalStatus.status == "MISSION_FAILED":
+    elif CP3InternalStatus.status == "MISSION_FAILED":
         if swagger_server.config.use_adaptation:
             send_done("internal status, mission failed")
         else:
             swagger_server.config.logger.debug("[WARN] TA internal status got MISSION_FAILED in non-adapting case")
 
-    elif CP3.InternalStatus.status == "ADAPTING":
+    elif CP3InternalStatus.status == "ADAPTING":
         swagger_server.config.adaptations = swagger_server.config.adaptations + 1
         send_status("internal status, adapting",
                     "adapting",
                     "DAS is now adapting")
 
-    elif CP3.InternalStatus.status == "ADAPTED":
+    elif CP3InternalStatus.status == "ADAPTED":
         send_status("internal status, adapted",
                     "adapted",
                     "DAS has now adapted")
 
-    elif CP3.InternalStatus.status == "ADAPTED_FAILED":
+    elif CP3InternalStatus.status == "ADAPTED_FAILED":
         send_status("internal status, adapted_failed",
                     "adapted",
                     "DAS has now adapted after a failure with message %s" % CP3InternalStatus.message)
 
-    elif CP3.InternalStatus.status == "FINAL_UTILITY":
+    elif CP3InternalStatus.status == "FINAL_UTILITY":
         swagger_server.config.logger.debug("ignoring until RR3") ## todo
 
-    elif CP3.InternalStatus.status == "PLAN":
+    elif CP3InternalStatus.status == "PLAN":
+        plan = [ x.strip() for x in  ast.literal_eval(CP3InternalStatus.message) ]
         swagger_server.config.logger.debug("ignoring until RR3") ## todo
 
 def observe_get():
