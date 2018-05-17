@@ -36,6 +36,8 @@ from robotcontrol.bot_controller import BotController
 from rainbow_interface import RainbowInterface
 from robotcontrol.launch_utils import launch_cp1_base, init
 
+config_list_file = os.path.expanduser('~/cp1/config_list.json')
+
 if __name__ == '__main__':
     # Parameter parsing, to set up TH
     if len(sys.argv) != 2:
@@ -153,8 +155,12 @@ if __name__ == '__main__':
             comms.send_status("__main__", "learning-done", sendxy=False, sendtime=False)
 
         model_learner.dump_learned_model()
+        # let's print the list of configurations the learner founds for debugging
+        with open(config_list_file, 'r') as confg_file:
+            config_data = json.load(confg_file)
+            print(config_data)
 
-    # ros launch
+    # roslaunch
     # Init me as a node
     logger.debug("initializing cp1_ta ros node")
     # rospy.init_node("cp1_ta")
