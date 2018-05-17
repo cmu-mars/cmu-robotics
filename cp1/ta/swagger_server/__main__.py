@@ -37,6 +37,7 @@ from rainbow_interface import RainbowInterface
 from robotcontrol.launch_utils import launch_cp1_base, init
 
 config_list_file = os.path.expanduser('~/cp1/config_list.json')
+config_list_file_true = os.path.expanduser('~/cp1/config_list_true.json')
 
 if __name__ == '__main__':
     # Parameter parsing, to set up TH
@@ -157,6 +158,12 @@ if __name__ == '__main__':
         model_learner.dump_learned_model()
         # let's print the list of configurations the learner founds for debugging
         with open(config_list_file, 'r') as confg_file:
+            print("**Predicted**")
+            config_data = json.load(confg_file)
+            print(config_data)
+
+        with open(config_list_file_true, 'r') as confg_file:
+            print("**True**")
             config_data = json.load(confg_file)
             print(config_data)
 
@@ -167,11 +174,6 @@ if __name__ == '__main__':
 
     p = Process(target=launch_cp1_base, args=('default',))
     p.start()
-    # rl_child = subprocess.Popen(["roslaunch", "cp1_base", "cp1-base-test.launch"],
-    #                             stdin=None,
-    #                             stdout=None,
-    #                             stderr=None)
-
     init("cp1_ta")
 
     logger.debug("waiting for move_base (emulates watching for odom_recieved)")
