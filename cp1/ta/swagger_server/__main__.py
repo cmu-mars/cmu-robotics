@@ -36,6 +36,9 @@ from robotcontrol.bot_controller import BotController
 from rainbow_interface import RainbowInterface
 from robotcontrol.launch_utils import launch_cp1_base, init
 
+config_list_file = os.path.expanduser('~/cp1/config_list.json')
+config_list_file_true = os.path.expanduser('~/cp1/config_list_true.json')
+
 if __name__ == '__main__':
     # Parameter parsing, to set up TH
     if len(sys.argv) != 2:
@@ -153,19 +156,24 @@ if __name__ == '__main__':
             comms.send_status("__main__", "learning-done", sendxy=False, sendtime=False)
 
         model_learner.dump_learned_model()
+        # let's print the list of configurations the learner founds for debugging
+        with open(config_list_file, 'r') as confg_file:
+            print("**Predicted**")
+            config_data = json.load(confg_file)
+            print(config_data)
 
-    # ros launch
+        with open(config_list_file_true, 'r') as confg_file:
+            print("**True**")
+            config_data = json.load(confg_file)
+            print(config_data)
+
+    # roslaunch
     # Init me as a node
     logger.debug("initializing cp1_ta ros node")
     # rospy.init_node("cp1_ta")
 
     p = Process(target=launch_cp1_base, args=('default',))
     p.start()
-    # rl_child = subprocess.Popen(["roslaunch", "cp1_base", "cp1-base-test.launch"],
-    #                             stdin=None,
-    #                             stdout=None,
-    #                             stderr=None)
-
     init("cp1_ta")
 
     logger.debug("waiting for move_base (emulates watching for odom_recieved)")
@@ -193,7 +201,10 @@ if __name__ == '__main__':
         """call back to update the global battery state from the ros topic"""
         config.battery = msg.data
         if msg.data <= 0:
-            comms.send_done("energy call back", "", "out-of-battery")
+            if th_connected:
+                comms.send_done("energy call back", "", "out-of-battery")
+            else:
+                rospy.logerr("out-of-battery")
 
     sub_mwh = rospy.Subscriber("/mobile_base/commands/charge_level_mwh", Float64, energy_cb)
 
