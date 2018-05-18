@@ -30,8 +30,8 @@ from swagger_client.models.parameters_1 import Parameters1
 from swagger_client.models.parameters_2 import Parameters2
 
 from cp3 import CP3
-from swagger_server import config
-
+import swagger_server.config as config
+import swagger_server.comms as comms
 
 if __name__ == '__main__':
     # Command line argument parsing
@@ -67,6 +67,7 @@ if __name__ == '__main__':
 
     def fail_hard(s):
         logger.debug(s)
+        comms.save_ps("error-failhard")
         if th_connected:
             thApi.error_post(Parameters(s))
         raise Exception(s)
