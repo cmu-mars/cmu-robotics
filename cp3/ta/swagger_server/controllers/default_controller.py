@@ -79,8 +79,9 @@ def internal_status_post(CP3InternalStatus):  # noqa: E501
         config.logger.debug("ignoring until RR3") ## todo
 
     elif CP3InternalStatus.status == "PLAN":
-        plan = [ x.strip() for x in  ast.literal_eval(CP3InternalStatus.message) ]
-        config.logger.debug("ignoring until RR3") ## todo
+        config.plan = [ x.strip() for x in  ast.literal_eval(CP3InternalStatus.message) ]
+        if not CP3InternalStatus.sim_time == -1:
+            config.logger.debug("[WARN] ta got an internal plan status with sim_time %s, which is out of spec" % CP3InternalStatus.sim_time)
 
 def observe_get():
     """

@@ -191,19 +191,11 @@ if __name__ == '__main__':
 
     sub_voltage = rospy.Subscriber("/energy_monitor/energy_level", Float64, energy_cb)
 
-    if th_connected and not ready_resp.use_adaptation:
-        logger.debug("sending live status message")
-        ## todo: i have no idea what rospy is going to say the sim
-        ## time is. probably 0.
+    ## set the initial plan (in A and B this won't change)
+    config.plan = cp.instruction_server.get_path(ready_resp.start_loc,ready_resp.target_loc)
 
-        ## todo: maybe use the send_status function in default_controller?
-        live_resp = thApi.status_post(Parameters1(status="live",
-                                                  message="CP3 TA ready to recieve inital perturbs and start in non-adaptive case",
-                                                  sim_time=rospy.Time.now().secs,
-                                                  plan=cp.instruction_server.get_path(ready_resp.start_loc,ready_resp.target_loc),
-                                                  config=config.nodes,
-                                                  sensors=config.sensors))
-        config.logger.debug("repsonse from TH to live: %s" % response)
+    if th_connected and not ready_resp.use_adaptation:
+        comms.send_status("__main__", "live", "CP3 TA ready to recieve inital perturbs and start in non-adaptive case")
 
     logger.debug("starting TA REST interface")
 

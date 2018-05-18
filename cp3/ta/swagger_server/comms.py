@@ -30,7 +30,7 @@ def send_status(src, code, msg):
         response = config.thApi.status_post(Parameters1(status = code,
                                                         message = msg,
                                                         sim_time = rospy.Time.now().secs,
-                                                        plan = cp.instruction_server.get_path(ready_resp.start_loc,ready_resp.target_loc), ## todo check
+                                                        plan = config.plan,
                                                         config = config.nodes,
                                                         sensors = config.sensors
         ))
