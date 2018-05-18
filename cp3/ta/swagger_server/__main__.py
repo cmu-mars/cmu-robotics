@@ -23,6 +23,7 @@ import random
 import json
 import os
 import shutil
+import time
 
 from swagger_client import DefaultApi
 from swagger_client.models.inline_response_200 import InlineResponse200
@@ -151,7 +152,8 @@ if __name__ == '__main__':
                                              ## redirect to any file
                                              ## handle instead and
                                              ## capture the logs there
-
+    ## Give ros some time to start
+    time.sleep(5)
     ## make this module a ros node so that we can subscribe to topics
     logger.debug("initializing cp3_ta ros node")
     rospy.init_node("cp3_ta")

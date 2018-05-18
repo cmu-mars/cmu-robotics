@@ -173,6 +173,10 @@ class CP3(ConverterMixin,BaseSystem):
 
 	def __init__(self, gazebo):
 		BaseSystem.__init__(self, MapServer(self.DEFAULT_MAP_FILE), InstructionDB(self.DEFAULT_INSTRUCTION_FULE), gazebo)
+		def default_bump_callback(bumped, velocity, time):
+			print("detected bump before start. This should be anomalous")
+		self.bump_callback = default_bump_callback
+		
 		self.bump_subscriber = rospy.Subscriber("/mobile_base/events/brass_bump", BrassBump, self.bumped)
 		self.track_aruco = False
 		self.track_illuminance = False
