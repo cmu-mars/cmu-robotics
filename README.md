@@ -72,6 +72,16 @@ iev@iev-mbp swagger-yaml %
 Below, we assume that this repo itself has already been cloned and
 lives at `CMU_ROBOTICS` on the file system.
 
+### DockerHub Containers
+
+For each challenge problem, we have tagged a container for integration week. The containers will allow you to run without being able to build. They are:
+
+- cmumars/p2-cp1:RR2.IW
+- cmumars/p2-cp2:RR2.IW
+- cmumars/p2-cp3:RR2.IW
+
+To get these, you can simply do `docker pull cmumars/p2-cp3:RR2.IW` for example. You will need to change the docker-compose files to refer to these builds though.
+
 ### Building CP1
 
 1. Clone the CP1 base repo, `git clone
