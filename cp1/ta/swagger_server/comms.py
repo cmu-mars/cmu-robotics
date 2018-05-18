@@ -3,7 +3,13 @@ import rospy
 from swagger_client.models.doneparams import Doneparams
 from swagger_client.models.statusparams import Statusparams
 import swagger_server.config as config
+import subprocess
+import os
+import datetime
 
+def save_ps(src):
+    with open(os.path.expanduser("~/ps_%s_%s.log") % (src, datetime.datetime.now()), "w") as outfile:
+        subprocess.call(["ps","aux"],stdout=outfile)
 
 def send_status(src, code, sendxy=True, sendtime=True):
     # todo, this is pretty hacky; really we want to make x, y
@@ -34,8 +40,8 @@ def send_status(src, code, sendxy=True, sendtime=True):
 
 
 def send_done(src, msg, outcome):
+    save_ps("done")
     x, y, ig1, ig2 = config.bot_cont.gazebo.get_bot_state()
-
     config.logger.debug("sending done from %s" % src)
     response = config.thApi.done_post(Doneparams(x=x,
                                                  y=y,

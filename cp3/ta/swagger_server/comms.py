@@ -19,7 +19,7 @@ def send_done(src):
                                                   final_y = y,
                                                   final_sim_time = rospy.Time.now().secs,
                                                   final_charge = config.battery,
-                                                  collisions = [], ## todo placeholder value
+                                                  collisions = config.collisions,
                                                   num_adaptations = config.adaptations,
                                                   final_utility = 0 ## todo placeholder value
                                                   ))

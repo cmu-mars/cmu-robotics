@@ -22,12 +22,14 @@ import time
 import random
 import json
 import os
+import shutil
 
 from swagger_client import DefaultApi
 from swagger_client.models.inline_response_200 import InlineResponse200
 from swagger_client.models.parameters import Parameters
 from swagger_client.models.parameters_1 import Parameters1
 from swagger_client.models.parameters_2 import Parameters2
+from swagger_client.models.collision_data import CollisionData
 
 from cp3 import CP3
 import swagger_server.config as config
@@ -129,7 +131,14 @@ if __name__ == '__main__':
         c = launch_file.split("-")
         config.nodes = [launch_file]
         config.sensors = [c[1]]
-
+    # Check if using marker in world
+    if "USE_STATIC_MARKERS" in os.environ.keys():
+    	if int(os.environ["USE_STATIC_MARKERS"]) == 1:
+            print("Using the world that has the markers statically placed")
+            wo_markers=os.path.expanduser("~/catkin_ws/src/cp3_base/worlds/cp3.world")
+            w_markers=os.path.expanduser("~/catkin_ws/src/cp3_base/worlds/cp3-markers.world")
+            shutil.copy(wo_markers, os.path.expanduser("~/catkin_ws/src/cp3_base/worlds/cp3-orig.world"))
+            shutil.copy(w_markers, wo_markers)
 
     logger.debug("launching cp3-%s.launch" % launch_file)
     rl_child = subprocess.Popen(["roslaunch", "cp3_base", "cp3-" + launch_file + ".launch"],
@@ -193,6 +202,16 @@ if __name__ == '__main__':
 
     ## set the initial plan (in A and B this won't change)
     config.plan = cp.instruction_server.get_path(ready_resp.start_loc,ready_resp.target_loc)
+
+    ## register a callback with the CP to record collision data
+    def collision_cb(bumped, velocity, time):
+        ## from cp3.py, bumped seems to be always true, so i'll ignore it.
+        x , y , w , v = config.cp.gazebo.get_turtlebot_state()
+        config.collisions.append(CollisionData(robot_x=x,
+                                               robot_y=y,
+                                               robot_speed=velocity,
+                                               sim_time=time))
+    cp.track_bumps(collision_cb)
 
     if th_connected and not ready_resp.use_adaptation:
         comms.send_status("__main__", "live", "CP3 TA ready to recieve inital perturbs and start in non-adaptive case")
