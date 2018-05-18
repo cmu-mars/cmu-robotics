@@ -196,7 +196,7 @@ def start_post():
 
     :rtype: None
     """
-    if not swagger_server.config.started:
+    if not config.started:
         def active_cb():
             """ callback for when the bot is made active """
             config.logger.debug("received notification that goal is active")
@@ -206,7 +206,7 @@ def start_post():
             if 'successfully' in result.sequence:
                 config.logger.debug("received notification that the goal has been completed successfully")
 
-            if not swagger_server.config.use_adaptation:
+            if not config.use_adaptation:
                 send_done("done callback")
 
         ## register a callback with the CP to record collision data
@@ -218,13 +218,12 @@ def start_post():
                                                    robot_speed=velocity,
                                                    sim_time=time))
         config.cp.track_bumps(collision_cb)
-
-        result , msg = swagger_server.config.cp.do_instructions(swagger_server.config.cp.start,
-                                                                swagger_server.config.cp.target,
+        result , msg = config.cp.do_instructions(config.cp.start,
+                                                                config.cp.target,
                                                                 False,
                                                                 active_cb,
                                                                 done_cb)
-        swagger_server.config.started = True
+        config.started = True
         return {} , 200
     else:
         ret = InlineResponse400("/start called more than once")
