@@ -149,16 +149,6 @@ definitions:
         type: "string"
         description: "The body of the source code that should replaced the source\
           \ code given by the location range associated with this perturbation."
-    example:
-      at:
-        stop:
-          file: "file"
-          offset: 0
-        start:
-          file: "file"
-          offset: 0
-      kind: {}
-      replacement: "replacement"
   SourceRange:
     type: "object"
     required:
@@ -174,27 +164,37 @@ definitions:
     example:
       stop:
         file: "file"
-        offset: 0
+        line: 12
+        column: 6
       start:
         file: "file"
-        offset: 0
+        line: 12
+        column: 6
   SourceLocation:
-    type: "object"
+    type: object
     required:
-    - "file"
-    - "offset"
+      - file
+      - line
+      - column
     properties:
       file:
-        type: "string"
-        description: "The file at which this source location resides."
-      offset:
-        type: "integer"
-        description: "The character offset between the start of the file and this\
-          \ location."
-        minimum: 0
+        type: string
+        description: >-
+          The file at which this source location resides.
+      line:
+        type: integer
+        minimum: 1
+        description: >-
+          The one-indexed line number of this location.
+      column:
+        type: integer
+        minimum: 1
+        description: >-
+          The one-indexed column number of this location.
     example:
       file: "file"
-      offset: 0
+      line: 12
+      column: 6
   Error:
     type: "object"
     required:

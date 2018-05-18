@@ -31,24 +31,22 @@ class SourceLocation(object):
                             and the value is json key in definition.
     """
     swagger_types = {
-        'file': 'str',
-        'offset': 'int'
+        'file': str,
+        'line': int,
+        'column': int
     }
 
     attribute_map = {
         'file': 'file',
-        'offset': 'offset'
+        'line': 'line',
+        'column': 'column'
     }
 
-    def __init__(self, file=None, offset=None):  # noqa: E501
+    def __init__(self, file: str=None, line: int=None, column: int=None):  # noqa: E501
         """SourceLocation - a model defined in Swagger"""  # noqa: E501
-
-        self._file = None
-        self._offset = None
-        self.discriminator = None
-
-        self.file = file
-        self.offset = offset
+        self._file = file
+        self._line = line
+        self._column = column
 
     @property
     def file(self):
@@ -76,31 +74,58 @@ class SourceLocation(object):
         self._file = file
 
     @property
-    def offset(self):
-        """Gets the offset of this SourceLocation.  # noqa: E501
+    def line(self) -> int:
+        """gets the line of this sourcelocation.
 
-        The character offset between the start of the file and this location.  # noqa: E501
+        the one-indexed line number of this location.  # noqa: e501
 
-        :return: The offset of this SourceLocation.  # noqa: E501
+        :return: the line of this sourcelocation.
         :rtype: int
         """
-        return self._offset
+        return self._line
 
-    @offset.setter
-    def offset(self, offset):
-        """Sets the offset of this SourceLocation.
+    @line.setter
+    def line(self, line: int):
+        """sets the line of this sourcelocation.
 
-        The character offset between the start of the file and this location.  # noqa: E501
+        the one-indexed line number of this location.  # noqa: e501
 
-        :param offset: The offset of this SourceLocation.  # noqa: E501
-        :type: int
+        :param line: the line of this sourcelocation.
+        :type line: int
         """
-        if offset is None:
-            raise ValueError("Invalid value for `offset`, must not be `None`")  # noqa: E501
-        if offset is not None and offset < 0:  # noqa: E501
-            raise ValueError("Invalid value for `offset`, must be a value greater than or equal to `0`")  # noqa: E501
+        if line is none:
+            raise valueerror("invalid value for `line`, must not be `none`")  # noqa: e501
+        if line is not none and line < 1:  # noqa: e501
+            raise valueerror("invalid value for `line`, must be a value greater than or equal to `1`")  # noqa: e501
 
-        self._offset = offset
+        self._line = line
+
+    @property
+    def column(self) -> int:
+        """gets the column of this sourcelocation.
+
+        the one-indexed column number of this location.  # noqa: e501
+
+        :return: the column of this sourcelocation.
+        :rtype: int
+        """
+        return self._column
+
+    @column.setter
+    def column(self, column: int):
+        """sets the column of this sourcelocation.
+
+        the one-indexed column number of this location.  # noqa: e501
+
+        :param column: the column of this sourcelocation.
+        :type column: int
+        """
+        if column is none:
+            raise valueerror("invalid value for `column`, must not be `none`")  # noqa: e501
+        if column is not none and column < 1:  # noqa: e501
+            raise valueerror("invalid value for `column`, must be a value greater than or equal to `1`")  # noqa: e501
+
+        self._column = column
 
     def to_dict(self):
         """Returns the model properties as a dict"""

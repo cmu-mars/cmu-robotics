@@ -12,22 +12,41 @@ RUN apk add --no-cache python3 git gcc gfortran python3-dev build-base openblas-
  && if [[ ! -e /usr/bin/pip ]]; then ln -s pip3 /usr/bin/pip ; fi \
  && if [[ ! -e /usr/bin/python ]]; then ln -sf /usr/bin/python3 /usr/bin/python; fi
 
-RUN pip install --no-cache numpy
+RUN pip install --no-cache numpy==1.14.2
 
-# install Hulk from source
-ENV HULK_REVISION rr2
-RUN git clone https://github.com/squaresLab/Hulk /tmp/hulk \
- && cd /tmp/hulk \
- && git checkout "${HULK_REVISION}" \
+# install BugZoo from source
+ENV BUGZOO_REVISION 58f73fd8328d9a0650b9f0185d398a298c9f2a55
+RUN git clone https://github.com/squaresLab/BugZoo /tmp/bugzoo --depth 30 \
+ && cd /tmp/bugzoo \
+ && git fetch origin "${BUGZOO_REVISION}" \
+ && git checkout "${BUGZOO_REVISION}" \
  && pip install --no-cache . \
- && rm -rf /tmp/hulk
+ && rm -rf /tmp/bugzoo
+
+# install boggart from source
+ENV BOGGART_REVISION a8820c79cdd21deb4200db74b4c1fd742f728a4b
+RUN git clone https://github.com/squaresLab/boggart /tmp/boggart \
+ && cd /tmp/boggart \
+ && git fetch origin "${BOGGART_REVISION}" \
+ && git checkout "${BOGGART_REVISION}" \
+ && pip install --no-cache . \
+ && rm -rf /tmp/boggart
+
+# install Darjeeling from source
+ENV DARJEELING_REVISION 731423982bc030aaeaa4fa559e76be69cf7c31b3
+RUN git clone https://github.com/squaresLab/darjeeling /tmp/darjeeling \
+ && cd /tmp/darjeeling \
+ && git fetch origin "${DARJEELING_REVISION}" \
+ && git checkout "${DARJEELING_REVISION}" \
+ && pip install --no-cache . \
+ && rm -rf /tmp/darjeeling
 
 # install Orchestrator from source
-ENV ORCHESTRATOR_REVISION rr2
+ENV ORCHESTRATOR_REVISION 841137bd38961e7825fa1e9d5c03f005fbbaace3
 RUN git clone https://github.com/cmu-mars/p2c2-orchestrator /tmp/orchestrator \
  && cd /tmp/orchestrator \
  && git checkout "${ORCHESTRATOR_REVISION}" \
- && pip install --no-cache --upgrade . \
+ && pip install --no-cache . \
  && rm -rf /tmp/orchestrator
 
 # install the TA
