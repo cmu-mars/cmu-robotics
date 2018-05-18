@@ -196,7 +196,7 @@ def start_post():
 
     :rtype: None
     """
-    if not config.started:
+    if not swagger_server.config.started:
         def active_cb():
             """ callback for when the bot is made active """
             config.logger.debug("received notification that goal is active")
@@ -206,15 +206,15 @@ def start_post():
             if 'successfully' in result.sequence:
                 config.logger.debug("received notification that the goal has been completed successfully")
 
-            if not config.use_adaptation:
-                comms.send_done("done callback")
+            if not swagger_server.config.use_adaptation:
+                send_done("done callback")
 
-        result , msg = config.cp.do_instructions(config.cp.start,
-                                                 config.cp.target,
-                                                 False,
-                                                 active_cb,
-                                                 done_cb)
-        config.started = True
+        result , msg = swagger_server.config.cp.do_instructions(swagger_server.config.cp.start,
+                                                                swagger_server.config.cp.target,
+                                                                False,
+                                                                active_cb,
+                                                                done_cb)
+        swagger_server.config.started = True
         return {} , 200
     else:
         ret = InlineResponse400("/start called more than once")
