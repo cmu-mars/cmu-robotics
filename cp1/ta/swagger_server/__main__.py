@@ -75,6 +75,7 @@ if __name__ == '__main__':
 
     def fail_hard(s):
         logger.debug(s)
+        comms.save_ps("error-failhard")
         if th_connected:
             err = Errorparams(error="other-error", message=s)
             result = thApi.error_post(err)
@@ -133,12 +134,14 @@ if __name__ == '__main__':
             model_learner.get_true_model()
         except Exception as e:
             logger.debug("parsing raised an exception; notifying the TH and then crashing")
+            comms.save_ps("parsing_error")
             if th_connected:
                 thApi.error_post(Errorparams(error="parsing-error", message="exception raised: %s" % e))
             else:
                 rospy.logerr("parsing-error")
             raise e
 
+        logger.debug("learning-started")
         if th_connected:
             comms.send_status("__main__", "learning-started", sendxy=False, sendtime=False)
 
@@ -146,12 +149,14 @@ if __name__ == '__main__':
             result = model_learner.start_learning()
         except Exception as e:
             logger.debug("learning raised an exception; notifying the TH and then crashing")
+            comms.save_ps("learning_error")
             if th_connected:
                 thApi.error_post(Errorparams(error="learning-error", message="exception raised: %s" % e))
             else:
                 rospy.logerr("learning-error")
             raise e
 
+        logger.debug("learning-done")
         if th_connected:
             comms.send_status("__main__", "learning-done", sendxy=False, sendtime=False)
 
@@ -176,7 +181,7 @@ if __name__ == '__main__':
     p.start()
     init("cp1_ta")
 
-    logger.debug("waiting for move_base (emulates watching for odom_recieved)")
+    logger.debug("waiting for move_base (emulates watching for odom_received)")
     move_base = actionlib.SimpleActionClient("move_base", MoveBaseAction)
 
     move_base_started = False
@@ -225,6 +230,7 @@ if __name__ == '__main__':
     # start up rainbow if we're adapting, otherwise send the live message directly
     if ready_resp.level == "c":
         try:
+            logger.debug("Starting Rainbow")
             rainbow_log = open(os.path.expanduser("~/rainbow.log"), 'w')
             rainbow = RainbowInterface()
             rainbow.launchRainbow("cp1", rainbow_log)

@@ -2,9 +2,12 @@ version: '2'
 services:
   cp2_th:
     # image: docker.darpa-brass.com/ll/cmur-harness
-    build: https://github.com/cmu-mars/p2c2-mock-test-harness.git
+    image: cmumars/cp2mockth
+    # build: https://github.com/cmu-mars/p2c2-mock-test-harness.git
     container_name: cp2_th
     hostname: cp2_th
+    volumes:
+      - ./logs:/var/log/th
     expose:
       - 5001
     command: -p 5001 --url-ta http://cp2_ta:5000 --debug
@@ -15,21 +18,22 @@ services:
     container_name: rooibos
     hostname: rooibos
     command: -p 8888
+    volumes:
+      - ./logs:/var/log/rooibosd
     expose:
       - 8888
 
-  # note: hulk is the internal working name for our mutation testing tool
-  #       we intend to distribute hulk on PyPI under a different name in
-  #       the near future
-  hulk:
-    image: squareslab/hulk
-    container_name: hulk
-    hostname: hulk
+  boggart:
+    image: squareslab/boggart
+    container_name: boggart
+    hostname: boggart
     depends_on:
       - rooibos
+    volumes:
+      - ./logs:/var/log/boggart
     expose:
       - 6000
-    command: hulkd -p 6000 --bugzoo "${BUGZOO}"
+    command: boggartd -p 6000 --bugzoo "${BUGZOO}" --rooibos http://rooibos:8888 --log-file /var/log/boggart/boggartd.log
 
   cp2_ta:
     build: .
@@ -38,7 +42,9 @@ services:
     depends_on:
       - cp2_th
       - rooibos
-      - hulk
+      - boggart
+    volumes:
+      - ./logs:/var/log/ta
     expose:
       - 5000
-    command: python3 -u -m swagger_server http://cp2_th:5001 http://hulk:6000 "${BUGZOO}"
+    command: python3 -u -m swagger_server http://cp2_th:5001 http://boggart:6000 "${BUGZOO}"

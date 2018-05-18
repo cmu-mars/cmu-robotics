@@ -31,8 +31,8 @@ from swagger_client.models.parameters_1 import Parameters1
 from swagger_client.models.parameters_2 import Parameters2
 
 from cp3 import CP3
-from swagger_server import config
-
+import swagger_server.config as config
+import swagger_server.comms as comms
 
 if __name__ == '__main__':
     # Command line argument parsing
@@ -68,6 +68,7 @@ if __name__ == '__main__':
 
     def fail_hard(s):
         logger.debug(s)
+        comms.save_ps("error-failhard")
         if th_connected:
             thApi.error_post(Parameters(s))
         raise Exception(s)
@@ -198,19 +199,11 @@ if __name__ == '__main__':
 
     sub_voltage = rospy.Subscriber("/energy_monitor/energy_level", Float64, energy_cb)
 
-    if th_connected and not ready_resp.use_adaptation:
-        logger.debug("sending live status message")
-        ## todo: i have no idea what rospy is going to say the sim
-        ## time is. probably 0.
+    ## set the initial plan (in A and B this won't change)
+    config.plan = cp.instruction_server.get_path(ready_resp.start_loc,ready_resp.target_loc)
 
-        ## todo: maybe use the send_status function in default_controller?
-        live_resp = thApi.status_post(Parameters1(status="live",
-                                                  message="CP3 TA ready to recieve inital perturbs and start in non-adaptive case",
-                                                  sim_time=rospy.Time.now().secs,
-                                                  plan=cp.instruction_server.get_path(ready_resp.start_loc,ready_resp.target_loc),
-                                                  config=config.nodes,
-                                                  sensors=config.sensors))
-        config.logger.debug("repsonse from TH to live: %s" % response)
+    if th_connected and not ready_resp.use_adaptation:
+        comms.send_status("__main__", "live", "CP3 TA ready to recieve inital perturbs and start in non-adaptive case")
 
     logger.debug("starting TA REST interface")
 
