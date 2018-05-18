@@ -247,6 +247,7 @@ if __name__ == "__main__":
         print("Turtlebot is at (%s, %s), facing %s and going %s ms" %(str(x),str(y),str(w),str(v)))
     elif args.command == 'go':
         gargs = go_parser.parse_args(extras)
+        bump_events = []
         if gargs.direct or gargs.start is None:
             cp.gazebo = GazeboInterface(0,0)
             rospy.init_node("cp3")
@@ -280,7 +281,9 @@ if __name__ == "__main__":
                     cp.gazebo = GazeboInterface(timeout=60)
                     rospy.init_node("cp3")
                     cp.track(False, gargs.illuminance)
-                    cp.track_bumps()
+                    def bump_record(bumped, velocity, time):
+                        bump_events.append({"bumped" : bumped, "velocity" : velocity, "time" : time})
+                    cp.track_bumps(bump_record)
                 #rospy.sleep(20)
                 if gargs.lights is not None:
                     for id in gargs.lights.split(','):
@@ -301,7 +304,6 @@ if __name__ == "__main__":
 
             end = rospy.Time.now()
             hit = cp.did_bump()
-
             if result: # Check to see that the robot is actually near the target
                 x, y, z, w = cp.gazebo.get_turtlebot_state()
                 target = cp.map_server.waypoint_to_coords(gargs.target)
@@ -311,15 +313,18 @@ if __name__ == "__main__":
             s = ""
             if gargs.config is not None:
                 s = s + "%s," %gargs.config
-                s = s + "%s,%s,%s,%s" %(gargs.start,gargs.target,result,(end-start).to_sec())
-                if gargs.illuminance:
-                    s = s + ",max_illuminance=%s,min_illuminance=%s" %(cp.max_illuminance,cp.min_illuminance)
-                if gargs.aruco:
-                    s = s + ",lost_marker=%s" %cp.lost_marker
-                if gargs.bumps:
-                    s = s + ",hit_obstacle=%s" %hit
-                if message is not None:
-                    s = s + ",message='%s'" %message
+            s = s + "%s,%s,%s,%s" %(gargs.start,gargs.target,result,(end-start).to_sec())
+            if gargs.illuminance:
+                s = s + ",max_illuminance=%s,min_illuminance=%s" %(cp.max_illuminance,cp.min_illuminance)
+            if gargs.aruco:
+                s = s + ",lost_marker=%s" %cp.lost_marker
+            
+            if message is not None:
+                s = s + ",message='%s'" %message
+            if gargs.bumps:
+                bump_num = len(bump_events)
+                seq = [x['velocity'] for x in bump_events]
+                s = s + ",hit_obstacle=%s max speed was %s" %(str(bump_num>0),str(max(seq) if bump_num > 0 else-1) )
             if gargs.write is not None:
                 gargs.write = os.path.expanduser(gargs.write)
                 with open(gargs.write, 'a') as f:

@@ -16,6 +16,10 @@ RUN chmod 640 /etc/sudoers.d/llproxy
 USER mars
 WORKDIR /home/mars
 
+# Hack to put python psutils path in for python 2, which ROS is running
+RUN sudo apt-get install -y python-pip
+RUN sudo pip install psutil watchdog
+
 RUN git config --global url.https://github.com/.insteadOf git://github.com/
 
 # create an empty catkin workspace
@@ -57,6 +61,7 @@ RUN git clone https://github.com/cmu-mars/ig-action-server-p15.git   src/ig-inte
 #         cd src/ig-interpreter # &&\
 #         git checkout "${IG_INTERPRETER_REV}"
 
+RUN mkdir ~/instructions
 
 # Install Python Libraries etc
 RUN sudo apt-get install -y python-flask python-ply

@@ -1,8 +1,10 @@
 import connexion
-import six
+import asyncio
+import concurrent.futures
+from multiprocessing import Process, pool
+from threading import Thread
 
 from swagger_server.models.battery_params import BatteryParams  # noqa: E501
-from swagger_server.models.cp1_internal_status import CP1InternalStatus  # noqa: E501
 from swagger_server.models.inline_response200 import InlineResponse200  # noqa: E501
 from swagger_server.models.inline_response2001 import InlineResponse2001  # noqa: E501
 from swagger_server.models.inline_response2002 import InlineResponse2002  # noqa: E501
@@ -13,21 +15,18 @@ from swagger_server.models.inline_response4002 import InlineResponse4002  # noqa
 from swagger_server.models.inline_response4003 import InlineResponse4003  # noqa: E501
 from swagger_server.models.place_params import PlaceParams  # noqa: E501
 from swagger_server.models.remove_params import RemoveParams  # noqa: E501
+from swagger_server.models.cp1_internal_status import CP1InternalStatus
+
 from swagger_server import util
 
 from swagger_client.models.errorparams import Errorparams
 from swagger_client.models.done_tasksfinished import DoneTasksfinished
 
-## todo remove?
-from datetime import date, datetime
-from typing import List, Dict
-from six import iteritems
-from ..util import deserialize_date, deserialize_datetime
-
 import swagger_server.config as config
 import swagger_server.comms as comms
 
 import rospy
+
 
 def internal_post(CP1InternalStatus):  # noqa: E501
     """internal_post
@@ -61,15 +60,15 @@ def internal_post(CP1InternalStatus):  # noqa: E501
         config.logger.debug("internal got a deprecated status which is being ignored")
     elif CP1InternalStatus.status == "learning-error":
         config.logger.debug("internal got a deprecated status which is being ignored")
-    elif CP1InternalStatus.status ==  "other-error":
+    elif CP1InternalStatus.status == "other-error":
         config.logger.debug("sending error to the TH because of message %s" % CP1InternalStatus.message)
-        resp = config.thApi.error_post(Errorparams(error="other-error",message=CP1InternalStatus.message))
+        resp = config.thApi.error_post(Errorparams(error="other-error", message=CP1InternalStatus.message))
 
-    ## these are the literal constants that come from rainbow. the
-    ## constants above are from the API definition; there's some
-    ## overlap and this is a little messy
+    # these are the literal constants that come from rainbow. the
+    # constants above are from the API definition; there's some
+    # overlap and this is a little messy
     elif CP1InternalStatus.status == "RAINBOW_READY":
-        comms.send_status("internal, rainbow ready in level %s" % config.ready_resp.level, "live", False)
+        comms.send_status("internal, rainbow ready in level %s" % config.ready_response.level, "live", False)
     elif CP1InternalStatus.status == "MISSION_SUCCEEDED":
         config.logger.debug("internal got a rainbow mission message which is being ignored")
     elif CP1InternalStatus.status == "MISSION_FAILED":
@@ -81,6 +80,7 @@ def internal_post(CP1InternalStatus):  # noqa: E501
     elif CP1InternalStatus.status == "ADAPTED_FAILED":
         comms.send_status("internal, adapted_failed", "adapt-done")
 
+
 def observe_get():
     """
     observe_get
@@ -88,7 +88,9 @@ def observe_get():
 
     :rtype: InlineResponse2003
     """
-    x , y , ig1 , ig2 = config.bot_cont.gazebo.get_bot_state()
+
+    config.logger.debug("observe_get was called")
+    x, y, ig1, ig2 = config.bot_cont.gazebo.get_bot_state()
 
     ret = InlineResponse2003()
     ret.x = x
@@ -108,13 +110,17 @@ def perturb_battery_post(Parameters=None):
 
     :rtype: InlineResponse2002
     """
-    if connexion.request.is_json:
-        BatteryParams = BatteryParams.from_dict(connexion.request.get_json())  # noqa: E501
 
-    if config.bot_cont.gazebo.set_charge(BatteryParams.charge):
-        return InlineResponse2002(sim_time = rospy.Time.now().secs)
+    config.logger.debug("perturb_battery_post was called")
+    if connexion.request.is_json:
+        Parameters = BatteryParams.from_dict(connexion.request.get_json())  # noqa: E501
+
+    charge = Parameters.charge / (1000 * config.bot_cont.robot_battery.battery_voltage)
+    result = config.bot_cont.gazebo.set_charge(charge)
+    if result:
+        return InlineResponse2002(sim_time=rospy.Time.now().secs)
     else:
-        return InlineResponse4002(message = "setting the battery failed") , 400
+        return InlineResponse4002(message="setting the battery failed"), 400
 
 
 def perturb_place_obstacle_post(Parameters=None):
@@ -126,16 +132,19 @@ def perturb_place_obstacle_post(Parameters=None):
 
     :rtype: InlineResponse200
     """
-    if connexion.request.is_json:
-        PlaceParams = PlaceParams.from_dict(connexion.request.get_json())  # noqa: E501
 
-    result = config.bot_cont.gazebo.place_obstacle(PlaceParams.x, PlaceParams.y)
+    config.logger.debug("perturb_place_obstacle_post was called")
+    if connexion.request.is_json:
+        Parameters = PlaceParams.from_dict(connexion.request.get_json())  # noqa: E501
+
+    result = config.bot_cont.gazebo.place_obstacle(Parameters.x, Parameters.y)
     if result:
-        return InlineResponse200(obstacleid = result, sim_time = rospy.Time.now().secs)
+        return InlineResponse200(obstacleid=result, sim_time=rospy.Time.now().secs)
     else:
-        ## todo: we can't really distinguish between reasons for
-        ## failure here so the API is a little bit too big
-        return InlineResponse4001(cause = "other-error", message="obstacle placement failed")
+        # todo: we can't really distinguish between reasons for
+        # failure here so the API is a little bit too big
+        return InlineResponse4001(cause="other-error", message="obstacle placement failed")
+
 
 def perturb_remove_obstacle_post(Parameters=None):
     """
@@ -146,14 +155,18 @@ def perturb_remove_obstacle_post(Parameters=None):
 
     :rtype: InlineResponse2001
     """
-    if connexion.request.is_json:
-        RemoveParams = RemoveParams.from_dict(connexion.request.get_json())  # noqa: E501
 
-    if config.bot_cont.gazebo.remove_obstacle(RemoveParams.obstacleid):
+    config.logger.debug("perturb_remove_obstacle_post was called")
+    if connexion.request.is_json:
+        Parameters = RemoveParams.from_dict(connexion.request.get_json())  # noqa: E501
+
+    result = config.bot_cont.gazebo.remove_obstacle(Parameters.obstacleid)
+    if result:
         return InlineResponse2001(sim_time=rospy.Time.now().secs)
     else:
-        return InlineResponse4001(cause="bad-obstacleid",
+        return InlineResponse4001(cause="bad-obstacle_id",
                                   message="asked to remove an obstacle with a name we didn't issue")
+
 
 def start_post():
     """
@@ -167,29 +180,63 @@ def start_post():
 
         def at_waypoint_cb(name_of_waypoint):
             config.logger.debug("at_waypoint callback called with %s" % name_of_waypoint)
-            x , y , ig1 , ig2 = config.bot_cont.gazebo.get_bot_state()
+            x, y, ig1, ig2 = config.bot_cont.gazebo.get_bot_state()
             config.tasks_finished.append(DoneTasksfinished(x=x,
-                                                             y=y,
-                                                             sim_time=rospy.Time.now().secs,
-                                                             name=name_of_waypoint))
-            comms.send_status("at-waypoint callback", "at-waypoint")
+                                                           y=y,
+                                                           sim_time=rospy.Time.now().secs,
+                                                           name=name_of_waypoint))
+            if config.th_connected:
+                comms.send_status("at-waypoint callback", "at-waypoint")
+            else:
+                rospy.loginfo("at-waypoint")
+                rospy.loginfo(config.tasks_finished[-1])
 
         def active_cb():
             config.logger.debug("received notification that goal is active")
 
-        def totally_done_cb(terminal, result):
-            comms.send_done("totally_done callback",
-                      "mission sequencer indicated that all missions are done",
-                      "at-goal")
+        def totally_done_cb(number_of_tasks_accomplished, locs):
+            config.logger.debug("mission sequencer indicated that the robot is at goal")
+            config.logger.debug("mission sequencer believes that the robot accomplished {0} tasks".format(number_of_tasks_accomplished))
 
-        def done_cb(terminal, result):
+            config.started = False
+            if config.th_connected:
+                comms.send_done("totally_done callback",
+                                "mission sequencer indicated that the robot is at goal",
+                                "at-goal")
+            else:
+                rospy.loginfo("Accomplished {0} tasks".format(number_of_tasks_accomplished))
+
+        def done_cb(status, result):
             config.logger.debug("done cb was used from instruction graph")
 
-        config.bot_cont.start(start=config.ready_response.start_loc,
-                              targets=config.ready_response.target_locs,
-                              active_cb=active_cb,
-                              done_cb = done_cb,
-                              at_waypoint_cb=at_waypoint_cb,
-                              mission_done_cb=totally_done_cb)
+        # Added multi-threading instead of multi-processing
+        # because the subprocess could not connect to ig_process
+
+        if config.level == "a" or config.level == "b":
+            t = Thread(target=config.bot_cont.go_instructions_multiple_tasks_reactive,
+                       args=(config.ready_response.start_loc,
+                             config.ready_response.target_locs,
+                             active_cb,
+                             done_cb,
+                             at_waypoint_cb,
+                             totally_done_cb,
+                             ))
+        elif config.level == "c":
+            t = Thread(target=config.bot_cont.go_instructions_multiple_tasks_adaptive,
+                       args=(config.ready_response.start_loc,
+                             config.ready_response.target_locs,
+                             active_cb,
+                             done_cb,
+                             at_waypoint_cb,
+                             totally_done_cb,
+                             ))
+
+        # setting the battery to full charge before starting the mission
+        rospy.loginfo("setting the initial charge right before starting the mission")
+        full_charge = config.bot_cont.robot_battery.capacity
+        config.bot_cont.gazebo.set_charge(full_charge)
+        # now everything is ready to start the mission
+        t.start()
+
     else:
         return InlineResponse4003("/start called more than once")

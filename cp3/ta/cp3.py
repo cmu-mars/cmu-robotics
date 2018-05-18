@@ -14,13 +14,14 @@ import ig_action_msgs.msg
 from actionlib_msgs.msg import *
 from map_server import MapServer
 from instruction_db import InstructionDB
-from kobuki_msgs.msg import BumperEvent
+from brass_gazebo_plugins.msg import BrassBump
 from sensor_msgs.msg import Illuminance
 from std_msgs.msg import UInt32MultiArray, Bool, Int8
 
 
 import psutil
 
+#import tf
 import transformations as t
 import roslaunch
 from gazebo_interface import GazeboInterface
@@ -138,6 +139,15 @@ class BaseSystem:
 				else:
 					return False, "IG Failed perhaps because of a timeout"
 
+	def wait_for_odom(self, timeout):
+#		listener=tf.TransformListener()
+		try:
+#			listener.waitForTransform("gazebo_world", "odom", rospy.Time(), rospy.Duration(timeout));
+			print("cp.wait_for_odom doesn't work because this is python3 and ROS is build with python2")
+			return True
+		except:
+			return False
+
 class ConverterMixin:
 	@classmethod
 	def convert_to_class(cls, obj):
@@ -163,12 +173,17 @@ class CP3(ConverterMixin,BaseSystem):
 
 	def __init__(self, gazebo):
 		BaseSystem.__init__(self, MapServer(self.DEFAULT_MAP_FILE), InstructionDB(self.DEFAULT_INSTRUCTION_FULE), gazebo)
-		self.bump_subscriber = rospy.Subscriber("/mobile_base/events/bumper", BumperEvent, self.bumped)
+		def default_bump_callback(bumped, velocity, time):
+			print("detected bump before start. This should be anomalous")
+		self.bump_callback = default_bump_callback
+		
+		self.bump_subscriber = rospy.Subscriber("/mobile_base/events/brass_bump", BrassBump, self.bumped)
 		self.track_aruco = False
 		self.track_illuminance = False
 		self.marker_subscriber = None
 		self.illuminance_subscriber = None
 		self.was_bumped = False
+		self.bump_speed = -1;
 
 	def init(self):
 		off = self.map_server.lights_off()
@@ -259,9 +274,9 @@ class CP3(ConverterMixin,BaseSystem):
 			rospy.sleep(1)
 
 
-	def track_bumps(self):
+	def track_bumps(self, cb):
 		self.was_bumped = False
-		self.bump_subscriber = rospy.Subscriber("/mobile_base/events/bumper", BumperEvent, self.bumped)
+		self.bump_callback = cb
 
 	def did_bump(self):
 		return self.was_bumped;
@@ -270,9 +285,13 @@ class CP3(ConverterMixin,BaseSystem):
 		self.was_bumped = False
 
 	def bumped(self, be):
-		if be.state == BumperEvent.PRESSED:
+		if be.state == BrassBump.PRESSED:
 			self.was_bumped = True
-			print("Bumped")
+			self.bump_callback(True, be.velocity, rospy.Time.now())
+
+	def bumpspeed(self, odom):
+		if odom.twist.twist.linear.x > self.bump_speed:
+			self.bump_speed = odom.twist.twist.linear.x
 
 	def track(self, track_aruco, track_illuminance):
 		self.track_aruco = track_aruco

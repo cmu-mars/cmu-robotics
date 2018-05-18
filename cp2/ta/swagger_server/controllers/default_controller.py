@@ -1,3 +1,5 @@
+import logging
+
 import connexion
 import six
 
@@ -16,6 +18,10 @@ from orchestrator.exceptions import *
 
 from swagger_server import config
 from swagger_server.converters import *
+
+logger = logging.getLogger('cp2ta').getChild('controller')  # type: logging.Logger
+logger.setLevel(logging.DEBUG)
+
 
 def adapt_post(Parameters):  # noqa: E501
     """adapt_post
@@ -90,14 +96,24 @@ def perturb_post(perturb_params):  # noqa: E501
 
     :rtype: None
     """
+    logger.debug("Attempting to perturb system.")
     if connexion.request.is_json:
-        perturb_params = Perturbation.from_dict(connexion.request.get_json())  # noqa: E501
+        jsn = connexion.request.get_json()
+        logger.debug("Decoding perturbation from provided dict: %s", jsn)
+        perturb_params = Perturbation.from_dict(jsn)
+        logger.debug("Decoded perturbation from provided dict.")
 
+    logger.debug("Transforming perturbation into a boggart mutation.")
     mutation = perturb2mutation(perturb_params)
+    logger.debug("Transformed perturbation into a boggart mutation.")
     try:
         config.orc.perturb(mutation)
+        logger.info("Successfully perturbed system using mutation: %s",
+                    mutation)
         return '', 204
     except OrchestratorError as err:
+        logger.exception("Failed to apply given mutation: %s",
+                         mutation)
         return err.to_response()
 
 def perturbations_get(perturbation_params):  # noqa: E501

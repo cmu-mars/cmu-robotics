@@ -30,3 +30,7 @@ use_adaptation = False
 nodes = []
 
 sensors = []
+
+plan = None
+
+collisions = []

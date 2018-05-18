@@ -2,14 +2,7 @@
 
 ## Installation
 
-First, two prerequisite Docker images must be built:
-
-```
-$ docker build -t cmu-mars/base git://github.com/cmu-mars/p2c2-orchestrator.git@rr2
-$ docker build -t cmu-mars/gazebo git://github.com/cmu-mars/cp-gazebo-p15.git@rr2
-```
-
-Next, BugZoo needs to be installed onto the host machine. We recommend the use
+BugZoo needs to be installed onto the host machine. We recommend the use
 of Python virtual environments to ensure containment and to prevent
 interference with system libraries:
 
@@ -20,7 +13,7 @@ $ . PATH_TO_BUGZOO_VENV/bin/activate
 (bugzoo) $ git clone git://github.com/cmu-mars/p2c2-base-image PATH_TO_BASE_IMAGE_REPO
 (bugzoo) $ cd PATH_TO_BASE_IMAGE_REPO
 (bugzoo) $ git checkout rr2
-(bugzoo) $ bugzoo source add cmu-mars .
+(bugzoo) $ bugzoo source add mars .
 (bugzoo) $ bugzoo bug build --force mars:base
 ```
 
@@ -32,8 +25,10 @@ $ docker-compose build
 
 ## Usage
 
-First, you'll need to launch BugZoo on a machine that's capable of provisioning
-Docker containers:
+Before running `docker-compose`, you'll need to launch `bugzood` on the host
+machine, as shown below. For the remainder of these instructions, we'll assume
+that both `bugzoo` and `docker-compose` are running on the same machine
+(ideally hosted on Amazon EC2).
 
 ```
 (bugzoo) $ bugzood --host 0.0.0.0 --port 6060 --debug
