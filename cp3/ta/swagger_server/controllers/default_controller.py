@@ -20,7 +20,7 @@ import ast
 import rospy
 
 import swagger_server.config as config
-import swagger_server.comms as comm
+import swagger_server.comms as comms
 
 
 def internal_status_post(CP3InternalStatus):  # noqa: E501
