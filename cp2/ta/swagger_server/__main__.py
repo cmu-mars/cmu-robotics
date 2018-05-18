@@ -12,32 +12,50 @@ from orchestrator.exceptions import *
 from swagger_server import config
 from swagger_server.converters import *
 
+logger = logging.getLogger("cp2ta")  # type: logging.Logger
+logger.setLevel(logging.DEBUG)
+logger.addHandler(logging.NullHandler())
+
+
 if __name__ == '__main__':
     # Parameter parsing, to set up TH
     if len(sys.argv) != 4:
-      print ("expected th_uri hulk_url bugzoo_url")
+      print("expected th_uri boggart_url bugzoo_url")
       sys.exit(1)
 
     th_uri = sys.argv[1]
-    hulk_url = sys.argv[2]
+    boggart_url = sys.argv[2]
     bugzoo_url = sys.argv[3]
 
-    # Set up TA server and logging
+    # Set up TA server
     app = connexion.App(__name__, specification_dir='./swagger/')
     app.app.json_encoder = encoder.JSONEncoder
     app.add_api('swagger.yaml', arguments={'title': 'CP2'}, strict_validation=True)
 
-    # FIXME why are we hijacking the werkzeug logger?
-    handler_stream = logging.StreamHandler(sys.stdout)
-    logger = logging.getLogger('werkzeug')
-    logger.setLevel(logging.DEBUG)
-    handler = logging.FileHandler('access.log')
-    logger.addHandler(handler)
-    logger.addHandler(logging.StreamHandler())
+    # Setup logging
+    log_formatter = \
+        logging.Formatter('%(asctime)s:%(name)s:%(levelname)s: %(message)s',
+                          '%Y-%m-%d %H:%M:%S')
+    log_to_stdout = logging.StreamHandler(sys.stdout)
+    log_to_stdout.setFormatter(log_formatter)
+    log_to_file = logging.FileHandler('/var/log/ta/ta.log')
+    log_to_file.setFormatter(log_formatter)
 
-    logger_orc = logging.getLogger('orchestrator')
-    logger_orc.setLevel(logging.DEBUG)
-    logger_orc.addHandler(handler_stream)
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(log_to_stdout)
+    logger.addHandler(log_to_file)
+
+    def setup_logger(name):
+        lgr = logging.getLogger(name)
+        lgr.setLevel(logging.DEBUG)
+        lgr.addHandler(log_to_stdout)
+        lgr.addHandler(log_to_file)
+
+    # setup_logger('werkzeug')
+    setup_logger('orchestrator')
+    setup_logger('boggart')
+    setup_logger('bugzoo')
+    setup_logger('darjeeling')
 
     def log_request_info():
         logger.debug('Headers: %s', connexion.request.headers)
@@ -64,7 +82,7 @@ if __name__ == '__main__':
     def error_cb(err_code, msg):
         thApi.error_post(ErrorError(kind=err_code,message=msg))
 
-    config.orc = Orchestrator(hulk_url, bugzoo_url, progress_cb, done_cb, error_cb)
+    config.orc = Orchestrator(boggart_url, bugzoo_url, progress_cb, done_cb, error_cb)
 
     def fail_hard(s):
         logger.debug(s)
@@ -75,7 +93,7 @@ if __name__ == '__main__':
     try:
         logger.debug("posting to /ready")
         ready_resp = thApi.ready_post()
-        logger.debug("recieved response from /ready:")
+        logger.debug("received response from /ready:")
         logger.debug(str(ready_resp))
     except Exception as e:
         logger.debug("Failed to connect with th")
