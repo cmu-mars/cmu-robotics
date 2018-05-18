@@ -68,7 +68,7 @@ def internal_post(CP1InternalStatus):  # noqa: E501
     # constants above are from the API definition; there's some
     # overlap and this is a little messy
     elif CP1InternalStatus.status == "RAINBOW_READY":
-        comms.send_status("internal, rainbow ready in level %s" % config.ready_resp.level, "live", False)
+        comms.send_status("internal, rainbow ready in level %s" % config.ready_response.level, "live", False)
     elif CP1InternalStatus.status == "MISSION_SUCCEEDED":
         config.logger.debug("internal got a rainbow mission message which is being ignored")
     elif CP1InternalStatus.status == "MISSION_FAILED":
@@ -88,6 +88,8 @@ def observe_get():
 
     :rtype: InlineResponse2003
     """
+
+    config.logger.debug("observe_get was called")
     x, y, ig1, ig2 = config.bot_cont.gazebo.get_bot_state()
 
     ret = InlineResponse2003()
@@ -109,6 +111,7 @@ def perturb_battery_post(Parameters=None):
     :rtype: InlineResponse2002
     """
 
+    config.logger.debug("perturb_battery_post was called")
     if connexion.request.is_json:
         Parameters = BatteryParams.from_dict(connexion.request.get_json())  # noqa: E501
 
@@ -129,6 +132,8 @@ def perturb_place_obstacle_post(Parameters=None):
 
     :rtype: InlineResponse200
     """
+
+    config.logger.debug("perturb_place_obstacle_post was called")
     if connexion.request.is_json:
         Parameters = PlaceParams.from_dict(connexion.request.get_json())  # noqa: E501
 
@@ -150,6 +155,8 @@ def perturb_remove_obstacle_post(Parameters=None):
 
     :rtype: InlineResponse2001
     """
+
+    config.logger.debug("perturb_remove_obstacle_post was called")
     if connexion.request.is_json:
         Parameters = RemoveParams.from_dict(connexion.request.get_json())  # noqa: E501
 
@@ -188,10 +195,13 @@ def start_post():
             config.logger.debug("received notification that goal is active")
 
         def totally_done_cb(number_of_tasks_accomplished, locs):
+            config.logger.debug("mission sequencer indicated that the robot is at goal")
+            config.logger.debug("mission sequencer believes that the robot accomplished {0} tasks".format(number_of_tasks_accomplished))
+
             config.started = False
             if config.th_connected:
                 comms.send_done("totally_done callback",
-                                "mission sequencer indicated that all missions are done",
+                                "mission sequencer indicated that the robot is at goal",
                                 "at-goal")
             else:
                 rospy.loginfo("Accomplished {0} tasks".format(number_of_tasks_accomplished))

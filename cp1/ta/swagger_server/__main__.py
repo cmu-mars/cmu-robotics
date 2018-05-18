@@ -139,6 +139,7 @@ if __name__ == '__main__':
                 rospy.logerr("parsing-error")
             raise e
 
+        logger.debug("learning-started")
         if th_connected:
             comms.send_status("__main__", "learning-started", sendxy=False, sendtime=False)
 
@@ -152,6 +153,7 @@ if __name__ == '__main__':
                 rospy.logerr("learning-error")
             raise e
 
+        logger.debug("learning-done")
         if th_connected:
             comms.send_status("__main__", "learning-done", sendxy=False, sendtime=False)
 
@@ -176,7 +178,7 @@ if __name__ == '__main__':
     p.start()
     init("cp1_ta")
 
-    logger.debug("waiting for move_base (emulates watching for odom_recieved)")
+    logger.debug("waiting for move_base (emulates watching for odom_received)")
     move_base = actionlib.SimpleActionClient("move_base", MoveBaseAction)
 
     move_base_started = False
@@ -225,6 +227,7 @@ if __name__ == '__main__':
     # start up rainbow if we're adapting, otherwise send the live message directly
     if ready_resp.level == "c":
         try:
+            logger.debug("Starting Rainbow")
             rainbow_log = open(os.path.expanduser("~/rainbow.log"), 'w')
             rainbow = RainbowInterface()
             rainbow.launchRainbow("cp1", rainbow_log)
