@@ -209,6 +209,16 @@ def start_post():
             if not swagger_server.config.use_adaptation:
                 send_done("done callback")
 
+        ## register a callback with the CP to record collision data
+        def collision_cb(bumped, velocity, time):
+            ## from cp3.py, bumped seems to be always true, so i'll ignore it.
+            x , y , w , v = config.cp.gazebo.get_turtlebot_state()
+            config.collisions.append(CollisionData(robot_x=x,
+                                                   robot_y=y,
+                                                   robot_speed=velocity,
+                                                   sim_time=time))
+        config.cp.track_bumps(collision_cb)
+
         result , msg = swagger_server.config.cp.do_instructions(swagger_server.config.cp.start,
                                                                 swagger_server.config.cp.target,
                                                                 False,
