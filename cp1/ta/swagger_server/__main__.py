@@ -108,7 +108,7 @@ if __name__ == '__main__':
     config.ready_response = ready_resp
 
     # dynamic checks on ready response
-    if ready_resp.target_locs == []:
+    if not ready_resp.target_locs:
         fail_hard("malformed response from ready: target_locs must not be the empty list")
 
     if ready_resp.start_loc == ready_resp.target_locs[0]:
