@@ -21,8 +21,17 @@ import ast
 import rospy
 import swagger_server.config ## todo: maybe an easier way to do this; i don't know
 
+## from __future__ import with_statement ## todo: bring this back when you downgrade to py2
+import subprocess
+import os
+
+def save_ps(src):
+    with open(os.path.expanduser("~/ps_%s_%s.log") % (src, datetime.datetime.now()), "w") as outfile:
+        subprocess.call(["ps","aux"],stdout=outfile)
+
 def send_done(src):
     swagger_server.config.logger.debug("sending done from %s" % src)
+    save_ps("done")
     x , y , w , v = swagger_server.config.cp.gazebo.get_turtlebot_state()
     response = swagger_server.config.thApi.done_post(Parameters2(final_x = x,
                                                   final_y = y,
