@@ -28,6 +28,7 @@ from swagger_client.models.inline_response_200 import InlineResponse200
 from swagger_client.models.parameters import Parameters
 from swagger_client.models.parameters_1 import Parameters1
 from swagger_client.models.parameters_2 import Parameters2
+from swagger_client.models.collision_data import CollisionData
 
 from cp3 import CP3
 import swagger_server.config as config
@@ -193,6 +194,16 @@ if __name__ == '__main__':
 
     ## set the initial plan (in A and B this won't change)
     config.plan = cp.instruction_server.get_path(ready_resp.start_loc,ready_resp.target_loc)
+
+    ## register a callback with the CP to record collision data
+    def collision_cb(bumped, velocity, time):
+        ## from cp3.py, bumped seems to be always true, so i'll ignore it.
+        x , y , w , v = config.cp.gazebo.get_turtlebot_state()
+        config.collisions.append(CollisionData(robot_x=x,
+                                               robot_y=y,
+                                               robot_speed=velocity,
+                                               sim_time=time))
+    cp.track_bumps(collision_cb)
 
     if th_connected and not ready_resp.use_adaptation:
         comms.send_status("__main__", "live", "CP3 TA ready to recieve inital perturbs and start in non-adaptive case")

@@ -32,3 +32,5 @@ nodes = []
 sensors = []
 
 plan = None
+
+collisions = []
