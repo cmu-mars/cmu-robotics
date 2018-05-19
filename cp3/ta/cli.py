@@ -329,8 +329,7 @@ if __name__ == "__main__":
                 gargs.write = os.path.expanduser(gargs.write)
                 with open(gargs.write, 'a') as f:
                     f.write(s + "\n")
-            else:
-                print(s)
+            print(s)
             if gargs.launch:
                 cp.stop(launches)
     elif args.command == 'charging':
