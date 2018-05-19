@@ -108,7 +108,7 @@ class BaseSystem:
 			self.ig.send_goal(goal)
 			result = self.ig.wait_for_result(timeout=rospy.Duration(60*15))
 			state = self.ig.get_state()
-			if result and self.ig.get_result().succeeded and state == GoalStatus.SUCCEEDED:
+			if result and state == GoalStatus.SUCCEEDED:
 				return True, None
 			else:
 				if (self.ig.get_result() is not None):
