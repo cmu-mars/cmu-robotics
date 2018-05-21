@@ -14,14 +14,14 @@ services:
     # command: --cp CP2 --thPort ${TH_PORT} --taHost cp2_ta --taPort 5000
 
   bugzoo:
-    image: squareslab/bugzood
+    image: cmumars/bugzood
+    build: bugzoo
     container_name: bugzoo
     hostname: bugzoo
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /tmp:/tmp
       - ./logs:/var/log/bugzoo
-      - ./bugzoo/sources:/root/.bugzoo/sources:ro
     expose:
       - 6060
     command: -p 6060 --debug --log-file /var/log/bugzoo/bugzood.log
