@@ -19,3 +19,4 @@ A list of paths to log files that we want to be saved from every test run for po
 * `/home/mars/rainbow.log`
 * `/home/mars/.ros/logs/latest/\*`
 * `/home/mars/das/rainbow-brass/\*.log`
+* `/home/mars/ps_*.log`
