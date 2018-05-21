@@ -10,7 +10,7 @@ services:
       - ./logs:/var/log/th
     expose:
       - 5001
-    command: -p 5001 --url-ta http://cp2_ta:5000 --debug
+    command: -p 5001 --url-ta http://cp2_ta:5000 --debug --log-file /var/log/th/cp2th.log
     # command: --cp CP2 --thPort ${TH_PORT} --taHost cp2_ta --taPort 5000
 
   rooibos:

@@ -155,7 +155,7 @@ class Perturbation(Model):
         """
         if transformation_index is None:
             raise ValueError("Invalid value for `transformation_index`, must not be `None`")  # noqa: E501
-        if transformation_index is not None and transformation_index < 1:  # noqa: E501
+        if transformation_index is not None and transformation_index < 0:  # noqa: E501
             raise ValueError("Invalid value for `transformation_index`, must be a value greater than or equal to `1`")  # noqa: E501
 
         self._transformation_index = transformation_index
