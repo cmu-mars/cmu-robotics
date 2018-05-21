@@ -3,7 +3,7 @@
 ## Overview
 
 This challenge problem will demonstrate major advances in our capability to
-learn power models efficiently under budget constraints to adapt to
+machine learn power models efficiently under budget constraints to adapt to
 perturbations such as environmental changes or changes in the internal
 resources (Battery).
 
@@ -27,7 +27,7 @@ is one of the characteristics of cyber-physical systems that
 
 Using power as an example model, the aim of this challenge problem is to
 
-  1. apply learning techniques to discover new power models for a robotics
+  1. apply machine learning techniques to discover new power models for a robotics
      system, and
   2. take advantage of these new models at run time to improve the quality
      of missions of the robot over the use of no or static models.
@@ -520,12 +520,9 @@ Any two test cases would be different if the difficulty levels of them are
 different. However, if two test cases are similar with respect to the
 difficulty of the test, we consider them identical.
 
-## List of log files
+## Static data
 
-Here is a list of paths to log files that we want saved from every test run for postmortem analyses:
-* Standard output
-* Standard error
-* All files in `~/cp1/`
+[static data](../static-data/cp1/README.md) 
 
 
 ### Backend components

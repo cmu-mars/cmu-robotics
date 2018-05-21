@@ -12,6 +12,7 @@ from swagger_server.models.perturbation import Perturbation  # noqa: E501
 from swagger_server.models.perturbation_params import PerturbationParams  # noqa: E501
 from swagger_server.models.source_line import SourceLine  # noqa: E501
 from swagger_server import util
+import swagger_server.models
 
 from orchestrator import Orchestrator
 from orchestrator.exceptions import *
@@ -33,13 +34,28 @@ def adapt_post(Parameters):  # noqa: E501
 
     :rtype: None
     """
+    logger.debug("passed Parameters: %s", Parameters)
     if connexion.request.is_json:
-        Parameters = Parameters.from_dict(connexion.request.get_json())  # noqa: E501
+        jsn = connexion.request.get_json()
+        logger.info("payload: %s", jsn)
+        Parameters = swagger_server.models.parameters.Parameters.from_dict(jsn)  # noqa: E501
+        logger.info("parameters: %s", Parameters)
+    else:
+        logger.warning("apparently the request is not JSON")
+
+    logger.info("triggering adaptation")
+    if Parameters.time_limit is not None:
+        logger.info("* using time limit of %d minutes")
+    if Parameters.attempt_limit is not None:
+        logger.info("* using attempt limit of %d attempts")
 
     try:
-        config.orc.adapt(Parameters.time_limit, Parameters.attempt_limit)
+        config.orc.adapt(minutes=Parameters.time_limit,
+                         attempts=Parameters.attempt_limit)
+        logger.info("triggered adaptation")
         return '', 202
     except OrchestratorError as err:
+        logger.exception("failed to trigger adaptation: %s", err)
         return err.to_response()
 
 

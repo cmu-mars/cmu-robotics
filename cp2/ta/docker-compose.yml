@@ -10,18 +10,33 @@ services:
       - ./logs:/var/log/th
     expose:
       - 5001
-    command: -p 5001 --url-ta http://cp2_ta:5000 --debug
+    command: -p 5001 --url-ta http://cp2_ta:5000 --debug --log-file /var/log/th/cp2th.log
     # command: --cp CP2 --thPort ${TH_PORT} --taHost cp2_ta --taPort 5000
+
+  bugzoo:
+    image: cmumars/bugzood
+    build: bugzoo
+    container_name: bugzoo
+    hostname: bugzoo
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp:/tmp
+      - ./logs:/var/log/bugzoo
+    expose:
+      - 6060
+    command: -p 6060 --debug --log-file /var/log/bugzoo/bugzood.log
 
   rooibos:
     image: squareslab/rooibosd
     container_name: rooibos
     hostname: rooibos
-    command: -p 8888
+    depends_on:
+      - bugzoo
     volumes:
       - ./logs:/var/log/rooibosd
     expose:
       - 8888
+    command: -p 8888
 
   boggart:
     image: squareslab/boggart
@@ -33,7 +48,7 @@ services:
       - ./logs:/var/log/boggart
     expose:
       - 6000
-    command: boggartd -p 6000 --bugzoo "${BUGZOO}" --rooibos http://rooibos:8888 --log-file /var/log/boggart/boggartd.log
+    command: boggartd -p 6000 --bugzoo http://bugzoo:6060 --rooibos http://rooibos:8888 --log-file /var/log/boggart/boggartd.log
 
   cp2_ta:
     build: .
@@ -41,10 +56,11 @@ services:
     hostname: cp2_ta
     depends_on:
       - cp2_th
+      - bugzoo
       - rooibos
       - boggart
     volumes:
       - ./logs:/var/log/ta
     expose:
       - 5000
-    command: python3 -u -m swagger_server http://cp2_th:5001 http://boggart:6000 "${BUGZOO}"
+    command: python3 -u -m swagger_server http://cp2_th:5001 http://boggart:6000 http://bugzoo:6060
