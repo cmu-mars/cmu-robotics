@@ -4,8 +4,8 @@ import subprocess
 import os
 import datetime
 import swagger_server.config as config
-from swagger_server.models.parameters1 import Parameters1
-from swagger_server.models.parameters2 import Parameters2
+from swagger_client.models.parameters1 import Parameters1
+from swagger_client.models.parameters2 import Parameters2
 import rospy
 
 def save_ps(src):
