@@ -2,6 +2,7 @@ from __future__ import with_statement
 import argparse
 import rospy
 from gazebo_interface import GazeboInterface
+from track_instructions import InstructionTracker
 from cp3 import CP3
 import math
 import os
@@ -33,7 +34,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     commands = ['help', 'enable_light', 'enable_headlamp', 'list_obstacles', 
         'place_obstacle', 'remove_obstacle', 'set_pose', 'kinect', 'lidar', 'where', 'go',
-        'voltage', 'charging', "place_markers", "set_location", "cover", "kill", "list_lights", "safety_test", 'execute']
+        'voltage', 'charging', "place_markers", "set_location", "cover", "kill", "list_lights", "safety_test", 'execute', 'validate_coverage']
     configs = ['amcl-kinect', 'mrpt-kinect', 'amcl-lidar', 'mrpt-lidar', 'aruco']
     parser.add_argument('--challenge', choices={'cp1','cp2','cp3'}, default='cp3', help='The challenge problem context')
     parser.add_argument('command', choices=commands, help='The command to issue to Gazebo')
@@ -120,6 +121,9 @@ if __name__ == "__main__":
     ex_parser.add_argument("-s", "--start", type=str, help="The starting waypoint")
     ex_parser.add_argument("instructions", type=str, help="The file containing the list of instructions")
 
+    vc_parser = argparse.ArgumentParser(prog=parser.prog + " validate_coverage")
+    vc_parser.add_argument("coverage", type=str, help="the file containing coverage information")
+
     args, extras = parser.parse_known_args()
 
     if args.command == 'help':
@@ -175,11 +179,14 @@ if __name__ == "__main__":
         elif hargs.command=="execute":
             print("Executes an instruction graph")
             ex_parser.print_help()
+        elif hargs.command=='validate_coverage':
+            print("Validates the coverage data")
+            vc_parser.print_help()
         else:
             h_parser.print_help()
         sys.exit()
 
-    elif not args.command in ['safety_test','cover', 'go']:
+    elif not args.command in ['safety_test','cover', 'go', 'validate_coverage']:
         rospy.init_node("cli")
         gazebo = GazeboInterface(0,0)
         cp = CP3(gazebo)
@@ -294,7 +301,13 @@ if __name__ == "__main__":
                     heading = cp.instruction_server.get_start_heading(gargs.start, gargs.target)
                     result = cp.gazebo.set_turtlebot_position(location["x"], location["y"], heading)
                     rospy.sleep(10)
+                def print_feedback(status, message):
+                    print("%s: %s" %(status, message))
+
+                tr = InstructionTracker(cp.map_server, print_feedback)
+
                 start = rospy.Time.now()
+
                 result, message = cp.do_instructions(gargs.start, gargs.target, True)
             except Exception as e:
                 result = False
@@ -357,6 +370,35 @@ if __name__ == "__main__":
         CP3.convert_to_class(cp)
         result, reason = cp.list_lights_on_path(largs.waypoints)
         print result
+    elif args.command == 'validate_coverage':
+        cargs = vc_parser.parse_args(extras)
+        with open(cargs.coverage) as f:
+            waypoints = f.readlines()
+
+        waypoints = [x.strip() for x in waypoints]
+        waypoints = [x if x.startswith("l") else "l%s" %x for x in waypoints]
+        waypoints=waypoints[:len(waypoints)-1]
+
+        map_wp = cp.map_server.waypoint_list
+        waypoints_in_map = [x["node-id"] for x in map_wp]
+        for i in waypoints:
+            if i in waypoints_in_map:
+                waypoints_in_map.remove(i)
+            else:
+                print("Coverage contains a waypoint (%s) that is not in the map" %i)
+        if len(waypoints_in_map) > 0:
+            print("The coverage set does not contain the following waypoints:")
+            for i in waypoints_in_map:
+                print("  %s" %i)
+
+        for i in range(1, len(waypoints)-1):
+            s = waypoints[i-1]
+            node = cp.map_server.get_waypoint(s)[0]
+            if waypoints[i] not in node["connected-to"]:
+                print ("%s is not directly connected to %s" %(s,waypoints[i]))
+
+
+
     elif args.command == "cover":
         cargs = co_parser.parse_args(extras)
         if not cargs.restart:

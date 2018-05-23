@@ -32,6 +32,12 @@ class MapServer():
             raise ValueError('non-unique waypoint identifiers in the map file')
         return len(waypoint_list) == 1
 
+    def coords_to_waypoint(self, x, y):
+        for i in self.waypoint_list:
+            if x == i['coord']['x'] and y == i['coord']['y']:
+                return i['node-id']
+        return None
+
 
     def get_waypoint(self, waypoint_id):
         l = [x for x in self.waypoint_list if x["node-id"]==waypoint_id]  #filter(lambda waypoint: waypoint["node-id"] == waypoint_id, self.waypoint_list)
