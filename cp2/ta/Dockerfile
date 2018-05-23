@@ -42,7 +42,7 @@ RUN pip install --no-cache numpy==1.14.2
 # && rm -rf /tmp/darjeeling
 
 # install Orchestrator from source
-ENV ORCHESTRATOR_REVISION c916f99c8a47ec12a46faa1a02d77cf48619b356
+ENV ORCHESTRATOR_REVISION aade09625895c906cdaa81604dd8bcdc4ffaefac
 RUN git clone https://github.com/cmu-mars/p2c2-orchestrator /tmp/orchestrator \
  && cd /tmp/orchestrator \
  && git fetch origin "${ORCHESTRATOR_REVISION}" \
