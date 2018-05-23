@@ -378,10 +378,10 @@ if __name__ == "__main__":
         waypoints = [x.strip() for x in waypoints]
         waypoints = [x if x.startswith("l") else "l%s" %x for x in waypoints]
         waypoints=waypoints[:len(waypoints)-1]
-
+        waypointset = list(set(waypoints))
         map_wp = cp.map_server.waypoint_list
         waypoints_in_map = [x["node-id"] for x in map_wp]
-        for i in waypoints:
+        for i in waypointset:
             if i in waypoints_in_map:
                 waypoints_in_map.remove(i)
             else:
