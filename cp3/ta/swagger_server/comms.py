@@ -3,6 +3,7 @@
 import subprocess
 import os
 import datetime
+import math
 import swagger_server.config as config
 from swagger_client.models.parameters_1 import Parameters1
 from swagger_client.models.parameters_2 import Parameters2
@@ -17,14 +18,16 @@ def send_done(src):
         config.logger.debug("sending done from %s" % src)
         save_ps("done")
         x , y , w , v = config.cp.gazebo.get_turtlebot_state()
-        response = config.thApi.done_post(Parameters2(final_x = x,
+        d = Parameters2(final_x = x,
                                                   final_y = y,
                                                   final_sim_time = rospy.Time.now().secs,
-                                                  final_charge = config.battery,
+                                                  final_charge = math.floor(config.battery),
                                                   collisions = config.collisions,
                                                   num_adaptations = config.adaptations,
                                                   final_utility = 0 ## todo placeholder value
-                                                  ))
+                                                  )
+        config.logger.debug("Done message is %s" %d)
+        response = config.thApi.done_post(d)
         config.logger.debug("response from done: %s" % response)
     except Exception as e:
         config.logger.error("Got an error %s when sending done" %e)
