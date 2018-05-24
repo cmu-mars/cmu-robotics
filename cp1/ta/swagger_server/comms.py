@@ -7,9 +7,11 @@ import subprocess
 import os
 import datetime
 
+
 def save_ps(src):
     with open(os.path.expanduser("~/ps_%s_%s.log") % (src, datetime.datetime.now()), "w") as outfile:
-        subprocess.call(["ps","aux"],stdout=outfile)
+        subprocess.call(["ps","aux"], stdout=outfile)
+
 
 def send_status(src, code, sendxy=True, sendtime=True):
     # todo, this is pretty hacky; really we want to make x, y
