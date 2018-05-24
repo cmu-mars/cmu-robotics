@@ -211,4 +211,4 @@ if __name__ == '__main__':
     logger.debug("starting TA REST interface")
 
     print("Starting the TA webserver")
-    app.run(port=5000, host='0.0.0.0', debug=True)
+    app.run(port=5000, host='0.0.0.0')
