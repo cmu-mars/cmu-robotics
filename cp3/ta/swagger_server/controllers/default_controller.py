@@ -111,7 +111,7 @@ def observe_get():
     ret = InlineResponse2003()
     ret.x = x
     ret.y = y
-    ret.battery = int (config.battery)
+    ret.battery = config.battery
     ret.sim_time = rospy.Time.now().secs
     ret.lights = config.cp.map_server.lights_on()
     return ret

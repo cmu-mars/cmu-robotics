@@ -198,7 +198,7 @@ if __name__ == '__main__':
     def energy_cb(msg):
         """call back to update the global battery state from the ros topic"""
         ## todo: Ian: This is now float -- check if we need to convert to Int64
-        config.battery = msg.data
+        config.battery = int(msg.data)
 
     sub_voltage = rospy.Subscriber("/energy_monitor/energy_level", Float64, energy_cb)
 
