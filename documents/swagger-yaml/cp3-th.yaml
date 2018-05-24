@@ -12,7 +12,7 @@ definitions:
       - robot-x
       - robot-y
       - robot-speed
-      - sime-time
+      - sim-time
     properties:
       robot-x:
         type: number

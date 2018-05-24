@@ -223,7 +223,7 @@ Returns a list of possible perturbations of an (optionally) specified shape and 
 |**at**  <br>*required*|The range of code that is deleted or replaced by the perturbation.|[SourceRange](#sourcerange)|
 |**kind**  <br>*required*||[PerturbationKind](#perturbationkind)|
 |**replacement**  <br>*optional*|The body of the source code that should replaced the source code given by the location range associated with this perturbation.|string|
-|**transformation-index**  <br>*required*|**Minimum value** : `1`|integer|
+|**transformation-index**  <br>*required*|**Minimum value** : `0`|integer|
 
 
 <a name="perturbationkind"></a>

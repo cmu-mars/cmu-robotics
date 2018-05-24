@@ -3,6 +3,7 @@ import asyncio
 import concurrent.futures
 from multiprocessing import Process, pool
 from threading import Thread
+import rospy
 
 from swagger_server.models.battery_params import BatteryParams  # noqa: E501
 from swagger_server.models.inline_response200 import InlineResponse200  # noqa: E501
@@ -16,16 +17,11 @@ from swagger_server.models.inline_response4003 import InlineResponse4003  # noqa
 from swagger_server.models.place_params import PlaceParams  # noqa: E501
 from swagger_server.models.remove_params import RemoveParams  # noqa: E501
 from swagger_server.models.cp1_internal_status import CP1InternalStatus
-
 from swagger_server import util
-
 from swagger_client.models.errorparams import Errorparams
 from swagger_client.models.done_tasksfinished import DoneTasksfinished
-
 import swagger_server.config as config
 import swagger_server.comms as comms
-
-import rospy
 
 
 def internal_post(CP1InternalStatus):  # noqa: E501
@@ -68,7 +64,7 @@ def internal_post(CP1InternalStatus):  # noqa: E501
     # constants above are from the API definition; there's some
     # overlap and this is a little messy
     elif CP1InternalStatus.status == "RAINBOW_READY":
-        comms.send_status("internal, rainbow ready in level %s" % config.ready_response.level, "live", False)
+        comms.send_status("internal, rainbow ready in level %s" % config.ready_response.level, "live", sendxy=False)
     elif CP1InternalStatus.status == "MISSION_SUCCEEDED":
         config.logger.debug("internal got a rainbow mission message which is being ignored")
     elif CP1InternalStatus.status == "MISSION_FAILED":

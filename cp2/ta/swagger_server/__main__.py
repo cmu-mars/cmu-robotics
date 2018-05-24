@@ -76,7 +76,12 @@ if __name__ == '__main__':
                                      pareto_set=[ patch2ca(x) for x in pareto ]))
 
     def done_cb(log, attempts, outcome, pareto, runtime):
-        thApi.done_post(Parameters1(outcome=outcome.name,
+        outcome_s = ({
+            'NO_REPAIR': 'no-repair',
+            'PARTIAL_REPAIR': 'partial-repair',
+            'COMPLETE_REPAIR': 'complete-repair'
+        })[outcome.name]  # type: str
+        thApi.done_post(Parameters1(outcome=outcome_s,
                                     running_time=runtime,
                                     num_attempts=attempts,
                                     pareto_set=[ patch2ca(x) for x in pareto ],

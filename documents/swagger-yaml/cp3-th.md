@@ -126,7 +126,7 @@ indicate important state changes in the SUT to the TH. posted periodically as th
 
 |Name|Description|Schema|
 |---|---|---|
-|**config**  <br>*optional*|list of currently active nodes. This will not be sent with `status == live`.|< enum (amcl-kinect, amcl-lidar, mprt-kinect, mprt-lidar, aruco-camera) > array|
+|**config**  <br>*optional*|list of currently active nodes. This will not be sent with `status == live`.|< enum (amcl-kinect, amcl-lidar, mrpt-kinect, mrpt-lidar, aruco-camera) > array|
 |**message**  <br>*optional*|human readable text describing the status, if any|string|
 |**plan**  <br>*optional*|list of waypoints the current plan tends to visit, in order. This will not be sent with `status == live`.|< string > array|
 |**sensors**  <br>*optional*|list of currently active sensors, in order. This will not be sent with `status == live`.|< enum (kinect, lidar, camera, headlamp) > array|
@@ -155,7 +155,7 @@ indicate important state changes in the SUT to the TH. posted periodically as th
 |**robot-speed**  <br>*required*|The speed of the robot (m/s) at the time the collision occured|number (float)|
 |**robot-x**  <br>*required*|The x location of the robot center when collision occured|number (float)|
 |**robot-y**  <br>*required*|The y lcoation of the robot center when collision occured|number (float)|
-|**sim-time**  <br>*optional*|The (simulation) time at which the collision occurred (seconds from start of simulator)|integer|
+|**sim-time**  <br>*required*|The (simulation) time at which the collision occurred (seconds from start of simulator)|integer|
 
 
 
