@@ -26,12 +26,16 @@ def send_done(src):
     config.logger.debug("response from done: %s" % response)
 
 def send_status(src, code, msg):
-        config.logger.debug("sending status %s from %s" % (code,src))
-        response = config.thApi.status_post(Parameters1(status = code,
+        try:
+          config.logger.debug("sending status %s from %s" % (code,src))
+          response = config.thApi.status_post(Parameters1(status = code,
                                                         message = msg,
                                                         sim_time = rospy.Time.now().secs,
                                                         plan = config.plan,
                                                         config = config.nodes,
                                                         sensors = config.sensors
-        ))
-        config.logger.debug("repsonse from TH to status: %s" % response)
+          ))
+          config.logger.debug("repsonse from TH to status: %s" % response)
+        except Exception as e:
+          config.logger.debug("Got an error %s when sending status" %e)
+          print("Got an error %s when sending status" %e)
