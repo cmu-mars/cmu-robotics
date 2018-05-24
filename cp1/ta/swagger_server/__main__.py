@@ -246,4 +246,4 @@ if __name__ == '__main__':
     print("Starting TA REST interface")
     config.th_connected = th_connected
     # app.debug = True
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=True)
