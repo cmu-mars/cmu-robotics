@@ -40,7 +40,7 @@ def internal_status_post(CP3InternalStatus):  # noqa: E501
     try:
         cp3_internal_status = CP3InternalStatus
         if connexion.request.is_json: #and not type(cp3_internal_status) is dict:
-            # print(connexion.request.get_json())
+            # print(connexion.request.ge`t_json())
             # print(type(CP3InternalStatus))
             # print(CP3InternalStatus)
             cp3_internal_status = CP3IS.from_dict(connexion.request.get_json())  # noqa: E501
@@ -221,7 +221,7 @@ def start_post():
                 config.logger.debug("received notification that the goal has been completed successfully")
 
             if not config.use_adaptation:
-                send_done("done callback")
+                comms.send_done("done callback")
 
         ## register a callback with the CP to record collision data
         def collision_cb(bumped, velocity, time):

@@ -206,7 +206,12 @@ if __name__ == '__main__':
     config.plan = cp.instruction_server.get_path(ready_resp.start_loc,ready_resp.target_loc)
 
     if th_connected and not ready_resp.use_adaptation:
-        comms.send_status("__main__", "live", "CP3 TA ready to recieve inital perturbs and start in non-adaptive case")
+        def worker():
+            rospy.sleep(5)
+            comms.send_status("__main__", "live", "CP3 TA ready to recieve inital perturbs and start in non-adaptive case")
+
+        t = threading.Thread(target=worker)
+        t.start()
 
     logger.debug("starting TA REST interface")
 
