@@ -33,56 +33,59 @@ def internal_status_post(CP3InternalStatus):  # noqa: E501
 
     :rtype: None
     """
-    if connexion.request.is_json:
-        CP3InternalStatus = CP3InternalStatus.from_dict(connexion.request.get_json())  # noqa: E501
+    try:
+        if connexion.request.is_json:
+            CP3InternalStatus = CP3InternalStatus.from_dict(connexion.request.get_json())  # noqa: E501
 
-    config.logger.debug("TA internal status end point hit with status %s and message %s"
-                        % (CP3InternalStatus.status, CP3InternalStatus.message))
+        config.logger.debug("TA internal status end point hit with status %s and message %s"
+                            % (CP3InternalStatus.status, CP3InternalStatus.message))
 
-    if CP3InternalStatus.status == "RAINBOW_READY":
-        comms.send_status("internal status, rainbow ready",
-                          "live",
-                          "CP3 TA ready to recieve inital perturbs in adaptive case after getting RAINBOW_READY")
-        if not config.use_adaptation:
-            config.logger.debug("[WARN] internal status got a rainbow ready when not in the adaptive case")
+        if CP3InternalStatus.status == "RAINBOW_READY":
+            config.logger.info("Sending 'live' in response to 'RAINBOW_READY'")
+            comms.send_status("internal status, rainbow ready",
+                              "live",
+                              "CP3 TA ready to recieve inital perturbs in adaptive case after getting RAINBOW_READY")
+            if not config.use_adaptation:
+                config.logger.debug("[WARN] internal status got a rainbow ready when not in the adaptive case")
 
-    elif CP3InternalStatus.status == "MISSION_SUCCEEDED":
-        config.logger.debug("TA internal status got MISSION_SUCCEEDED")
-        if config.use_adaptation:
-            comms.send_done("internal status, mission succeeded")
-        else:
-            config.logger.debug("[WARN] TA internal status got MISSION_SUCCEEDED in non-adapting case")
+        elif CP3InternalStatus.status == "MISSION_SUCCEEDED":
+            config.logger.debug("TA internal status got MISSION_SUCCEEDED")
+            if config.use_adaptation:
+                comms.send_done("internal status, mission succeeded")
+            else:
+                config.logger.debug("[WARN] TA internal status got MISSION_SUCCEEDED in non-adapting case")
 
-    elif CP3InternalStatus.status == "MISSION_FAILED":
-        if config.use_adaptation:
-            comms.send_done("internal status, mission failed")
-        else:
-            config.logger.debug("[WARN] TA internal status got MISSION_FAILED in non-adapting case")
+        elif CP3InternalStatus.status == "MISSION_FAILED":
+            if config.use_adaptation:
+                comms.send_done("internal status, mission failed")
+            else:
+                config.logger.debug("[WARN] TA internal status got MISSION_FAILED in non-adapting case")
 
-    elif CP3InternalStatus.status == "ADAPTING":
-        config.adaptations = config.adaptations + 1
-        comms.send_status("internal status, adapting",
-                    "adapting",
-                    "DAS is now adapting")
+        elif CP3InternalStatus.status == "ADAPTING":
+            config.adaptations = config.adaptations + 1
+            comms.send_status("internal status, adapting",
+                        "adapting",
+                        "DAS is now adapting")
 
-    elif CP3InternalStatus.status == "ADAPTED":
-        comms.send_status("internal status, adapted",
-                          "adapted",
-                          "DAS has now adapted")
+        elif CP3InternalStatus.status == "ADAPTED":
+            comms.send_status("internal status, adapted",
+                              "adapted",
+                              "DAS has now adapted")
 
-    elif CP3InternalStatus.status == "ADAPTED_FAILED":
-        comms.send_status("internal status, adapted_failed",
-                          "adapted",
-                          "DAS has now adapted after a failure with message %s" % CP3InternalStatus.message)
+        elif CP3InternalStatus.status == "ADAPTED_FAILED":
+            comms.send_status("internal status, adapted_failed",
+                              "adapted",
+                              "DAS has now adapted after a failure with message %s" % CP3InternalStatus.message)
 
-    elif CP3InternalStatus.status == "FINAL_UTILITY":
-        config.logger.debug("ignoring until RR3") ## todo
+        elif CP3InternalStatus.status == "FINAL_UTILITY":
+            config.logger.debug("ignoring until RR3") ## todo
 
-    elif CP3InternalStatus.status == "PLAN":
-        config.plan = [ x.strip() for x in  ast.literal_eval(CP3InternalStatus.message) ]
-        if not CP3InternalStatus.sim_time == -1:
-            config.logger.debug("[WARN] ta got an internal plan status with sim_time %s, which is out of spec" % CP3InternalStatus.sim_time)
-
+        elif CP3InternalStatus.status == "PLAN":
+            config.plan = [ x.strip() for x in  ast.literal_eval(CP3InternalStatus.message) ]
+            if not CP3InternalStatus.sim_time == -1:
+                config.logger.debug("[WARN] ta got an internal plan status with sim_time %s, which is out of spec" % CP3InternalStatus.sim_time)
+    except Exception as e:
+        print("Error: %s" %e)
 def observe_get():
     """
     observe_get

@@ -27,6 +27,7 @@ def send_done(src):
 
 def send_status(src, code, msg):
         try:
+          print("Sending live")
           config.logger.debug("sending status %s from %s" % (code,src))
           response = config.thApi.status_post(Parameters1(status = code,
                                                         message = msg,
