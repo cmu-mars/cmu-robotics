@@ -11,6 +11,9 @@ from orchestrator.exceptions import *
 
 from swagger_server import config
 from swagger_server.converters import *
+from swagger_client.models.parameters_1 import Parameters1
+from swagger_client.models.parameters import Parameters
+from swagger_server.models.error_error import ErrorError
 
 logger = logging.getLogger("cp2ta")  # type: logging.Logger
 logger.setLevel(logging.DEBUG)
@@ -69,12 +72,10 @@ if __name__ == '__main__':
     thApi.api_client.configuration.host = th_uri
 
     def progress_cb(candidate, pareto):
-        from ..swagger_client.models.parameters import Parameters
         thApi.status_post(Parameters(adaptation=patch2ca(candidate),
                                      pareto_set=[ patch2ca(x) for x in pareto ]))
 
     def done_cb(log, attempts, outcome, pareto, runtime):
-        from ..swagger_client.models.parameters_1 import Parameters1
         thApi.done_post(Parameters1(outcome=outcome.name,
                                     running_time=runtime,
                                     num_attempts=attempts,
@@ -82,13 +83,11 @@ if __name__ == '__main__':
                                     log=[ patch2ca(x) for x in log ]))
 
     def error_cb(err_code, msg):
-        from .models.error_error import ErrorError
         thApi.error_post(ErrorError(kind=err_code,message=msg))
 
     config.orc = Orchestrator(boggart_url, bugzoo_url, progress_cb, done_cb, error_cb)
 
     def fail_hard(s):
-        from ..swagger_client.models.parameters import Parameters
         logger.debug(s)
         thApi.error_post(Parameters(s))
         raise Exception(s)
