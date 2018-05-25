@@ -237,7 +237,7 @@ if __name__ == '__main__':
     elif th_connected:
         def worker():
             rospy.sleep(5)
-            comms.send_status("__main__ in level %s" % ready_resp.level, "live")
+            comms.send_status("__main__ in level %s" % ready_resp.level, "live", sendtime=False)
         t = threading.Thread(target=worker)
         t.start()
 
@@ -245,4 +245,4 @@ if __name__ == '__main__':
     print("Starting TA REST interface")
     config.th_connected = th_connected
     # app.debug = True
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000)

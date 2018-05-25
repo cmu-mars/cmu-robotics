@@ -39,7 +39,7 @@ RUN sudo pip3 install --no-cache-dir -r requirements.txt
 
 COPY . /usr/src/app
 RUN sudo chown -R mars /usr/src/app
-RUN python3 -m pip install --upgrade /usr/src/app
+RUN python3 -m pip install /usr/src/app
 ADD missions/* /home/mars/
 ADD cp1 /home/mars/cp1
 

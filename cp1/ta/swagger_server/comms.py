@@ -26,12 +26,27 @@ def send_status(src, code, sendxy=True, sendtime=True):
         config.logger.debug("sending status %s from %s" % (code, src))
 
         if sendtime:
+            dd = Statusparams(status=code,
+                              x=x,
+                              y=y,
+                              charge=config.battery,
+                              sim_time=rospy.Time.now().secs)
+            rospy.loginfo(dd)
+            config.logger.debug("Done message is %s" % dd)
             response = config.thApi.status_post(Statusparams(status=code,
                                                              x=x,
                                                              y=y,
                                                              charge=config.battery,
                                                              sim_time=rospy.Time.now().secs))
         else:
+            dd = Statusparams(status=code,
+                             x=x,
+                             y=y,
+                             charge=0,
+                             sim_time=0
+                             )
+            rospy.loginfo(dd)
+            config.logger.debug("Done message is %s" % dd)
             response = config.thApi.status_post(Statusparams(status=code,
                                                              x=x,
                                                              y=y,
