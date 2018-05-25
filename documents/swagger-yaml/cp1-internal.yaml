@@ -6,7 +6,7 @@ schemes:
   - http
 host: brass-ta
 paths:
-  /internal:
+  /internal-status:
     post:
       description: >-
         reports any internal status (including the error that may

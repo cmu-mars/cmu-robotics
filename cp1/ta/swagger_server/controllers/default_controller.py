@@ -24,8 +24,8 @@ import swagger_server.config as config
 import swagger_server.comms as comms
 
 
-def internal_post(CP1InternalStatus):  # noqa: E501
-    """internal_post
+def internal_status_post(CP1InternalStatus):  # noqa: E501
+    """internal_status_post
 
     reports any internal status (including the error that may occured) from the backend that might be sent to the TA for internal bookeeping or forwarding to the TH # noqa: E501
 

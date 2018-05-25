@@ -18,8 +18,8 @@
 <a name="paths"></a>
 ## Paths
 
-<a name="internal-post"></a>
-### POST /internal
+<a name="internal-status-post"></a>
+### POST /internal-status
 
 #### Description
 reports any internal status (including the error that may occured) from the backend that might be sent to the TA for internal bookeeping or forwarding to the TH
@@ -29,9 +29,9 @@ reports any internal status (including the error that may occured) from the back
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**CP1InternalStatus**  <br>*required*|[CP1InternalStatus](#internal-post-cp1internalstatus)|
+|**Body**|**CP1InternalStatus**  <br>*required*|[CP1InternalStatus](#internal-status-post-cp1internalstatus)|
 
-<a name="internal-post-cp1internalstatus"></a>
+<a name="internal-status-post-cp1internalstatus"></a>
 **CP1InternalStatus**
 
 |Name|Description|Schema|

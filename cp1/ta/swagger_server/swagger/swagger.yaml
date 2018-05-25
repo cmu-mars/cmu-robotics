@@ -100,12 +100,12 @@ paths:
         400:
           description: "encountered an error while computing the observation"
       x-swagger-router-controller: "swagger_server.controllers.default_controller"
-  /internal:
+  /internal-status:
     post:
       description: "reports any internal status (including the error that may occured)\
         \ from the backend that might be sent to the TA for internal bookeeping or\
         \ forwarding to the TH"
-      operationId: "internal_post"
+      operationId: "internal_status_post"
       parameters:
       - in: "body"
         name: "CP1InternalStatus"
