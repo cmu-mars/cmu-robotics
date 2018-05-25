@@ -1,0 +1,66 @@
+version: '2'
+services:
+  cp2_th:
+    image: docker.darpa-brass.com/tbraje/cmur-harness
+    container_name: cp2_th
+    hostname: cp2_th
+    expose:
+      - 5001
+    entrypoint: /home/haskell/cmur
+    command: >
+      --thPort 5001
+      --shellApi http://nevermind:8080
+      --taApi http://cp2_ta:5000/
+      --parameters '{"baselineFlag": "ActualTest", "testId": {"uuid": "fb9bbe71-c4ac-4405-a7e0-7f5d67785358"}, "cp": "CP2", "testGrpId": "3b76efbe-6588-4096-94a8-1d7ebfb51d5e", "params": {"numberOfFiles": 1, "cp2Init": {}, "numberOfPerturbations": 6}, tcId: 0}'
+
+  bugzoo:
+    image: cmumars/bugzood
+    build: bugzoo
+    container_name: bugzoo
+    hostname: bugzoo
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp:/tmp
+      - ./logs:/var/log/bugzoo
+    expose:
+      - 6060
+    command: -p 6060 --debug --log-file /var/log/bugzoo/bugzood.log
+
+  rooibos:
+    image: squareslab/rooibosd
+    container_name: rooibos
+    hostname: rooibos
+    depends_on:
+      - bugzoo
+    volumes:
+      - ./logs:/var/log/rooibosd
+    expose:
+      - 8888
+    command: -p 8888
+
+  boggart:
+    image: squareslab/boggart
+    container_name: boggart
+    hostname: boggart
+    depends_on:
+      - rooibos
+    volumes:
+      - ./logs:/var/log/boggart
+    expose:
+      - 6000
+    command: boggartd -p 6000 --bugzoo http://bugzoo:6060 --rooibos http://rooibos:8888 --log-file /var/log/boggart/boggartd.log
+
+  cp2_ta:
+    build: .
+    container_name: cp2_ta
+    hostname: cp2_ta
+    depends_on:
+      - cp2_th
+      - bugzoo
+      - rooibos
+      - boggart
+    volumes:
+      - ./logs:/var/log/ta
+    expose:
+      - 5000
+    command: python3 -u -m swagger_server http://cp2_th:5001 http://boggart:6000 http://bugzoo:6060

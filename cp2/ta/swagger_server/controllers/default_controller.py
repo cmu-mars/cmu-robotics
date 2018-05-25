@@ -88,15 +88,15 @@ def observe_get():  # noqa: E501
 
     :rtype: InlineResponse2001
     """
-    num_attempts, time_spent = orc.resource_usage
-    jsn_patches = orc.patches
+    num_attempts, time_spent = config.orc.resource_usage
+    jsn_patches = config.orc.patches
 
     resources = InlineResponse2001Resourceconsumption()
     resources.num_attempts = num_attempts
     resources.time_spent = time_spent
 
     ret = InlineResponse2001()
-    ret.stage = orc.state.name
+    ret.stage = config.orc.state.name
     ret.resource_consumption = resources
     ret.pareto_set = [ patch2ca(patch) for patch in config.orc.patches ]
 

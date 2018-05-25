@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
+import time
 import connexion
 import sys
 import logging
 import traceback
+import threading
 from swagger_server import encoder
 from swagger_client import DefaultApi
 
@@ -97,16 +99,22 @@ if __name__ == '__main__':
         thApi.error_post(Parameters(s))
         raise Exception(s)
 
-    ## start the sequence diagram: post to ready to get configuration data
-    try:
-        logger.debug("posting to /ready")
-        ready_resp = thApi.ready_post()
-        logger.debug("received response from /ready:")
-        logger.debug(str(ready_resp))
-    except Exception as e:
-        logger.debug("Failed to connect with th")
-        logger.debug(traceback.format_exc())
-        raise e
+    # start the sequence diagram: post to ready to get configuration data
+    def send_ready():
+        time.sleep(5)
+        try:
+            logger.debug("posting to /ready")
+            ready_resp = thApi.ready_post()
+            logger.debug("received response from /ready:")
+            logger.debug(str(ready_resp))
+        except Exception as e:
+            logger.debug("Failed to connect with th")
+            logger.debug(traceback.format_exc())
+            raise e
+
+    # FIXME for now, we send /ready after a fixed delay
+    t = threading.Thread(target=send_ready)
+    t.start()
 
     # Start the TA listening
     logger.debug("running the TA")
