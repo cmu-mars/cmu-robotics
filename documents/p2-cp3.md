@@ -272,7 +272,7 @@ function close_enough (loc1, loc2) = distance (loc1, loc2) <= MAX_DISTANCE
 | Condition                                                      | Score                                                |
 |---|---|
 | arrival_A >= arrival_C | 	1 |
-| arrival_A + BUFFER <= arrival_C | (Arrival_A + BUFFER - Arrival_C)/BUFFER |
+| arrival_A + BUFFER >= arrival_C | (Arrival_A + BUFFER - Arrival_C)/BUFFER |
 | else | 0 |
 
 
