@@ -271,8 +271,8 @@ function close_enough (loc1, loc2) = distance (loc1, loc2) <= MAX_DISTANCE
 
 | Condition                                                      | Score                                                |
 |---|---|
-| arrival_A < arrival_C | 	1 |
-| arrival_A - BUFFER <= arrival_C | (arrival_C - arrival_A - BUFFER) / (arrival_A - BUFFER) |
+| arrival_A >= arrival_C | 	1 |
+| arrival_A - BUFFER >= arrival_C | (arrival_C - arrival_A - BUFFER) / (arrival_A - BUFFER) |
 | else | 0 |
 
 
@@ -290,7 +290,7 @@ function close_enough (loc1, loc2) = distance (loc1, loc2) <= MAX_DISTANCE
 
 |Constant | Value | Meaning |
 |---------|-------|---------|
-|MAX_CHARGE | 15000 | The maximum mwh that the battery can hold |
+|MAX_CHARGE | 180000 | The maximum mwh that the battery can hold |
 
 | Condition                                                      | Score                                                |
 |----------------------------------------------------------------|------------------------------------------------------|
