@@ -78,6 +78,7 @@ if __name__ == "__main__":
     go_parser.add_argument('-i', '--illuminance', action='store_true', help="Track illuminance and report max and min")
     go_parser.add_argument('-u', '--launch', action='store_true', help="Attempt to launch the ros configuration as well")
     go_parser.add_argument('-b', '--bumps', action="store_true", help="Track robot bumping into something")
+    go_parser.add_argument('-e', '--speed', type=float, help='The speed that the robot should go on the path')
     go_parser.add_argument('--no_publish', action="store_true", help="Do not publish location")
     go_parser.add_argument('start', nargs='?', help='The waypoint label of the start')
     go_parser.add_argument('target', help='The wapoint lable of the target')
@@ -101,6 +102,7 @@ if __name__ == "__main__":
     co_parser.add_argument('-c', '--config', choices=configs, help="The configuration to start")
     co_parser.add_argument('-r', '--restart', action='store_true', help='Restart robot after each segment')
     co_parser.add_argument('-i', '--illuminance', action='store_true', help='Track illuminance and report max and min')
+    co_parser.add_argument('-e', '--speed', type=float, help='The speed that the robot should go on the paths')
     co_parser.add_argument("waypoint_order", type=str, help='File containing the list of waypoints to visit in order')
     co_parser.add_argument('output', type=str, help='File to print statistics for each leg')
     
@@ -415,7 +417,7 @@ if __name__ == "__main__":
                             print("Failed to start -- could not move robot to " + s)
                             sys.exit() 
                     start = rospy.Time.now()
-                    result, msg = cp.do_instructions(s, t, True)
+                    result, msg = cp.do_instructions(s, t, True, speed=cargs.speed)
                     end = rospy.Time.now()
                     if result: # Check to see that the robot is actually near the target
                         x, y, z, w = cp.gazebo.get_turtlebot_state()

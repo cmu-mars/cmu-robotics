@@ -94,11 +94,13 @@ class BaseSystem:
 			rospy.sleep(sleep_time)
 		return self.do_instructions(start, target, wait, active_cb, done_cb)
 
-	def do_instructions(self, start, target, wait, active_cb=None, done_cb = None):
+	def do_instructions(self, start, target, wait, active_cb=None, done_cb = None, speed=None):
 		if self.ig is None:
 			self.ig = actionlib.SimpleActionClient("ig_action_server", ig_action_msgs.msg.InstructionGraphAction)
 			self.ig.wait_for_server()
 		igcode = self.instruction_server.get_instructions(start, target)
+		if speed is not None:
+			igcode = igcode.replace("0.68,", "%s," %speed)
 		goal = ig_action_msgs.msg.InstructionGraphGoal(order=igcode)
 		self.gazebo.set_charging_srv(False)
 		if not wait:
@@ -327,13 +329,13 @@ class CP3(ConverterMixin,BaseSystem):
 			self.illuminance_subscriber.unregister()
 		
 
-	def do_instructions(self, start, target, wait, active_cb = None, done_cb = None):
+	def do_instructions(self, start, target, wait, active_cb = None, done_cb = None, speed=None):
 
 		if wait and (self.track_aruco or self.track_illuminance):
 			self.start_aruco_tracking()
 		ret = None
 		try:
-			ret = BaseSystem.do_instructions(self, start, target, wait, active_cb, done_cb)
+			ret = BaseSystem.do_instructions(self, start, target, wait, active_cb, done_cb, speed=speed)
 		except:
 			ret = False, "Some weird exception";
 		if wait and (self.track_aruco or self.track_illuminance):
