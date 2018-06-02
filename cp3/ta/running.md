@@ -17,7 +17,7 @@ services:
       - "TA_PORT=${TA_PORT}"
       - "RAINBOW_DEBUG_MODE=0"                 # 0 is not debug, 1 is start rainbow in debug
     volumes:
-      - start:/start                           # Mount a directory for ready messages for testing
+      - ./start:/start                       # Mount a directory for ready messages for testing
       - roslogs:/home/mars/.ros/latest
       - logs:/home/mars/logs
     ports:
