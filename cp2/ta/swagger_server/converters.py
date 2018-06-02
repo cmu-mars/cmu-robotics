@@ -14,8 +14,9 @@ from swagger_server.models.test_outcome import TestOutcome
 from swagger_server.models.source_range import SourceRange
 from swagger_server.models.source_location import SourceLocation
 
-import hulk
+import boggart
 import darjeeling
+import boggart as bgrt
 
 def patch2ca(pa):
     outcome_compilation = CompilationOutcome(time_taken=pa.build.time_taken,
@@ -31,10 +32,10 @@ def patch2ca(pa):
                                test_outcomes=outcome_tests)
 
 def perturb2mutation(pp):
-    loc = hulk.FileLocationRange(pp.at.start.file,
-                                 hulk.Location(pp.at.start.line, pp.at.start.column),
-                                 hulk.Location(pp.at.stop.line, pp.at.stop.column))
-    return hulk.Mutation(pp.kind,                 # operator
+    loc = bgrt.FileLocationRange(pp.at.start.file,
+                                 bgrt.Location(pp.at.start.line, pp.at.start.column),
+                                 bgrt.Location(pp.at.stop.line, pp.at.stop.column))
+    return bgrt.Mutation(pp.kind,                 # operator
                          pp.transformation_index, # transformation_index,
                          loc,                     # location,
                          pp.arguments)            # args

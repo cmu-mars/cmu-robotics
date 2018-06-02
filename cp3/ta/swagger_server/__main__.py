@@ -22,16 +22,19 @@ import time
 import random
 import json
 import os
+import shutil
+import time
 
 from swagger_client import DefaultApi
 from swagger_client.models.inline_response_200 import InlineResponse200
 from swagger_client.models.parameters import Parameters
 from swagger_client.models.parameters_1 import Parameters1
 from swagger_client.models.parameters_2 import Parameters2
+from swagger_client.models.collision_data import CollisionData
 
 from cp3 import CP3
-from swagger_server import config
-
+import swagger_server.config as config
+import swagger_server.comms as comms
 
 if __name__ == '__main__':
     # Command line argument parsing
@@ -67,6 +70,7 @@ if __name__ == '__main__':
 
     def fail_hard(s):
         logger.debug(s)
+        comms.save_ps("error-failhard")
         if th_connected:
             thApi.error_post(Parameters(s))
         raise Exception(s)
@@ -128,7 +132,14 @@ if __name__ == '__main__':
         c = launch_file.split("-")
         config.nodes = [launch_file]
         config.sensors = [c[1]]
-
+    # Check if using marker in world
+    if "USE_STATIC_MARKERS" in os.environ.keys():
+    	if int(os.environ["USE_STATIC_MARKERS"]) == 1:
+            print("Using the world that has the markers statically placed")
+            wo_markers=os.path.expanduser("~/catkin_ws/src/cp3_base/worlds/cp3.world")
+            w_markers=os.path.expanduser("~/catkin_ws/src/cp3_base/worlds/cp3-markers.world")
+            shutil.copy(wo_markers, os.path.expanduser("~/catkin_ws/src/cp3_base/worlds/cp3-orig.world"))
+            shutil.copy(w_markers, wo_markers)
 
     logger.debug("launching cp3-%s.launch" % launch_file)
     rl_child = subprocess.Popen(["roslaunch", "cp3_base", "cp3-" + launch_file + ".launch"],
@@ -141,7 +152,8 @@ if __name__ == '__main__':
                                              ## redirect to any file
                                              ## handle instead and
                                              ## capture the logs there
-
+    ## Give ros some time to start
+    time.sleep(5)
     ## make this module a ros node so that we can subscribe to topics
     logger.debug("initializing cp3_ta ros node")
     rospy.init_node("cp3_ta")
@@ -167,6 +179,8 @@ if __name__ == '__main__':
         fail_hard("failed to connect to gazebo: %s" % e)
 
     ## todo: for RR3, do things with  utility function
+    if not cp.wait_for_odom(30):
+    	fail_hard("failed to set robot position")
 
     if ready_resp.use_adaptation:
         try:
@@ -184,23 +198,20 @@ if __name__ == '__main__':
     def energy_cb(msg):
         """call back to update the global battery state from the ros topic"""
         ## todo: Ian: This is now float -- check if we need to convert to Int64
-        config.battery = msg.data
+        config.battery = int(msg.data)
 
     sub_voltage = rospy.Subscriber("/energy_monitor/energy_level", Float64, energy_cb)
 
-    if th_connected and not ready_resp.use_adaptation:
-        logger.debug("sending live status message")
-        ## todo: i have no idea what rospy is going to say the sim
-        ## time is. probably 0.
+    ## set the initial plan (in A and B this won't change)
+    config.plan = cp.instruction_server.get_path(ready_resp.start_loc,ready_resp.target_loc)
 
-        ## todo: maybe use the send_status function in default_controller?
-        live_resp = thApi.status_post(Parameters1(status="live",
-                                                  message="CP3 TA ready to recieve inital perturbs and start in non-adaptive case",
-                                                  sim_time=rospy.Time.now().secs,
-                                                  plan=cp.instruction_server.get_path(ready_resp.start_loc,ready_resp.target_loc),
-                                                  config=config.nodes,
-                                                  config=config.sensors))
-        config.logger.debug("repsonse from TH to live: %s" % response)
+    if th_connected and not ready_resp.use_adaptation:
+        def worker():
+            rospy.sleep(5)
+            comms.send_status("__main__", "live", "CP3 TA ready to recieve inital perturbs and start in non-adaptive case")
+
+        t = threading.Thread(target=worker)
+        t.start()
 
     logger.debug("starting TA REST interface")
 

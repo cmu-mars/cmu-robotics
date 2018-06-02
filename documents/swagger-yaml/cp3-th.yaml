@@ -12,7 +12,7 @@ definitions:
       - robot-x
       - robot-y
       - robot-speed
-      - sime-time
+      - sim-time
     properties:
       robot-x:
         type: number
@@ -184,8 +184,8 @@ paths:
                   enum:
                     - amcl-kinect
                     - amcl-lidar
-                    - mprt-kinect
-                    - mprt-lidar
+                    - mrpt-kinect
+                    - mrpt-lidar
                     - aruco-camera
               sensors:
                 description: >-

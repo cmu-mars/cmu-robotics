@@ -1,5 +1,5 @@
-.travis.yaml
 .swagger-codegen-ignore
+.travis.yaml
 README.md
 tox.ini
 git_push.sh

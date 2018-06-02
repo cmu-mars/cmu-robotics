@@ -13,26 +13,19 @@
       # - "TH_PORT=`echo ${TH_URI} | awk -F ':' '{print $NF}'`"
 version: '2'
 services:
-  roscore:
-    image: ros:kinetic
-    container_name: roscore
-    hostname: roscore
-    expose:
-      - 11311
-    command: roscore
-
   cp1_ta:
     image: cmu-mars/cp1
     container_name: cp1_ta
     hostname: cp1_ta
     environment:
       - "ROS_HOSTNAME=cp1_ta"
-      - "ROS_MASTER_URI=http://roscore:11311"
+      - "ROS_MASTER_URI=http://cp1_ta:11311"
       - "TA_PORT=${TA_PORT}"
+      - "RAINBOW_WAIT_TIME=130"
     ports:
       - ${TA_PORT}:5000
-    depends_on:
-      - roscore
+      - 1044:1044
     expose:
       - 5000
-    command: bash -c "cd /usr/src/app && python3 -u -m swagger_server http://${TH_HOST}:${TH_PORT}"
+      - 1044
+    command: bash -c "rm -f /tmp/.X1-lock && . ~/.bashrc && . ~/catkin_ws/entrypoint.sh && cd /usr/src/app && python3 -m swagger_server /home/mars/test-ready-c1c.json"

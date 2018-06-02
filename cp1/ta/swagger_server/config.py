@@ -17,8 +17,11 @@ logger = None
 # bot controller
 bot_cont = None
 
-## level
+# level
 level = None
 
-## waypoints for done message
+# waypoints for done message
 tasks_finished = []
+
+# for testing without th
+th_connected = False

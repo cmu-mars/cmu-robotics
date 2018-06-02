@@ -1,3 +1,5 @@
+import logging
+
 import connexion
 import six
 
@@ -10,12 +12,17 @@ from swagger_server.models.perturbation import Perturbation  # noqa: E501
 from swagger_server.models.perturbation_params import PerturbationParams  # noqa: E501
 from swagger_server.models.source_line import SourceLine  # noqa: E501
 from swagger_server import util
+import swagger_server.models
 
 from orchestrator import Orchestrator
 from orchestrator.exceptions import *
 
 from swagger_server import config
 from swagger_server.converters import *
+
+logger = logging.getLogger('cp2ta').getChild('controller')  # type: logging.Logger
+logger.setLevel(logging.DEBUG)
+
 
 def adapt_post(Parameters):  # noqa: E501
     """adapt_post
@@ -27,13 +34,28 @@ def adapt_post(Parameters):  # noqa: E501
 
     :rtype: None
     """
+    logger.debug("passed Parameters: %s", Parameters)
     if connexion.request.is_json:
-        Parameters = Parameters.from_dict(connexion.request.get_json())  # noqa: E501
+        jsn = connexion.request.get_json()
+        logger.info("payload: %s", jsn)
+        Parameters = swagger_server.models.parameters.Parameters.from_dict(jsn)  # noqa: E501
+        logger.info("parameters: %s", Parameters)
+    else:
+        logger.warning("apparently the request is not JSON")
+
+    logger.info("triggering adaptation")
+    if Parameters.time_limit is not None:
+        logger.info("* using time limit of %d minutes")
+    if Parameters.attempt_limit is not None:
+        logger.info("* using attempt limit of %d attempts")
 
     try:
-        config.orc.adapt(Parameters.time_limit, Parameters.attempt_limit)
+        config.orc.adapt(minutes=Parameters.time_limit,
+                         attempts=Parameters.attempt_limit)
+        logger.info("triggered adaptation")
         return '', 202
     except OrchestratorError as err:
+        logger.exception("failed to trigger adaptation: %s", err)
         return err.to_response()
 
 
@@ -66,15 +88,15 @@ def observe_get():  # noqa: E501
 
     :rtype: InlineResponse2001
     """
-    num_attempts, time_spent = orc.resource_usage
-    jsn_patches = orc.patches
+    num_attempts, time_spent = config.orc.resource_usage
+    jsn_patches = config.orc.patches
 
     resources = InlineResponse2001Resourceconsumption()
     resources.num_attempts = num_attempts
     resources.time_spent = time_spent
 
     ret = InlineResponse2001()
-    ret.stage = orc.state.name
+    ret.stage = config.orc.state.name
     ret.resource_consumption = resources
     ret.pareto_set = [ patch2ca(patch) for patch in config.orc.patches ]
 
@@ -90,14 +112,24 @@ def perturb_post(perturb_params):  # noqa: E501
 
     :rtype: None
     """
+    logger.debug("Attempting to perturb system.")
     if connexion.request.is_json:
-        perturb_params = Perturbation.from_dict(connexion.request.get_json())  # noqa: E501
+        jsn = connexion.request.get_json()
+        logger.debug("Decoding perturbation from provided dict: %s", jsn)
+        perturb_params = Perturbation.from_dict(jsn)
+        logger.debug("Decoded perturbation from provided dict.")
 
+    logger.debug("Transforming perturbation into a boggart mutation.")
     mutation = perturb2mutation(perturb_params)
+    logger.debug("Transformed perturbation into a boggart mutation.")
     try:
         config.orc.perturb(mutation)
+        logger.info("Successfully perturbed system using mutation: %s",
+                    mutation)
         return '', 204
     except OrchestratorError as err:
+        logger.exception("Failed to apply given mutation: %s",
+                         mutation)
         return err.to_response()
 
 def perturbations_get(perturbation_params):  # noqa: E501

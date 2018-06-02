@@ -3,7 +3,7 @@
 ## Overview
 
 This challenge problem will demonstrate major advances in our capability to
-learn power models efficiently under budget constraints to adapt to
+machine learn power models efficiently under budget constraints to adapt to
 perturbations such as environmental changes or changes in the internal
 resources (Battery).
 
@@ -27,7 +27,7 @@ is one of the characteristics of cyber-physical systems that
 
 Using power as an example model, the aim of this challenge problem is to
 
-  1. apply learning techniques to discover new power models for a robotics
+  1. apply machine learning techniques to discover new power models for a robotics
      system, and
   2. take advantage of these new models at run time to improve the quality
      of missions of the robot over the use of no or static models.
@@ -184,13 +184,6 @@ The start location, target locations, initial battery, ..., are all defined
 in the test harness response to
 [ready](https://github.mit.edu/brass/cmu-robotics/blob/master/documents/swagger-yaml/cp1-th.md#post-ready).
 
-## List of log files
-
-Here is a list of paths to log files that we want saved from every test run:
-* Standard output
-* Standard error
-* All files in `~/cp1/`
-
 ## Test Procedure
 
 See overview above. In particular, this challenge problem will require a
@@ -220,66 +213,87 @@ problem. They are defined as follows:
 
 ### Adaptation space and power model selection
 
-In this challenge problem, we will provide a (feature) model that describe
-the space of adaptation (configuration options and their values). To
-describe the model via an example, the possible variations (and possible
-adaptation actions) determining the configuration of the robot is as
-follows:
+In this challenge problem, we have a (feature) model that describe
+the space of adaptation (configuration options and their values). 
 
-1. *Robot's motion actuator*: Two levels of speed: s1 (half speed), s2
-   (full speed)
-2. *Robot's sensors*: Five different Kinects: k1 (the least expensive one),
-   ..., k5 (the most expensive one)
-3. *Robot's computation*: Five different localization algorithms ranging
-   from the least computational demand for the most inaccurate localization
-   to the most demand for the most accurate: l1 , ..., l5
+```json
+{
+  "localization": [0, 1],
+  "kinect": [0, 1],
+  "thermometer": [0, 1],
+  "barometer": [0, 1],
+  "gps": [0, 1],
+  "laser": [0, 1],
+  "camera": [0, 1],
+  "bumpers": [0, 1],
+  "cliff": [0, 1],
+  "proximity": [0, 1],
+  "sound": [0, 1],
+  "light": [0, 1],
+  "magnetic": [0, 1],
+  "radio": [0, 1],
+  "altitude": [0, 1],
+  "speaker": [0, 1],
+  "voltmeter": [0, 1],
+  "lidar": [0, 1],
+  "carbon-monoxide": [0, 1],
+  "carbon-dioxide": [0, 1]
+}
+
+```
 
 Note that we abstracted different aspects of the robot that are known to be
 the main source of power consumption in robots, i.e., robot's motion
 actuator, sensors, and computationally intensive algorithms in the
 robot. These variations will be implemented by adjusting measurement
-frequencies, spatial resolution, or depth resolution of the Kinect
-sensor. Also, for the localization, we will implement different components
-with different accuracy for localizing the robot.
+frequencies, spatial resolution, or depth resolution of the
+sensors as an example. 
 
-Therefore, the configuration of the robot is encoded by 12 Boolean
-variables
+An example configuration of the robot is encoded by 20 Boolean
+variables:
 
+```json
+{ "config_id": 1,
+  "configuration":
+  {
+    "localization": 1,
+    "kinect": 1,
+    "thermometer": 1,
+    "barometer": 1,
+    "gps": 1,
+    "laser": 1,
+    "camera": 1,
+    "bumpers": 1,
+    "cliff": 1,
+    "proximity": 1,
+    "sound": 1,
+    "light": 1,
+    "magnetic": 1,
+    "radio": 1,
+    "altitude": 1,
+    "speaker": 1,
+    "voltmeter": 1,
+    "lidar": 1,
+    "carbon-monoxide": 1,
+    "carbon-dioxide": 1
+  },
+  "power_load": 60,
+  "speed": 0.4
+}
 ```
-C = [<s1,s2>,<k1,k2,k3,k4,k5>,<l1,l2,l3,l4,l5>]
-```
 
-At each time step in the simulation, ``at most`` one of the variables
-(e.g., s2, k4, l1) corresponding to the three components (e.g., speed,
-Kinect, localization) is enabled and the rest are disabled. For example,
-
-```
-C_t = [<0,1>,<0,0,0,1,0>,<1,0,0,0,0>]
-```
-
-Also, there might be some cases where the robot decide to disable the
-component completely (e.g., when it is in the charging station to charge
-faster):
-
-```
-C_t = [<0,0>,<0,0,0,0,0>,<0,0,0,0,0>]
-```
-
-The total number of possible configuration for the robot is: `3*6*6 = 108`.
+The total number of possible configuration for the robot is: `2^20 = 1M`, which makes a huge configuration space and will make the learning a challenging task.
 
 The power consumption model is then specified as:
 
 ```
-$P(s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5) = \beta_0 + \beta_s1*s1 + \beta_s2*s2
-+ \beta_k1*k1 + ... + \beta_k5*k5 +
-\beta_l1*l1 + ... + \beta_l5*l5 +
-\beta_i_1*s1*k1*l1 + \beta_i_2*s1*k1*l2 + ... +
-\beta_i_m*s2*k5*l5$,
+$P(.) = \beta_0 + \beta_o1*o1 + ... + \beta_o20*o20
++ \beta_o12*o1*o2 + ... + \beta_o2019*o20*o19
 ```
 
-where `s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5` are boolean variables, the
+where `o_i` are boolean variables, the
 coefficients for the variables ($\beta_i$) are any positive real numbers
-and the coefficients for the interaction terms ($\beta_{ij}$) are any real
+and the coefficients for the interaction terms ($\beta_{oij}$) are any real
 numbers including negative or zero.
 
 The interaction terms in the power consumption model are important. Let us
@@ -291,7 +305,7 @@ process, therefore, these two variables (i.e., Kinect and Localization)
 might interact. This means that the consumption of the robot is bigger than
 the consumptions of each of the Kinect and Localization individually.
 
-In this challenge problem, both discharge and charge of the robot is
+In this challenge problem, discharge of the robot is
 controlled, not by law of the physics for battery but as an arbitrary
 function that looks similar to power model that exist in the literature but
 with different coefficients that meant to simulate discharge and charge
@@ -300,17 +314,16 @@ components of the robot.
 
 #### Battery dynamics
 
-The battery will be charged and discharged according to the following
-rule. Given a period of time `t` during which the configuration of the
-robot remains unchanged, two power dynamics are considered: *charge* and
-*discharge*. The charge level of the battery at the end of the period is
+The battery will be discharged according to open-circuit battery model that we implemented in [brass_gazebo_battery](https://github.com/cmu-mars/brass_gazebo_battery). This power model simulates the power consumption of a robot. The amount of power consumed by each component of a robot depends on its usage. Given a period of time `dt` during which the configuration of the
+robot remains unchanged, the charge level of the battery at the end of the period is
 calculated by adding the charge delta and subtracting the discharge delta
 from the battery level at the beginning of the time period. The battery
 level cannot go below 0 at any moment.
 
-* *Charge*: `$charge_delta(t) = P_charge(k1,k2,k3,k4,k5,l1,l2,l3,l4,l5)*t$`
-* *Discharge*: `$discharge_delta(t) = P_discharge(s1,s2,k1,k2,k3,k4,k5,l1,l2,l3,l4,l5)*t$`
-* *Total change*: $new_battery_charge(t, old_battery_charge) = max(0, old_battery_charge + charge_delta(t) - discharge_delta(t))$
+* *Discharge*: `$discharge_delta(t) = P_discharge(.)*dt$`
+* *Total change*: `$new_battery_charge(t, old_battery_charge) = max(0, old_battery_charge - discharge_delta(t))$`
+
+
 
 ## Interface to the Test Harness (API)
 
@@ -374,9 +387,9 @@ the target location.
 
 **Test/Capture Method**: For determining whether a task is accomplished
 successfully, the position of the robot will be read from the
-simulator. This will be returned in test-ta/action/observed
+simulator. This will be returned in the `/done/tasks-finished` data structure. 
 
-**Result expression**: `location = (/done/x, /done/y)`
+**Result expression**: `location{i} = (/done/tasks-finished{i}/x, /done/tasks-finished{i}/y)` for each task `i` completed.
 `total_tasks=size(/ready/target-locs)`
 
 **Verdict Expression**: Using the information in `/done` message by
@@ -413,14 +426,13 @@ For each task `t` in `/done/tasks-finished`:
 
 `r = sum(score) / total_tasks`
 
-Note that the ordered list of tasks that are reported to be finished by the bot and can be retrieved in `/done/tasks-finished` should be a subset of the tasks in the ordered set tasks in `/ready/target-locs`, otherwise the final score is zero, `r=0`.
+Note that the ordered list of tasks that are reported to be finished by the bot and can be retrieved in `/done/tasks-finished` should be a subset of the tasks in the ordered set tasks in `/ready/target-locs`, otherwise the final score is zero, `r=0`. I.e., in the code below if `is_valid_case(/done/tasks-finished/name, /target-locs)==False` then `r=0`.
 
 ```python
->>> A = (a, b, g)
->>> B = (a, c, b, e, g)
->>> b_iter = iter(B)
->>> all(a in b_iter for a in A)
-True
+>>> def is_valid_case(A,B):
+      B_iter = iter(B)
+      return all(a in B_iter for a in A)
+
 ```
 
 
@@ -483,13 +495,11 @@ battery level once). Each test case is described by the following:
  * Mission schema: Navigation
  * Mission parameters: `A->T1->T2->...->Tn` (the way points or tasks that
    the robot need to accomplish provided by LL)
- * Charge and discharge functions to be selected from a set of predefined
-   models (most likely 100 pre-specified models).
+ * Discharge functions to be selected from a set of [100 predefined
+   models](https://github.com/cmu-mars/cp1_base/tree/master/cp1_base/power_models) with different difficulty level (with different number of options interactions).
  * Perturbations: Obstacles + Battery level change
- * Possible adaptations: possible variations for `Speed, Kinects,
-   Localization algorithms`
- * Evaluation metric: Power consumed, Mission accomplish time, Distance to
-   target location, Number of tasks accomplished
+ * Possible adaptations: possible variations for `path planning, robot reconfiguration, charge battery`
+ * Evaluation metric: Number of tasks accomplished, Mission accomplish time
 
 We also intend to specify some metrics based on which we evaluate how
 ``difficult`` and how ``similar`` two test cases are. Therefore, LL could
@@ -508,3 +518,12 @@ test cases:
 Any two test cases would be different if the difficulty levels of them are
 different. However, if two test cases are similar with respect to the
 difficulty of the test, we consider them identical.
+
+## Static data
+
+[static data](../static-data/cp1/README.md) 
+
+
+### Backend components
+
+Here is a list of [backend components](https://github.com/search?q=topic%3Acp1+org%3Acmu-mars+fork%3Atrue) for `CP1`.
