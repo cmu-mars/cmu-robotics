@@ -41,10 +41,10 @@ services:
 
 ## Running the example
 1. From the host, you should be able to:
-   a. Start the robot:`curl -X POST http://localhost:8000/start`. This starts the robot with the mission defined in `start/test-ready.json`.
-   b. Perturb the robot software: `curl -X POST http://localhost:8000/perturb/nodefail -d '{"id" : "amcl"}' -H "Content-Type:application/json"`. This kills the node `amcl`. Other valid nodes are `aruco, mrpt`, but it only makes sense to do this if the node is running
-   c. Perturb teh robot hardware: `curl -X POST http://localhost:8000/perturb/sensor -d '{"id" : "kinect", "state" : "false"}' -H "Content-Type:application/json"`. This kills the `kinect` sensor. Other valid sensors are `camera, lidar`. Like above, this only makes sense if the robot is using these sensors.
-   c. Turn on and off lights: `curl -X POST http://localhost:8000/perturb/light -d '{"id" : "light0", "state" : "false"}' -H "Content-Type:application/json"`
+   1. Start the robot:`curl -X POST http://localhost:8000/start`. This starts the robot with the mission defined in `start/test-ready.json`.
+   2. Perturb the robot software: `curl -X POST http://localhost:8000/perturb/nodefail -d '{"id" : "amcl"}' -H "Content-Type:application/json"`. This kills the node `amcl`. Other valid nodes are `aruco, mrpt`, but it only makes sense to do this if the node is running
+   3. Perturb teh robot hardware: `curl -X POST http://localhost:8000/perturb/sensor -d '{"id" : "kinect", "state" : "false"}' -H "Content-Type:application/json"`. This kills the `kinect` sensor. Other valid sensors are `camera, lidar`. Like above, this only makes sense if the robot is using these sensors.
+   4. Turn on and off lights: `curl -X POST http://localhost:8000/perturb/light -d '{"id" : "light0", "state" : "false"}' -H "Content-Type:application/json"`
 
 2. You should also be able to find out where the robot is, and the current state, by:
    `curl http://localhost:8000/observe`
