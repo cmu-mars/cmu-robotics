@@ -78,6 +78,8 @@ if __name__ == "__main__":
     go_parser.add_argument('-i', '--illuminance', action='store_true', help="Track illuminance and report max and min")
     go_parser.add_argument('-u', '--launch', action='store_true', help="Attempt to launch the ros configuration as well")
     go_parser.add_argument('-b', '--bumps', action="store_true", help="Track robot bumping into something")
+    go_parser.add_argument('-e', '--speed', type=float, help='The speed that the robot should go on the path')
+    go_parser.add_argument('--headlamp', action='store_true', help='Use the headlamp')
     go_parser.add_argument('--no_publish', action="store_true", help="Do not publish location")
     go_parser.add_argument('start', nargs='?', help='The waypoint label of the start')
     go_parser.add_argument('target', help='The wapoint lable of the target')
@@ -98,9 +100,11 @@ if __name__ == "__main__":
     co_parser.add_argument("-s", "--start_pair", type=str, help='The comma separated pair of waypoints to start with')
     co_parser.add_argument('-a', '--aruco', action='store_true', help='Track Aruco marker visibility')
     co_parser.add_argument('-l', '--lights', type=str, help="The comma separated list of lights to turn off")
+    co_parser.add_argument('--headlamp', action='store_true', help="Whether the headlamp should be on")
     co_parser.add_argument('-c', '--config', choices=configs, help="The configuration to start")
     co_parser.add_argument('-r', '--restart', action='store_true', help='Restart robot after each segment')
     co_parser.add_argument('-i', '--illuminance', action='store_true', help='Track illuminance and report max and min')
+    co_parser.add_argument('-e', '--speed', type=float, help='The speed that the robot should go on the paths')
     co_parser.add_argument("waypoint_order", type=str, help='File containing the list of waypoints to visit in order')
     co_parser.add_argument('output', type=str, help='File to print statistics for each leg')
     
@@ -288,14 +292,18 @@ if __name__ == "__main__":
                 if gargs.lights is not None:
                     for id in gargs.lights.split(','):
                         result = cp.gazebo.enable_light(id, False) 
-
+                if gargs.headlamp:
+                    result=cp.gazebo.enable_headlamp(True)
                 if not gargs.no_publish:
                     location = cp.map_server.waypoint_to_coords(gargs.start)
                     heading = cp.instruction_server.get_start_heading(gargs.start, gargs.target)
+                    # Fix to heading
+                    tl = cp.map_server.waypoint_to_coords(gargs.target)
+                    heading = math.atan2(tl["y"] - location["y"], tl["x"] - location["x"])
                     result = cp.gazebo.set_turtlebot_position(location["x"], location["y"], heading)
                     rospy.sleep(10)
                 start = rospy.Time.now()
-                result, message = cp.do_instructions(gargs.start, gargs.target, True)
+                result, message = cp.do_instructions(gargs.start, gargs.target, True, speed=gargs.speed if gargs.speed is not None else None)
             except Exception as e:
                 result = False
                 message = e.message
@@ -329,8 +337,7 @@ if __name__ == "__main__":
                 gargs.write = os.path.expanduser(gargs.write)
                 with open(gargs.write, 'a') as f:
                     f.write(s + "\n")
-            else:
-                print(s)
+            print(s)
             if gargs.launch:
                 cp.stop(launches)
     elif args.command == 'charging':
@@ -416,7 +423,7 @@ if __name__ == "__main__":
                             print("Failed to start -- could not move robot to " + s)
                             sys.exit() 
                     start = rospy.Time.now()
-                    result, msg = cp.do_instructions(s, t, True)
+                    result, msg = cp.do_instructions(s, t, True, speed=cargs.speed)
                     end = rospy.Time.now()
                     if result: # Check to see that the robot is actually near the target
                         x, y, z, w = cp.gazebo.get_turtlebot_state()
@@ -470,7 +477,10 @@ if __name__ == "__main__":
 
                         if cargs.lights is not None:
                             command = "%s -l %s " %(command, cargs.lights)
-                       
+                        if cargs.speed is not None:
+                            command = "%s --speed %s" %(command, cargs.speed)
+                        if cargs.headlamp:
+                            command = "%s --headlamp" %(command)
                         command = "%s %s %s" %(command,s,t)
                         print("Calling: %s " %command)
                         subprocess.call(command, shell=True)

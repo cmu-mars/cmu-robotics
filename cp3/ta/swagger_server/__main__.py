@@ -52,7 +52,7 @@ if __name__ == '__main__':
     ## capture the ambient logger
     logger = logging.getLogger('werkzeug')
     logger.setLevel(logging.DEBUG)
-    handler = logging.FileHandler('access.log')
+    handler = logging.FileHandler(os.path.expanduser('~/logs/TA_access.log'))
     logger.addHandler(handler)
     config.logger = logger
 
@@ -184,7 +184,7 @@ if __name__ == '__main__':
 
     if ready_resp.use_adaptation:
         try:
-            rainbow_log = open(os.path.expanduser("~/rainbow.log"),'w')
+            rainbow_log = open(os.path.expanduser("~/logs/rainbow.log"),'w')
             rainbow = RainbowInterface()
             ##todo: Ian: be careful copying this for cp1
             rainbow.launchRainbow("cp3", rainbow_log)
@@ -198,7 +198,7 @@ if __name__ == '__main__':
     def energy_cb(msg):
         """call back to update the global battery state from the ros topic"""
         ## todo: Ian: This is now float -- check if we need to convert to Int64
-        config.battery = msg.data
+        config.battery = int(msg.data)
 
     sub_voltage = rospy.Subscriber("/energy_monitor/energy_level", Float64, energy_cb)
 
@@ -206,7 +206,37 @@ if __name__ == '__main__':
     config.plan = cp.instruction_server.get_path(ready_resp.start_loc,ready_resp.target_loc)
 
     if th_connected and not ready_resp.use_adaptation:
-        comms.send_status("__main__", "live", "CP3 TA ready to recieve inital perturbs and start in non-adaptive case")
+        def worker():
+            rospy.sleep(5)
+            comms.send_status("__main__", "live", "CP3 TA ready to recieve inital perturbs and start in non-adaptive case")
+
+        t = threading.Thread(target=worker)
+        t.start()
+
+    def config_updater(sensors, nodes):
+        # Note, there is an error here because nodes should just contain
+        # amcl or arcuo, but the spec says it is a combo
+        #config.logger.debug("%s, %s" %(sensors,nodes))
+        config.nodes = [] 
+
+        if sensors is not None and len(sensors) != 0:
+            for i in nodes:
+                if 'kinect' in sensors:
+                    config.nodes.append(i + "-kinect")
+                elif 'lidar' in sensors:
+                    config.nodes.append(i + "-lidar")
+                elif 'camera' in sensors:
+                    config.nodes.append(i + "-camera")
+                else:
+                    config.node.append(i)
+        else:
+            # if there is no sensor, that will be indicated in sensors
+            for i in nodes:
+                config.nodes.append(i + "-kinect")
+        config.sensors = []
+        config.sensors.extend(list(sensors))
+
+    cp.track_config(config_updater)
 
     logger.debug("starting TA REST interface")
 

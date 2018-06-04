@@ -30,7 +30,7 @@ turtlebot has reached the goal and that the mission has been completed.  note th
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**doneparams**  <br>*optional*|[doneparams](#done-post-doneparams)|
+|**Body**|**doneparams**  <br>*required*|[doneparams](#done-post-doneparams)|
 
 <a name="done-post-doneparams"></a>
 **doneparams**
@@ -75,7 +75,7 @@ used by the TA to indicate to the TH that a non-recoverable error has occurred a
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**errorparams**  <br>*optional*|[errorparams](#error-post-errorparams)|
+|**Body**|**errorparams**  <br>*required*|[errorparams](#error-post-errorparams)|
 
 <a name="error-post-errorparams"></a>
 **errorparams**
@@ -113,7 +113,7 @@ indicate to the TH that the TA is ready to recieve configuration data to continu
 |Name|Description|Schema|
 |---|---|---|
 |**discharge-budget**  <br>*optional*|if in level c, the maximum number of queries against the target function during learning  <br>**Minimum value** : `2`  <br>**Maximum value** : `1048576`|integer|
-|**level**  <br>*required*|the level at which the DAS should operate for this test.<br>as given in the CP definition,<br><br>  * a - no perturbations, no adaptation, no power model<br><br>  * b - perturbations, but no adaptation, no power model<br><br>  * c - perturbations and adaptation, with charge and<br>        discharge power models provided and learned|enum (a, b, c)|
+|**level**  <br>*required*|the level at which the DAS should operate for this test. as given in the CP definition,<br><br>  * a - no perturbations, no adaptation, no power model<br><br>  * b - perturbations, but no adaptation, no power model<br><br>  * c - perturbations and adaptation, with charge and<br>        discharge power models provided and learned|enum (a, b, c)|
 |**power-model**  <br>*optional*|if in level c, the name of the power model from the test data to use for this test. each power model includes at least a function describing how the battery charges, discharges, and a maximum possible charge.  <br>**Minimum value** : `0`  <br>**Maximum value** : `99`|integer|
 |**start-loc**  <br>*required*|the name of the start map waypoint. start-loc must not be the same as the first item of `target-locs`.|string|
 |**target-locs**  <br>*required*|the names of the waypoints to visit, in the order in which they must be visited. each name must be a valid name of a waypoint on the map. `target-locs` must not be the empty list.  every adjacent pair of elements of `target-locs` must be disequal -- that is to say, it is not permitted to direct the robot to travel to the waypoint where it is already located.|< string > array|
@@ -130,7 +130,7 @@ used by the TA to periodically indicate its current state to the TH
 
 |Type|Name|Schema|
 |---|---|---|
-|**Body**|**statusparams**  <br>*optional*|[statusparams](#status-post-statusparams)|
+|**Body**|**statusparams**  <br>*required*|[statusparams](#status-post-statusparams)|
 
 <a name="status-post-statusparams"></a>
 **statusparams**

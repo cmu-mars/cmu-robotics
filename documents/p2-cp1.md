@@ -3,7 +3,7 @@
 ## Overview
 
 This challenge problem will demonstrate major advances in our capability to
-learn power models efficiently under budget constraints to adapt to
+machine learn power models efficiently under budget constraints to adapt to
 perturbations such as environmental changes or changes in the internal
 resources (Battery).
 
@@ -27,7 +27,7 @@ is one of the characteristics of cyber-physical systems that
 
 Using power as an example model, the aim of this challenge problem is to
 
-  1. apply learning techniques to discover new power models for a robotics
+  1. apply machine learning techniques to discover new power models for a robotics
      system, and
   2. take advantage of these new models at run time to improve the quality
      of missions of the robot over the use of no or static models.
@@ -387,9 +387,9 @@ the target location.
 
 **Test/Capture Method**: For determining whether a task is accomplished
 successfully, the position of the robot will be read from the
-simulator. This will be returned in test-ta/action/observed
+simulator. This will be returned in the `/done/tasks-finished` data structure. 
 
-**Result expression**: `location = (/done/x, /done/y)`
+**Result expression**: `location{i} = (/done/tasks-finished{i}/x, /done/tasks-finished{i}/y)` for each task `i` completed.
 `total_tasks=size(/ready/target-locs)`
 
 **Verdict Expression**: Using the information in `/done` message by
@@ -426,14 +426,13 @@ For each task `t` in `/done/tasks-finished`:
 
 `r = sum(score) / total_tasks`
 
-Note that the ordered list of tasks that are reported to be finished by the bot and can be retrieved in `/done/tasks-finished` should be a subset of the tasks in the ordered set tasks in `/ready/target-locs`, otherwise the final score is zero, `r=0`.
+Note that the ordered list of tasks that are reported to be finished by the bot and can be retrieved in `/done/tasks-finished` should be a subset of the tasks in the ordered set tasks in `/ready/target-locs`, otherwise the final score is zero, `r=0`. I.e., in the code below if `is_valid_case(/done/tasks-finished/name, /target-locs)==False` then `r=0`.
 
 ```python
->>> A = (a, b, g)
->>> B = (a, c, b, e, g)
->>> b_iter = iter(B)
->>> all(a in b_iter for a in A)
-True
+>>> def is_valid_case(A,B):
+      B_iter = iter(B)
+      return all(a in B_iter for a in A)
+
 ```
 
 
@@ -520,12 +519,9 @@ Any two test cases would be different if the difficulty levels of them are
 different. However, if two test cases are similar with respect to the
 difficulty of the test, we consider them identical.
 
-## List of log files
+## Static data
 
-Here is a list of paths to log files that we want saved from every test run for postmortem analyses:
-* Standard output
-* Standard error
-* All files in `~/cp1/`
+[static data](../static-data/cp1/README.md) 
 
 
 ### Backend components

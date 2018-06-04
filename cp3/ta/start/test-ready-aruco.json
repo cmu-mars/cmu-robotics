@@ -1,0 +1,6 @@
+{"start-configuration" : "aruco-camera",
+  "start-loc" : "l1",
+  "target-loc" : "l8",
+  "use-adaptation" : true,
+  "utility-function" : "favor-timeliness"
+}

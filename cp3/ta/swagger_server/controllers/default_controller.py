@@ -14,13 +14,16 @@ from typing import List, Dict
 from six import iteritems
 from ..util import deserialize_date, deserialize_datetime
 
-from swagger_server.models.cp3_internal_status import CP3InternalStatus  # noqa: E501
+from swagger_server.models.cp3_internal_status import CP3InternalStatus as CP3IS  # noqa: E501
+#from swagger_server.models import cp3_internal_status
 
 import ast
 import rospy
 
 import swagger_server.config as config
 import swagger_server.comms as comms
+
+import traceback
 
 
 def internal_status_post(CP3InternalStatus):  # noqa: E501
@@ -33,55 +36,69 @@ def internal_status_post(CP3InternalStatus):  # noqa: E501
 
     :rtype: None
     """
-    if connexion.request.is_json:
-        CP3InternalStatus = CP3InternalStatus.from_dict(connexion.request.get_json())  # noqa: E501
+    try:
+        cp3_internal_status = CP3InternalStatus
+        if connexion.request.is_json: #and not type(cp3_internal_status) is dict:
+            # print(connexion.request.ge`t_json())
+            # print(type(CP3InternalStatus))
+            # print(CP3InternalStatus)
+            cp3_internal_status = CP3IS.from_dict(connexion.request.get_json())  # noqa: E501
 
-    config.logger.debug("TA internal status end point hit with status %s and message %s"
-                        % (CP3InternalStatus.status, CP3InternalStatus.message))
+        config.logger.debug("TA internal status end point hit with status %s and message %s"
+                            % (cp3_internal_status.status, cp3_internal_status.message))
 
-    if CP3InternalStatus.status == "RAINBOW_READY":
-        comms.send_status("internal status, rainbow ready",
-                          "live",
-                          "CP3 TA ready to recieve inital perturbs in adaptive case after getting RAINBOW_READY")
-        if not config.use_adaptation:
-            config.logger.debug("[WARN] internal status got a rainbow ready when not in the adaptive case")
+        if cp3_internal_status.status == "RAINBOW_READY":
+            config.logger.info("Sending 'live' in response to 'RAINBOW_READY'")
+            comms.send_status("internal status, rainbow ready",
+                              "live",
+                              "CP3 TA ready to recieve inital perturbs in adaptive case after getting RAINBOW_READY")
+            if not config.use_adaptation:
+                config.logger.warn("[WARN] internal status got a rainbow ready when not in the adaptive case")
 
-    elif CP3InternalStatus.status == "MISSION_SUCCEEDED":
-        config.logger.debug("TA internal status got MISSION_SUCCEEDED")
-        if config.use_adaptation:
-            comms.send_done("internal status, mission succeeded")
-        else:
-            config.logger.debug("[WARN] TA internal status got MISSION_SUCCEEDED in non-adapting case")
+        elif cp3_internal_status.status == "MISSION_SUCCEEDED":
+            config.logger.debug("TA internal status got MISSION_SUCCEEDED")
+            if config.use_adaptation:
+                comms.send_done("internal status, mission succeeded")
+            else:
+                config.logger.warn("[WARN] TA internal status got MISSION_SUCCEEDED in non-adapting case")
 
-    elif CP3InternalStatus.status == "MISSION_FAILED":
-        if config.use_adaptation:
-            comms.send_done("internal status, mission failed")
-        else:
-            config.logger.debug("[WARN] TA internal status got MISSION_FAILED in non-adapting case")
+        elif cp3_internal_status.status == "MISSION_FAILED":
+            if config.use_adaptation:
+                comms.send_done("internal status, mission failed")
+            else:
+                config.logger.warn("[WARN] TA internal status got MISSION_FAILED in non-adapting case")
 
-    elif CP3InternalStatus.status == "ADAPTING":
-        config.adaptations = config.adaptations + 1
-        comms.send_status("internal status, adapting",
-                    "adapting",
-                    "DAS is now adapting")
+        elif cp3_internal_status.status == "ADAPTING":
+            config.adaptations = config.adaptations + 1
+            comms.setup_adapted_listeners()
+            # TODO set up IG listener to listen for new IG followed by first move
+            comms.send_status("internal status, adapting",
+                        "adapting",
+                        "DAS is now adapting")
 
-    elif CP3InternalStatus.status == "ADAPTED":
-        comms.send_status("internal status, adapted",
-                          "adapted",
-                          "DAS has now adapted")
+        elif cp3_internal_status.status == "ADAPTED":
+            #TODO wait for send 
+            # comms.send_status("internal status, adapted",
+            #                   "adapted",
+            #                   "DAS has now adapted")
+            #config.adapted_state = 1
+            pass
 
-    elif CP3InternalStatus.status == "ADAPTED_FAILED":
-        comms.send_status("internal status, adapted_failed",
-                          "adapted",
-                          "DAS has now adapted after a failure with message %s" % CP3InternalStatus.message)
+        elif cp3_internal_status.status == "ADAPTED_FAILED":
+            comms.send_status("internal status, adapted_failed",
+                              "adapted",
+                              "DAS has now adapted after a failure with message %s" % cp3_internal_status.message)
 
-    elif CP3InternalStatus.status == "FINAL_UTILITY":
-        config.logger.debug("ignoring until RR3") ## todo
+        elif cp3_internal_status.status == "FINAL_UTILITY":
+            config.logger.debug("ignoring until RR3") ## todo
 
-    elif CP3InternalStatus.status == "PLAN":
-        config.plan = [ x.strip() for x in  ast.literal_eval(CP3InternalStatus.message) ]
-        if not CP3InternalStatus.sim_time == -1:
-            config.logger.debug("[WARN] ta got an internal plan status with sim_time %s, which is out of spec" % CP3InternalStatus.sim_time)
+        elif cp3_internal_status.status == "PLAN":
+            config.plan = [ x.strip() for x in  ast.literal_eval(cp3_internal_status.message) ]
+            if not cp3_internal_status.sim_time == -1:
+                config.logger.debug("[WARN] ta got an internal plan status with sim_time %s, which is out of spec" % cp3_internal_status.sim_time)
+    except Exception as e:
+        config.logger.error("Internal status got an exception: %s" %e)
+        traceback.print_exc()
 
 def observe_get():
     """
@@ -196,6 +213,7 @@ def start_post():
 
     :rtype: None
     """
+    config.logger.info("Received start message")
     if not config.started:
         def active_cb():
             """ callback for when the bot is made active """
@@ -207,7 +225,7 @@ def start_post():
                 config.logger.debug("received notification that the goal has been completed successfully")
 
             if not config.use_adaptation:
-                send_done("done callback")
+                comms.send_done("done callback")
 
         ## register a callback with the CP to record collision data
         def collision_cb(bumped, velocity, time):

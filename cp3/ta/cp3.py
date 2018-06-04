@@ -94,11 +94,13 @@ class BaseSystem:
 			rospy.sleep(sleep_time)
 		return self.do_instructions(start, target, wait, active_cb, done_cb)
 
-	def do_instructions(self, start, target, wait, active_cb=None, done_cb = None):
+	def do_instructions(self, start, target, wait, active_cb=None, done_cb = None, speed=None):
 		if self.ig is None:
 			self.ig = actionlib.SimpleActionClient("ig_action_server", ig_action_msgs.msg.InstructionGraphAction)
 			self.ig.wait_for_server()
 		igcode = self.instruction_server.get_instructions(start, target)
+		if speed is not None:
+			igcode = igcode.replace("0.68,", "%s," %speed)
 		goal = ig_action_msgs.msg.InstructionGraphGoal(order=igcode)
 		self.gazebo.set_charging_srv(False)
 		if not wait:
@@ -108,7 +110,7 @@ class BaseSystem:
 			self.ig.send_goal(goal)
 			result = self.ig.wait_for_result(timeout=rospy.Duration(60*15))
 			state = self.ig.get_state()
-			if result and self.ig.get_result().succeeded and state == GoalStatus.SUCCEEDED:
+			if result and state == GoalStatus.SUCCEEDED:
 				return True, None
 			else:
 				if (self.ig.get_result() is not None):
@@ -212,13 +214,13 @@ class CP3(ConverterMixin,BaseSystem):
 
 		if mode.data == 2:
 			to_remove.add("kinect")
-			to_add.add("cameras")
+			to_add.add("camera")
 		elif mode.data == 1:
-			to_remove.add("cameras")
+			to_remove.add("camera")
 			to_add.add("kinect")
 		else:
 			to_remove.add("kinect")
-			to_remove.add("cameras")
+			to_remove.add("camera")
 		sensors = sensors.difference(to_remove)
 		sensors = sensors.union(to_add)
 
@@ -243,7 +245,7 @@ class CP3(ConverterMixin,BaseSystem):
 			n = [x[1:] for x in n]
 
 			has_amcl = "amcl" in n
-			has_mrpt = "mrpt_localization" in n
+			has_mrpt = "mrpt_localization_node" in n
 			has_aruco = set(self.NODE_MAP["aruco"]).issubset(n)
 			rc = False
 			if "amcl" in self.nodes and not has_amcl:
@@ -327,13 +329,13 @@ class CP3(ConverterMixin,BaseSystem):
 			self.illuminance_subscriber.unregister()
 		
 
-	def do_instructions(self, start, target, wait, active_cb = None, done_cb = None):
+	def do_instructions(self, start, target, wait, active_cb = None, done_cb = None, speed=None):
 
 		if wait and (self.track_aruco or self.track_illuminance):
 			self.start_aruco_tracking()
 		ret = None
 		try:
-			ret = BaseSystem.do_instructions(self, start, target, wait, active_cb, done_cb)
+			ret = BaseSystem.do_instructions(self, start, target, wait, active_cb, done_cb, speed=speed)
 		except:
 			ret = False, "Some weird exception";
 		if wait and (self.track_aruco or self.track_illuminance):

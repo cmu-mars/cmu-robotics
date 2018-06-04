@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
+import time
 import connexion
 import sys
 import logging
 import traceback
+import threading
 from swagger_server import encoder
 from swagger_client import DefaultApi
 
@@ -11,6 +13,9 @@ from orchestrator.exceptions import *
 
 from swagger_server import config
 from swagger_server.converters import *
+from swagger_client.models.parameters_1 import Parameters1
+from swagger_client.models.parameters import Parameters
+from swagger_server.models.error_error import ErrorError
 
 logger = logging.getLogger("cp2ta")  # type: logging.Logger
 logger.setLevel(logging.DEBUG)
@@ -73,7 +78,12 @@ if __name__ == '__main__':
                                      pareto_set=[ patch2ca(x) for x in pareto ]))
 
     def done_cb(log, attempts, outcome, pareto, runtime):
-        thApi.done_post(Parameters1(outcome=outcome.name,
+        outcome_s = ({
+            'NO_REPAIR': 'no-repair',
+            'PARTIAL_REPAIR': 'partial-repair',
+            'COMPLETE_REPAIR': 'complete-repair'
+        })[outcome.name]  # type: str
+        thApi.done_post(Parameters1(outcome=outcome_s,
                                     running_time=runtime,
                                     num_attempts=attempts,
                                     pareto_set=[ patch2ca(x) for x in pareto ],
@@ -89,20 +99,23 @@ if __name__ == '__main__':
         thApi.error_post(Parameters(s))
         raise Exception(s)
 
-    ## start the sequence diagram: post to ready to get configuration data
-    try:
-        logger.debug("posting to /ready")
-        ready_resp = thApi.ready_post()
-        logger.debug("received response from /ready:")
-        logger.debug(str(ready_resp))
-    except Exception as e:
-        logger.debug("Failed to connect with th")
-        logger.debug(traceback.format_exc())
-        raise e
+    # start the sequence diagram: post to ready to get configuration data
+    def send_ready():
+        time.sleep(5)
+        try:
+            logger.debug("posting to /ready")
+            ready_resp = thApi.ready_post()
+            logger.debug("received response from /ready:")
+            logger.debug(str(ready_resp))
+        except Exception as e:
+            logger.debug("Failed to connect with th")
+            logger.debug(traceback.format_exc())
+            raise e
 
-    ## todo: currently we don't even do anything with ready! see
-    ## https://github.mit.edu/brass/cmu-robotics/issues/39
+    # FIXME for now, we send /ready after a fixed delay
+    t = threading.Thread(target=send_ready)
+    t.start()
 
     # Start the TA listening
     logger.debug("running the TA")
-    app.run(port=5000, host='0.0.0.0')
+    app.run(port=5000, host='0.0.0.0', threaded=True)

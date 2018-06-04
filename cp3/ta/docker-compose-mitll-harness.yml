@@ -12,25 +12,33 @@
 #
 version: '2'
 services:
+  cp3_th:
+    image: docker.darpa-brass.com/tbraje/cmur-harness
+    container_name: cp3_th
+    hostname: cp3_th
+    environment:
+      - "TA_PORT=${TA_PORT}"
+      - "TH_PORT=${TH_PORT}"
+    ports:
+      - ${TH_PORT}:${TH_PORT}
+    volumes:
+      - ./:/run
+    command: /run/run.sh
+#    command: --cp CP3 --thPort ${TH_PORT} --taHost cp3_ta --taPort 5000
+
   cp3_ta:
-    image: cmumars/p2-cp3        # Refer to the dockerhub container 
+    image: cmumars/p2-cp3
     container_name: cp3_ta
     hostname: cp3_ta
     environment:
-      - "ROS_HOSTNAME=cp3_ta"
       - "ROS_MASTER_URI=http://cp3_ta:11311"
+      - "ROS_HOSTNAME=cp3_ta"
       - "TA_PORT=${TA_PORT}"
-      - "RAINBOW_DEBUG_MODE=0"   # 0 is not debug, 1 is start rainbow in debug
-    volumes:
-      - ./start:/start
-      - ./logs:/home/mars/logs
-      - ./roslogs:/home/mars/.ros/log
     ports:
       - ${TA_PORT}:5000
-      - 1044:1044                              # The Java remote debugger connections
+    depends_on:
+      - cp3_th
     expose:
       - 5000
-      - 1044
-    command: bash -c ". entrypoint.sh && cd /usr/src/app && ./start_exp.sh ${START}"
-volumes:
-  start:
+      - 1100
+    command: bash -c "sleep 20 && . entrypoint.sh && cd /usr/src/app && ./start_exp.sh http://cp3_th:${TH_PORT}"

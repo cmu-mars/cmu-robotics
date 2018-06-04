@@ -3,6 +3,7 @@ import asyncio
 import concurrent.futures
 from multiprocessing import Process, pool
 from threading import Thread
+import rospy
 
 from swagger_server.models.battery_params import BatteryParams  # noqa: E501
 from swagger_server.models.inline_response200 import InlineResponse200  # noqa: E501
@@ -15,21 +16,16 @@ from swagger_server.models.inline_response4002 import InlineResponse4002  # noqa
 from swagger_server.models.inline_response4003 import InlineResponse4003  # noqa: E501
 from swagger_server.models.place_params import PlaceParams  # noqa: E501
 from swagger_server.models.remove_params import RemoveParams  # noqa: E501
-from swagger_server.models.cp1_internal_status import CP1InternalStatus
-
+from swagger_server.models.cp1_internal_status import CP1InternalStatus as CP1IS
 from swagger_server import util
-
 from swagger_client.models.errorparams import Errorparams
 from swagger_client.models.done_tasksfinished import DoneTasksfinished
-
 import swagger_server.config as config
 import swagger_server.comms as comms
 
-import rospy
 
-
-def internal_post(CP1InternalStatus):  # noqa: E501
-    """internal_post
+def internal_status_post(CP1InternalStatus):  # noqa: E501
+    """internal_status_post
 
     reports any internal status (including the error that may occured) from the backend that might be sent to the TA for internal bookeeping or forwarding to the TH # noqa: E501
 
@@ -38,47 +34,53 @@ def internal_post(CP1InternalStatus):  # noqa: E501
 
     :rtype: None
     """
-    if connexion.request.is_json:
-        CP1InternalStatus = CP1InternalStatus.from_dict(connexion.request.get_json())  # noqa: E501
 
-    config.logger.debug("TA internal status end point hit with status %s and message %s"
-                        % (CP1InternalStatus.status, CP1InternalStatus.message))
+    try:
+        cp1_internal_status = CP1InternalStatus
+        if connexion.request.is_json:
+            cp1_internal_status = CP1IS.from_dict(connexion.request.get_json())  # noqa: E501
 
-    if CP1InternalStatus.status == "learning-started":
-        config.logger.debug("internal got a deprecated status which is being ignored")
-    elif CP1InternalStatus.status == "learning-done":
-        config.logger.debug("internal got a deprecated status which is being ignored")
-    elif CP1InternalStatus.status == "adapt-started":
-        comms.send_status("internal", "adapt-started")
-    elif CP1InternalStatus.status == "adapt-done":
-        comms.send_status("internal", "adapt-done")
-    elif CP1InternalStatus.status == "charging-started":
-        comms.send_status("internal", "charging-started")
-    elif CP1InternalStatus.status == "charging-done":
-        comms.send_status("internal", "charging-done")
-    elif CP1InternalStatus.status == "parsing-error":
-        config.logger.debug("internal got a deprecated status which is being ignored")
-    elif CP1InternalStatus.status == "learning-error":
-        config.logger.debug("internal got a deprecated status which is being ignored")
-    elif CP1InternalStatus.status == "other-error":
-        config.logger.debug("sending error to the TH because of message %s" % CP1InternalStatus.message)
-        resp = config.thApi.error_post(Errorparams(error="other-error", message=CP1InternalStatus.message))
+        config.logger.debug("TA internal status end point hit with status %s and message %s"
+                            % (cp1_internal_status.status, cp1_internal_status.message))
 
-    # these are the literal constants that come from rainbow. the
-    # constants above are from the API definition; there's some
-    # overlap and this is a little messy
-    elif CP1InternalStatus.status == "RAINBOW_READY":
-        comms.send_status("internal, rainbow ready in level %s" % config.ready_response.level, "live", False)
-    elif CP1InternalStatus.status == "MISSION_SUCCEEDED":
-        config.logger.debug("internal got a rainbow mission message which is being ignored")
-    elif CP1InternalStatus.status == "MISSION_FAILED":
-        config.logger.debug("internal got a rainbow mission message which is being ignored")
-    elif CP1InternalStatus.status == "ADAPTING":
-        comms.send_status("internal", "adapt-started")
-    elif CP1InternalStatus.status == "ADAPTED":
-        comms.send_status("internal", "adapt-done")
-    elif CP1InternalStatus.status == "ADAPTED_FAILED":
-        comms.send_status("internal, adapted_failed", "adapt-done")
+        if cp1_internal_status.status == "learning-started":
+            config.logger.debug("internal got a deprecated status which is being ignored")
+        elif cp1_internal_status.status == "learning-done":
+            config.logger.debug("internal got a deprecated status which is being ignored")
+        elif cp1_internal_status.status == "adapt-started":
+            comms.send_status("internal", "adapt-started")
+        elif cp1_internal_status.status == "adapt-done":
+            comms.send_status("internal", "adapt-done")
+        elif cp1_internal_status.status == "charging-started":
+            comms.send_status("internal", "charging-started")
+        elif cp1_internal_status.status == "charging-done":
+            comms.send_status("internal", "charging-done")
+        elif cp1_internal_status.status == "parsing-error":
+            config.logger.debug("internal got a deprecated status which is being ignored")
+        elif cp1_internal_status.status == "learning-error":
+            config.logger.debug("internal got a deprecated status which is being ignored")
+        elif cp1_internal_status.status == "other-error":
+            config.logger.debug("sending error to the TH because of message %s" % cp1_internal_status.message)
+            resp = config.thApi.error_post(Errorparams(error="other-error", message=cp1_internal_status.message))
+
+        # these are the literal constants that come from rainbow. the
+        # constants above are from the API definition; there's some
+        # overlap and this is a little messy
+        elif cp1_internal_status.status == "RAINBOW_READY":
+            comms.send_status("internal, rainbow ready in level %s" % config.ready_response.level, "live", sendxy=False)
+        elif cp1_internal_status.status == "MISSION_SUCCEEDED":
+            config.logger.debug("internal got a rainbow mission message which is being ignored")
+        elif cp1_internal_status.status == "MISSION_FAILED":
+            config.logger.debug("internal got a rainbow mission message which is being ignored")
+        elif cp1_internal_status.status == "ADAPTING":
+            comms.send_status("internal", "adapt-started")
+        elif cp1_internal_status.status == "ADAPTED":
+            comms.send_status("internal", "adapt-done")
+        elif cp1_internal_status.status == "ADAPTED_FAILED":
+            comms.send_status("internal, adapted_failed", "adapt-done")
+
+    except Exception as e:
+        config.logger.debug("Internal status got an exception: %s" % e)
 
 
 def observe_get():

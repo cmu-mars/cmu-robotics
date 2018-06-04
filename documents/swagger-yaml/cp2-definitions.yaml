@@ -181,7 +181,7 @@ definitions:
           given by the location range associated with this perturbation.
       transformation-index:
         type: integer
-        minimum: 1
+        minimum: 0
       arguments:
         type: object
         additionalProperties:

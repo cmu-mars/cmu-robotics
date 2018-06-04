@@ -1,17 +1,17 @@
 version: '2'
 services:
   cp2_th:
-    # image: docker.darpa-brass.com/ll/cmur-harness
-    image: cmumars/cp2mockth
-    # build: https://github.com/cmu-mars/p2c2-mock-test-harness.git
+    image: docker.darpa-brass.com/tbraje/cmur-harness
     container_name: cp2_th
     hostname: cp2_th
-    volumes:
-      - ./logs:/var/log/th
     expose:
       - 5001
-    command: -p 5001 --url-ta http://cp2_ta:5000 --debug --log-file /var/log/th/cp2th.log
-    # command: --cp CP2 --thPort ${TH_PORT} --taHost cp2_ta --taPort 5000
+    entrypoint: /home/haskell/cmur
+    command: >
+      --thPort 5001
+      --shellApi http://nevermind:8080
+      --taApi http://cp2_ta:5000/
+      --parameters '{"baselineFlag": "ActualTest", "testId": {"uuid": "fb9bbe71-c4ac-4405-a7e0-7f5d67785358"}, "cp": "CP2", "testGrpId": "3b76efbe-6588-4096-94a8-1d7ebfb51d5e", "params": {"numberOfFiles": 1, "cp2Init": {}, "numberOfPerturbations": 6}, tcId: 0}'
 
   bugzoo:
     image: cmumars/bugzood

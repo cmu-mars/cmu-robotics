@@ -2,19 +2,14 @@
 
 import sys
 import connexion
-
-import subprocess
-
-
-# from .encoder import JSONEncoder
 import logging
 import traceback
 import os
 import json
 from multiprocessing import Process, Queue
-from threading import Thread
 import rospy
 import actionlib
+import threading
 
 from std_msgs.msg import Float64
 from move_base_msgs.msg import MoveBaseAction
@@ -204,10 +199,10 @@ if __name__ == '__main__':
     # subscribe to rostopics
     def energy_cb(msg):
         """call back to update the global battery state from the ros topic"""
-        config.battery = msg.data
+        config.battery = int(msg.data)
         if msg.data <= 0:
             if th_connected:
-                comms.send_done("energy call back", "", "out-of-battery")
+                comms.send_done("energy call back", "out of juice", "out-of-battery")
             else:
                 rospy.logerr("out-of-battery")
 
@@ -240,7 +235,11 @@ if __name__ == '__main__':
         except Exception as e:
             fail_hard("failed to connection to rainbow: %s" % e)
     elif th_connected:
-        comms.send_status("__main__ in level %s" % ready_resp.level, "live")
+        def worker():
+            rospy.sleep(5)
+            comms.send_status("__main__ in level %s" % ready_resp.level, "live", sendtime=False)
+        t = threading.Thread(target=worker)
+        t.start()
 
     logger.debug("Starting TA REST interface")
     print("Starting TA REST interface")

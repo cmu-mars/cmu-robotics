@@ -13,4 +13,4 @@ In addition to the console trace from the ta, we need the following logs collect
 2. /home/mars/rainbow.log
 3. /home/mars/.ros/logs/latest/\*
 4. /home/mars/das/rainbow-brass/\*.log
-
+5. ~/ps_*.log

@@ -169,7 +169,7 @@ automatically from the Swagger definition for convenience.
 **Formal Description**: The intent here is that if we get close to the goal (within 50cm from the center of the robot), then we get 1. Otherwise we get a linearly decreasing score the further away we are. So, if the turtlebot finishes in the green area in the figure below we get a score of 1; in the blue area we get 0 > score > 1; outside the blue circle we get 0.
 ![Accuracy diagram](img/cp3-accuracy.png "Accuracy Intent")
 
-**Test/Capture Method**: The position of the robot will be read from the simulator. This will be returned in test-ta/action/observed
+**Test/Capture Method**: The position of the robot will be read from the simulator. This will be returned in the `done` message which will contain `final_x` and `final_y` which will be the actual coordinates (in the simulator) of the robot.
 
 **Result expression**: `location = (/done/final_x, /done/final_y)`
 
@@ -188,34 +188,34 @@ function distance(loc1, loc2) = sqrt((loc1.x - loc2.x)^2 + (loc1.y - loc2.y)^2))
 
 | Condition                                                        | Score                                             |
 |------------------------------------------------------------------|---------------------------------------------------|
-| eventually(distance(location,target) < BUFFER)	                | 1                                                 |
-| eventually(BUFFER < distance(location, target) < MAX_DISTANCE)	 | 1-(distance(location,target)-BUFFER)/(MAX_DISTANCE+BUFFER) |
+| distance(location,target) < BUFFER	                | 1                                                 |
+| BUFFER < distance(location, target) < MAX_DISTANCE	 | 1-(distance(location,target)-BUFFER)/(MAX_DISTANCE+BUFFER) |
 | else                                                             | 0                                                 |
 
 **Challenge evaluation for degraded intents:**
 
-C = the challenge (with adaptation on)
+C = the challenge (with adaptation on)\
 B = base (with no adaptation)
 
-DEG_C = the score (0..1) degraded of C
+DEG_C = the score (0..1) degraded of C\
 DEG_B = the score (0..1) degraded of B
 
-| C ->,<br/> B \/  | PASS              | DEGRADED                             | FAIL |
+| **C ->,<br/> B \\/**  | **PASS**              | **DEGRADED**                             | **FAIL** |
 |-------------|-------------------|--------------------------------------|------|
-| PASS        | INCONCLUSIVE      | FAIL                                 | FAIL |
-| DEGRADED    | PASS              | PASS if DEG_C > DEG_B<br/>INCONCLUSIVE if DEG_C == DEG_B<br/>FAIL otherwise | FAIL |
-| FAIL        | PASS | PASS | INCONCLUSIVE |
+| **PASS**        | INCONCLUSIVE      | FAIL                                 | FAIL |
+| **DEGRADED**    | PASS              | PASS if DEG_C > DEG_B<br/>INCONCLUSIVE if DEG_C == DEG_B<br/>FAIL otherwise | FAIL |
+| **FAIL**        | PASS | PASS | INCONCLUSIVE |
 
 ### Intent Element 2: Utility
 **Informal Description**: The DAS maintains a high level of utility for the mission
 
-**Formal Description**: Software systems are designed to trade-off different business goals. Over time, these trade-offs may adapt and the system must change the way it responds to match these new trade-offs. For the purposes of this challenge problem, we represent the trade-offs as a utility preference function, but limit the preference functions to one that favors timeliness, one that favors efficiency, and another that favors safety. Utility will be a value on the interval [0,1].
+**Formal Description**: Software systems are designed to trade-off different goals. Over time, these trade-offs may adapt and the system must change the way it responds to match these new trade-offs. For the purposes of this challenge problem, we represent the trade-offs as a utility preference function, but limit the preference functions to one that favors timeliness, one that favors efficiency, and another that favors safety. Utility will be a value on the interval [0,1].
 
 **Test/Capture Method**: The done message will contain the final utility of the system, based on combining the metrics from the qualities of timeliness, efficiency, and safety described below. 
 
 **Result expression**: `utility = /done/final-utility`
 
-**Verdict Expression**: The value for the verdict expression will be the value of utility. In the roll-up of the test, the test succeeds if the utility of the Challenge is greater than the utility of Baseline B. The function to be used for making tradeoffs will be specified by the evaluators as one of three functions that can broadly be described as (a) favoring timing, (b) favoring safety, or (b) favoring efficiency. The function will be of the form w_t x timing_score + w_s x safety_score + w_e * efficiency score, where the utility will be normalized to be in the interval [0-1]. 
+**Verdict Expression**: The value for the verdict expression will be the value of utility. In the roll-up of the test, the test succeeds if the utility of the Challenge is greater than the utility of Baseline B. The function to be used for making tradeoffs will be specified by the evaluators as one of three functions that can broadly be described as (a) favoring timing, (b) favoring safety, or (b) favoring efficiency. The function will be of the form `w_t x timing_score + w_s x safety_score + w_e * efficiency score`, where the utility will be normalized to be in the interval [0-1]. 
 
 | Condition | Score |
 |-----------|-------|
@@ -271,8 +271,8 @@ function close_enough (loc1, loc2) = distance (loc1, loc2) <= MAX_DISTANCE
 
 | Condition                                                      | Score                                                |
 |---|---|
-| arrival_A < arrival_C | 	1 |
-| arrival_A - BUFFER <= arrival_C | (arrival_C - arrival_A - BUFFER) / (arrival_A - BUFFER) |
+| arrival_A >= arrival_C | 	1 |
+| arrival_A + BUFFER >= arrival_C | (Arrival_A + BUFFER - Arrival_C)/BUFFER |
 | else | 0 |
 
 
@@ -290,7 +290,7 @@ function close_enough (loc1, loc2) = distance (loc1, loc2) <= MAX_DISTANCE
 
 |Constant | Value | Meaning |
 |---------|-------|---------|
-|MAX_CHARGE | 15000 | The maximum mwh that the battery can hold |
+|MAX_CHARGE | 180000 | The maximum mwh that the battery can hold |
 
 | Condition                                                      | Score                                                |
 |----------------------------------------------------------------|------------------------------------------------------|
@@ -315,8 +315,7 @@ function close_enough (loc1, loc2) = distance (loc1, loc2) <= MAX_DISTANCE
 
 | Condition                                                      | Score                                                |
 |----------------------------------------------------------------|------------------------------------------------------|
-| size(collisions) == 0                                              |   1          |
-| !exists speed in collisions . speed > SAFE_SPEED                                                      | 1 |
+| forall speed in collisions . speed < SAFE_SPEED                                                      | 1 |
 | otherwise | 0 |
 
 

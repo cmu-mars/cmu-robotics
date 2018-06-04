@@ -54,7 +54,7 @@ class RainbowInterface:
         if (self.target is None):
             return True
         rospy.loginfo("Starting Rainbow (DAS)...")
-        command = Command([RAINBOW_PATH+"/brass.sh", "-w", RAINBOW_PATH, "-s", self.target, os.path.expanduser("~/rainbow-start.log")])
+        command = Command([RAINBOW_PATH+"/brass.sh", "-w", RAINBOW_PATH, "-s", self.target, os.path.expanduser("~/logs/rainbow-start.log")])
         ret = command.run(timeout=60)
         rospy.loginfo("Rainbow started, exit=%s"%str(ret))
         return ret == 0
