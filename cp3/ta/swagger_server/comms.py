@@ -10,7 +10,7 @@ from swagger_client.models.parameters_2 import Parameters2
 import rospy
 
 def save_ps(src):
-    with open(os.path.expanduser("~/ps_%s_%s.log") % (src, datetime.datetime.now()), "w") as outfile:
+    with open(os.path.expanduser("~/logs/ps_%s_%s.log") % (src, datetime.datetime.now()), "w") as outfile:
         subprocess.call(["ps","aux"],stdout=outfile)
 
 def send_done(src):

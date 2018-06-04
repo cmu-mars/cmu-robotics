@@ -13,16 +13,24 @@
 version: '2'
 services:
   cp3_ta:
-    image: cmu-mars/cp3
+    image: cmumars/p2-cp3        # Refer to the dockerhub container 
     container_name: cp3_ta
     hostname: cp3_ta
     environment:
       - "ROS_HOSTNAME=cp3_ta"
       - "ROS_MASTER_URI=http://cp3_ta:11311"
       - "TA_PORT=${TA_PORT}"
+      - "RAINBOW_DEBUG_MODE=0"   # 0 is not debug, 1 is start rainbow in debug
+    volumes:
+      - ./start:/start
+      - ./logs:/home/mars/logs
+      - ./roslogs:/home/mars/.ros/log
     ports:
       - ${TA_PORT}:5000
+      - 1044:1044                              # The Java remote debugger connections
     expose:
       - 5000
-    command: bash -c ". entrypoint.sh && cd /usr/src/app && ./start_exp.sh /home/mars/test-ready.json"
-
+      - 1044
+    command: bash -c ". entrypoint.sh && cd /usr/src/app && ./start_exp.sh ${START}"
+volumes:
+  start:

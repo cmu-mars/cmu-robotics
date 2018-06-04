@@ -52,7 +52,7 @@ if __name__ == '__main__':
     ## capture the ambient logger
     logger = logging.getLogger('werkzeug')
     logger.setLevel(logging.DEBUG)
-    handler = logging.FileHandler('access.log')
+    handler = logging.FileHandler(os.path.expanduser('~/logs/TA_access.log'))
     logger.addHandler(handler)
     config.logger = logger
 
@@ -184,7 +184,7 @@ if __name__ == '__main__':
 
     if ready_resp.use_adaptation:
         try:
-            rainbow_log = open(os.path.expanduser("~/rainbow.log"),'w')
+            rainbow_log = open(os.path.expanduser("~/logs/rainbow.log"),'w')
             rainbow = RainbowInterface()
             ##todo: Ian: be careful copying this for cp1
             rainbow.launchRainbow("cp3", rainbow_log)
