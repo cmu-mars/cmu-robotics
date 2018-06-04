@@ -43,7 +43,7 @@ ADD start_exp.sh /usr/src/app
 RUN sudo chown -R mars /usr/src/app
 RUN chmod +x /usr/src/app/start_exp.sh
 
-
+#RUN cd /usr/src/app && python3 -m pip install --upgrade /usr/src/app
 ENV PYTHONUNBUFFERED 0
 
 EXPOSE 8080
@@ -52,7 +52,7 @@ ADD entrypoint.sh .
 
 
 
-ADD test-ready.json /home/mars/
+#ADD test-ready.json /home/mars/
 
 
 ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
