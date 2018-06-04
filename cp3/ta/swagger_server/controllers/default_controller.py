@@ -26,7 +26,6 @@ import swagger_server.comms as comms
 import traceback
 
 
-
 def internal_status_post(CP3InternalStatus):  # noqa: E501
     """internal_status_post
 
@@ -71,14 +70,19 @@ def internal_status_post(CP3InternalStatus):  # noqa: E501
 
         elif cp3_internal_status.status == "ADAPTING":
             config.adaptations = config.adaptations + 1
+            comms.setup_adapted_listeners()
+            # TODO set up IG listener to listen for new IG followed by first move
             comms.send_status("internal status, adapting",
                         "adapting",
                         "DAS is now adapting")
 
         elif cp3_internal_status.status == "ADAPTED":
-            comms.send_status("internal status, adapted",
-                              "adapted",
-                              "DAS has now adapted")
+            #TODO wait for send 
+            # comms.send_status("internal status, adapted",
+            #                   "adapted",
+            #                   "DAS has now adapted")
+            #config.adapted_state = 1
+            pass
 
         elif cp3_internal_status.status == "ADAPTED_FAILED":
             comms.send_status("internal status, adapted_failed",

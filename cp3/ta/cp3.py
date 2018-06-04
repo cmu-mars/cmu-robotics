@@ -214,13 +214,13 @@ class CP3(ConverterMixin,BaseSystem):
 
 		if mode.data == 2:
 			to_remove.add("kinect")
-			to_add.add("cameras")
+			to_add.add("camera")
 		elif mode.data == 1:
-			to_remove.add("cameras")
+			to_remove.add("camera")
 			to_add.add("kinect")
 		else:
 			to_remove.add("kinect")
-			to_remove.add("cameras")
+			to_remove.add("camera")
 		sensors = sensors.difference(to_remove)
 		sensors = sensors.union(to_add)
 
@@ -245,7 +245,7 @@ class CP3(ConverterMixin,BaseSystem):
 			n = [x[1:] for x in n]
 
 			has_amcl = "amcl" in n
-			has_mrpt = "mrpt_localization" in n
+			has_mrpt = "mrpt_localization_node" in n
 			has_aruco = set(self.NODE_MAP["aruco"]).issubset(n)
 			rc = False
 			if "amcl" in self.nodes and not has_amcl:

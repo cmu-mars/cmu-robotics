@@ -213,6 +213,31 @@ if __name__ == '__main__':
         t = threading.Thread(target=worker)
         t.start()
 
+    def config_updater(sensors, nodes):
+        # Note, there is an error here because nodes should just contain
+        # amcl or arcuo, but the spec says it is a combo
+        #config.logger.debug("%s, %s" %(sensors,nodes))
+        config.nodes = [] 
+
+        if sensors is not None and len(sensors) != 0:
+            for i in nodes:
+                if 'kinect' in sensors:
+                    config.nodes.append(i + "-kinect")
+                elif 'lidar' in sensors:
+                    config.nodes.append(i + "-lidar")
+                elif 'camera' in sensors:
+                    config.nodes.append(i + "-camera")
+                else:
+                    config.node.append(i)
+        else:
+            # if there is no sensor, that will be indicated in sensors
+            for i in nodes:
+                config.nodes.append(i + "-kinect")
+        config.sensors = []
+        config.sensors.extend(list(sensors))
+
+    cp.track_config(config_updater)
+
     logger.debug("starting TA REST interface")
 
     print("Starting the TA webserver")
