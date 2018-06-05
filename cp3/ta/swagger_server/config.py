@@ -34,3 +34,15 @@ sensors = []
 plan = None
 
 collisions = []
+
+
+## these variables keep track of the final-sim-time we report as
+## (sim-time@done - sim-time@start) -
+## sum(sim-time@adapted - sim-time@adapting)
+
+time_at_start = None
+time_at_done = None
+
+expected_next_adapt = "ADAPTING"
+time_spent_adapting = 0
+time_at_last_adapt  = None
