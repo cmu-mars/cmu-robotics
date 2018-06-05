@@ -28,7 +28,7 @@ def send_done(src):
         x , y , w , v = config.cp.gazebo.get_turtlebot_state()
         d = Parameters2(final_x = x,
                         final_y = y,
-                        final_sim_time = (config.time_at_done - config.time_at_start) - config.time_spend_adapting,
+                        final_sim_time = (config.time_at_done - config.time_at_start) - config.time_spent_adapting,
                         final_charge = math.floor(config.battery),
                         collisions = config.collisions,
                         num_adaptations = config.adaptations,
