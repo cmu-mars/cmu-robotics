@@ -485,44 +485,13 @@ We assume the following test stages for evaluation:
 | Predefined  |             | `✔` (B)     |             |
 | Learned     |             |             | `✔` (C)     |
 
+## Test Design
 
-### Test Cases
-To evaluate intent discovery, we propose that a set of test cases, each
-describing a mission as well as perturbations for the robot (e.g.,
-navigating a simulated corridor, placing 1 obstacle and changing the
-battery level once). Each test case is described by the following:
-
- * Mission schema: Navigation
- * Mission parameters: `A->T1->T2->...->Tn` (the way points or tasks that
-   the robot need to accomplish provided by LL)
- * Discharge functions to be selected from a set of [100 predefined
-   models](https://github.com/cmu-mars/cp1_base/tree/master/cp1_base/power_models) with different difficulty level (with different number of options interactions).
- * Perturbations: Obstacles + Battery level change
- * Possible adaptations: possible variations for `path planning, robot reconfiguration, charge battery`
- * Evaluation metric: Number of tasks accomplished, Mission accomplish time
-
-We also intend to specify some metrics based on which we evaluate how
-``difficult`` and how ``similar`` two test cases are. Therefore, LL could
-generate ``challenging`` and yet ``different`` test cases, this is what we
-mean by interesting test cases. The metrics are dependent on perturbations
-during the mission.
-
-Here are a list of metrics for determining a representative collection of
-test cases:
-
-1. The number of obstacle placement as well as number of battery set.
-
-2. The number of tasks (determined by the number of way points) and the
-   distance that the robot need to traverse to accomplish the tasks.
-
-Any two test cases would be different if the difficulty levels of them are
-different. However, if two test cases are similar with respect to the
-difficulty of the test, we consider them identical.
+[Guideline](test-design-cp1.md)
 
 ## Static data
 
 [static data](../static-data/cp1/README.md) 
-
 
 ### Backend components
 
