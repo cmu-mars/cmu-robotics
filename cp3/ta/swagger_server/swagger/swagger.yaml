@@ -154,10 +154,9 @@ definitions:
         type: "string"
         description: "cause the named node to fail"
         enum:
-        - "movebase"
         - "amcl"
         - "mrpt"
-        - "cb-base"
+        - "aruco"
   inline_response_200_1:
     required:
     - "sim-time"
