@@ -15,18 +15,25 @@ def save_ps(src):
         subprocess.call(["ps","aux"],stdout=outfile)
 
 def send_done(src):
+    ## todo: this might be a little aggressive; this will bring down the TA
+    ## entirely, i believe
+    if (config.time_at_start == None):
+        config.logger.error("trying to send done without having a start time")
+        raise Exception("trying to send done without having a start time")
+
     try:
+        config.time_at_done = rospy.Time.now().secs
         config.logger.debug("sending done from %s" % src)
         save_ps("done")
         x , y , w , v = config.cp.gazebo.get_turtlebot_state()
         d = Parameters2(final_x = x,
-                                                  final_y = y,
-                                                  final_sim_time = rospy.Time.now().secs,
-                                                  final_charge = math.floor(config.battery),
-                                                  collisions = config.collisions,
-                                                  num_adaptations = config.adaptations,
-                                                  final_utility = 0 ## todo placeholder value
-                                                  )
+                        final_y = y,
+                        final_sim_time = (config.time_at_done - config.time_at_start) - config.time_spend_adapting,
+                        final_charge = math.floor(config.battery),
+                        collisions = config.collisions,
+                        num_adaptations = config.adaptations,
+                        final_utility = 0 ## todo placeholder value
+        )
         config.logger.debug("Done message is %s" %d)
         response = config.thApi.done_post(d)
         config.logger.debug("response from done: %s" % response)
