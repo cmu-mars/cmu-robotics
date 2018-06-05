@@ -211,7 +211,6 @@ class CP3(ConverterMixin,BaseSystem):
 
 		to_remove = set()
 		to_add = set()
-
 		if mode.data == 2:
 			to_remove.add("kinect")
 			to_add.add("camera")
@@ -223,11 +222,11 @@ class CP3(ConverterMixin,BaseSystem):
 			to_remove.add("camera")
 		sensors = sensors.difference(to_remove)
 		sensors = sensors.union(to_add)
-
 		with self.lock:
-			if not sensors.issubset(self.sensors):
-				self.sensors = self.sensors.union(sensors)
+			if sensors != self.sensors:
+				self.sensors = self.sensors.difference(to_remove).union(to_add)
 				self.report_config = True
+
 
 	def update_lidar(self, on):
 		with self.lock:
