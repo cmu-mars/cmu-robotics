@@ -49,4 +49,5 @@ The map has a number of paths that can be taken from one target to another. In m
 obstacles in some paths that may affect safety. These corridors are hightlighted in the attached image of the map. Having test cases that exercise
 the robot on paths that are likely to contain these corridors should have some interesting results.
 
-*Insert Image*
+
+![CP3 Map Image](img/cp3-map.png)
