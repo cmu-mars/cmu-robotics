@@ -34,10 +34,14 @@ def track_adapt(desired=None, update=None):
         # set the next expected
         config.expected_next_adapt = update
 
-        # update the sum of time spent adapting
-        config.time_spent_adapting = config.time_spent_adapting + (t_now - config.time_at_last_adapt)
+        # update the sum of time spent adapting, if we have a previous last
+        # adapt marker. if rainbow does produces balanced adapt messages,
+        # this should only get skipped on the very first message, which
+        # should be an "ADAPTING"
+        if not (config.time_at_last_adapt == None):
+            config.time_spent_adapting = config.time_spent_adapting + (t_now - config.time_at_last_adapt)
 
-        # update the last adapted marker
+        # update the last adapted marker in all instances
         config.time_at_last_adapt = t_now
     else:
         ## todo: should anything more happen here?
