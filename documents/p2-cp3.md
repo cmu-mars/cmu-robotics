@@ -217,6 +217,14 @@ DEG_B = the score (0..1) degraded of B
 
 **Verdict Expression**: The value for the verdict expression will be the value of utility. In the roll-up of the test, the test succeeds if the utility of the Challenge is greater than the utility of Baseline B. The function to be used for making tradeoffs will be specified by the evaluators as one of three functions that can broadly be described as (a) favoring timing, (b) favoring safety, or (b) favoring efficiency. The function will be of the form `w_t x timing_score + w_s x safety_score + w_e * efficiency score`, where the utility will be normalized to be in the interval [0-1]. 
 
+The following weights are to be used in the evaluation:
+
+|**Utility**|**Time Weight**|**Safety Weight**|**Efficiency Weight**|
+|-|-|-|-|
+|favor-timeliness| w_t = 0.6 | w_s = 0.2 | w_e = 0.2 |
+|favor-safety    | w_t = 0.2 | w_s = 0.6 | w_e = 0.2 |
+|favor-efficiency| w_t = 0.2 | w_s = 0.2 | w_e = 0.6 |
+
 | Condition | Score |
 |-----------|-------|
 | utility >= 0.75 | PASS |
@@ -232,11 +240,11 @@ B = base (with no adaptation)
 DEG_C = the score (0..1) degraded of C
 DEG_B = the score (0..1) degraded of B
 
-| C ->,<br/> B \/  | PASS              | DEGRADED                             | FAIL |
+| **C ->,<br/> B \\/**  | **PASS**              | **DEGRADED**                             | **FAIL** |
 |-------------|-------------------|--------------------------------------|------|
-| PASS        | INCONCLUSIVE      | FAIL                                 | FAIL |
-| DEGRADED    | PASS              | PASS if DEG_C > DEG_B<br/>INCONCLUSIVE if DEG_C == DEG_B<br/>FAIL otherwise | FAIL |
-| FAIL        | PASS | PASS | INCONCLUSIVE |
+| **PASS**        | INCONCLUSIVE      | FAIL                                 | FAIL |
+| **DEGRADED**    | PASS              | PASS if DEG_C > DEG_B<br/>INCONCLUSIVE if DEG_C == DEG_B<br/>FAIL otherwise | FAIL |
+| **FAIL**        | PASS | PASS | INCONCLUSIVE |
 
 **Utility Component 1: Timing**
 
