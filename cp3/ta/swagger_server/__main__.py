@@ -96,7 +96,7 @@ if __name__ == '__main__':
     config.use_adaptation = ready_resp.use_adaptation
 
     ## build CP object without a gazebo instance, need to set later
-    cp = CP3(None)
+    cp = CP3(None, ready_resp.start_configuration)
     config.cp = cp
 
     ## check dynamic invariants on ready message
@@ -174,6 +174,7 @@ if __name__ == '__main__':
         cp.gazebo = gazebo
         cp.init()
         start_coords = cp.map_server.waypoint_to_coords(ready_resp.start_loc)
+        direction = cp.instruction_server.get_start_heading(ready_resp.start_loc, ready_resp.target_loc, ready_resp.start_configuration)
         gazebo.set_turtlebot_position(start_coords['x'], start_coords['y'], 0)
     except Exception as e:
         fail_hard("failed to connect to gazebo: %s" % e)
@@ -203,7 +204,7 @@ if __name__ == '__main__':
     sub_voltage = rospy.Subscriber("/energy_monitor/energy_level", Float64, energy_cb)
 
     ## set the initial plan (in A and B this won't change)
-    config.plan = cp.instruction_server.get_path(ready_resp.start_loc,ready_resp.target_loc)
+    config.plan = cp.instruction_server.get_path(ready_resp.start_loc,ready_resp.target_loc,ready_resp.start_configuration)
 
     if th_connected and not ready_resp.use_adaptation:
         def worker():

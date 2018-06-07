@@ -30,7 +30,7 @@ import threading
 
 class BaseSystem:
 
-	def __init__(self, map_server, instruction_server, gazebo): 
+	def __init__(self, map_server, instruction_server, gazebo, start_configuration): 
 #		self.ig = actionlib.SimpleActionClient("ig_action_server", ig_action_msgs.msg.InstructionGraphAction)
 #		self.ig.wait_for_server()
 
@@ -41,6 +41,7 @@ class BaseSystem:
 
 		self.move_base = None
 		self.ig = None
+		self.start_configuration = start_configuration
 
 		
 
@@ -82,7 +83,7 @@ class BaseSystem:
 
 
 		# Place the robot at the start
-		heading = self.instruction_server.get_start_heading(start, target)
+		heading = self.instruction_server.get_start_heading(start, target, self.start_configuration)
 		if heading == -1:
 			print("No information for %s to %s" %(start, target))
 			return False
@@ -98,7 +99,7 @@ class BaseSystem:
 		if self.ig is None:
 			self.ig = actionlib.SimpleActionClient("ig_action_server", ig_action_msgs.msg.InstructionGraphAction)
 			self.ig.wait_for_server()
-		igcode = self.instruction_server.get_instructions(start, target)
+		igcode = self.instruction_server.get_instructions(start, target, self.start_configuration)
 		if speed is not None:
 			igcode = igcode.replace("0.68,", "%s," %speed)
 		goal = ig_action_msgs.msg.InstructionGraphGoal(order=igcode)
@@ -173,8 +174,8 @@ class CP3(ConverterMixin,BaseSystem):
              'mrpt-kinect' : ['cp3-kinect.launch','cp3-mrpt.launch'],
              'mrpt-lidar' : ['cp3-lidar.launch', 'cp3-mrpt.launch']}
 
-	def __init__(self, gazebo):
-		BaseSystem.__init__(self, MapServer(self.DEFAULT_MAP_FILE), InstructionDB(self.DEFAULT_INSTRUCTION_FULE), gazebo)
+	def __init__(self, gazebo, start_configuration=None):
+		BaseSystem.__init__(self, MapServer(self.DEFAULT_MAP_FILE), InstructionDB(self.DEFAULT_INSTRUCTION_FULE), gazebo, start_configuration if not None else 'amcl-kinect')
 		def default_bump_callback(bumped, velocity, time):
 			print("detected bump before start. This should be anomalous")
 		self.bump_callback = default_bump_callback
