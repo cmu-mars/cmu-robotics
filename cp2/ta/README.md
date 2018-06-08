@@ -3,11 +3,11 @@
 ## Installation
 
 ```
-$ docker-compose build
+$ docker-compose build --no-cache
 ```
 
 ## Usage
 
 ```
-$ docker-compose up --build
+$ docker-compose up
 ```
