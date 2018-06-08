@@ -3,6 +3,7 @@
 ## Installation
 
 ```
+$ docker pull cmumars/cp2:base
 $ docker-compose build --no-cache
 ```
 
