@@ -3,7 +3,6 @@ services:
   cp2_th:
     # image: docker.darpa-brass.com/ll/cmur-harness
     image: cmumars/cp2mockth
-    # build: https://github.com/cmu-mars/p2c2-mock-test-harness.git
     container_name: cp2_th
     hostname: cp2_th
     volumes:
@@ -14,8 +13,7 @@ services:
     # command: --cp CP2 --thPort ${TH_PORT} --taHost cp2_ta --taPort 5000
 
   bugzoo:
-    image: cmumars/bugzood
-    build: bugzoo
+    image: cmumars/bugzoo
     container_name: bugzoo
     hostname: bugzoo
     volumes:

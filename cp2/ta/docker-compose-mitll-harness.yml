@@ -14,8 +14,7 @@ services:
       --parameters '{"baselineFlag": "ActualTest", "testId": {"uuid": "fb9bbe71-c4ac-4405-a7e0-7f5d67785358"}, "cp": "CP2", "testGrpId": "3b76efbe-6588-4096-94a8-1d7ebfb51d5e", "params": {"numberOfFiles": 1, "cp2Init": {}, "numberOfPerturbations": 6}, tcId: 0}'
 
   bugzoo:
-    image: cmumars/bugzood
-    build: bugzoo
+    image: cmumars/bugzoo
     container_name: bugzoo
     hostname: bugzoo
     volumes:
