@@ -14,27 +14,35 @@ class InstructionDB:
 		key = "%s_to_%s" %(wp_src, wp_tgt)
 		return key
 
-	def get_path(self, wp_src, wp_tgt):
+	def get_path(self, wp_src, wp_tgt, config):
 		key = self.__form_key(wp_src, wp_tgt)
 		if key not in self.db:
 			return None
-		return self.db[key]["path"]
+		if config is None:
+			config='amcl-kinect'
+		return self.db[key][config]["path"]
 
-	def get_instructions(self, wp_src, wp_tgt):
+	def get_instructions(self, wp_src, wp_tgt, config):
 		key = self.__form_key(wp_src, wp_tgt)
 		if key not in self.db:
 			return None
-		return self.db[key]["instructions"]
+		if config is None:
+			config='amcl-kinect'
+		return self.db[key][config]["instructions"]
 
-	def get_predicted_duration(self, wp_src, wp_tgt):
+	def get_predicted_duration(self, wp_src, wp_tgt, config):
 		key = self.__form_key(wp_src, wp_tgt)
 		if key not in self.db:
 			return -1
-		return self.db[key]["time"]
+		if config is None:
+			config='amcl-kinect'
+		return self.db[key][config]["time"]
 
-	def get_start_heading(self, wp_src, wp_tgt):
+	def get_start_heading(self, wp_src, wp_tgt, config):
 		key = self.__form_key(wp_src, wp_tgt)
 		if key not in self.db:
 			return 0
-		return self.db[key]["start-dir"]
+		if config is None:
+			config='amcl-kinect'
+		return self.db[key][config]["start-dir"]
 
