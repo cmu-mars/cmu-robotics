@@ -35,7 +35,6 @@ services:
       - "ROS_HOSTNAME=cp3_ta"
       - "TA_PORT=${TA_PORT}"
     volumes:
-      - ./start:/start
       - ./logs:/home/mars/logs
       - ./roslogs:/home/mars/.ros/log
     ports:
