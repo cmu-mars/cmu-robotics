@@ -31,46 +31,7 @@ for a reply. Some of the TAs may have a fallback for reading a ready
 message JSON object from the filesystem for debugging, but that is not
 uniform.
 
-## Phase II RR2 Instructions
-
-The easiest way to see the difference in APIs since the RR1 build is
-to use `git diff` with the appropriate commit SHA, i.e.
-
-```
-iev@iev-mbp swagger-yaml % git diff -w 7b2713e450425ead250d804a00012c599ad5da61 cp3-ta.yaml
-diff --git a/documents/swagger-yaml/cp3-ta.yaml b/documents/swagger-yaml/cp3-ta.yaml
-index fc1da1e..52b125c 100644
---- a/documents/swagger-yaml/cp3-ta.yaml
-+++ b/documents/swagger-yaml/cp3-ta.yaml
-@@ -87,9 +87,9 @@ paths:
-               id:
-                 type: string
-                 enum:
--                  - kinect-ir
-+                  - kinect
-                   - lidar
--                  - kinect-all
-+                  - camera
-                 description: >-
-                   which sensor of SENSORSET to set
-               state:
-@@ -138,10 +138,9 @@ paths:
-               id:
-                 type: string
-                 enum:
--                  - movebase
-                   - amcl
-                   - mrpt
--                  - cb-base
-+                  - aruco
-                 description: >-
-                   cause the named node to fail
-       responses:
-iev@iev-mbp swagger-yaml %
-```
-
-Below, we assume that this repo itself has already been cloned and
-lives at `CMU_ROBOTICS` on the file system.
+## Phase II RR3 Instructions
 
 ### DockerHub Containers
 
@@ -78,9 +39,9 @@ For each challenge problem, we have tagged a container for integration week. The
 
 - cmumars/p2-cp1:RR2.IW
 - cmumars/p2-cp2:RR2.IW
-- cmumars/p2-cp3:RR2.IW
+- cmumars/p2-cp3:RR3
 
-To get these, you can simply do `docker pull cmumars/p2-cp3:RR2.IW` for example. You will need to change the docker-compose files to refer to these builds though.
+To get these, you can simply do `docker pull cmumars/p2-cp3:RR3` for example. You will need to change the docker-compose files to refer to these builds though.
 
 ### Building CP1
 
@@ -146,7 +107,22 @@ To get these, you can simply do `docker pull cmumars/p2-cp3:RR2.IW` for example.
 Instructions for building and interacting with CP2 can be found at:
 [cp2/ta/README.md](cp2/ta/README.md).
 
+### Running CP3
+
+1. Pull the docker image `cmumars/p2-cp3` from DockerHub
+2. In the directory that you are wanting to compose in, ensure that the directorys `roslogs`, `logs` exist (these are where logs will be put), and ensure that they are Readable, Writable, and Executable for everyone.
+3. Compose with:
+``` shell
+TA_PORT=8080 TA_PORT=8081 docker-compose -f docker-compose-mitll-harness.yml up
+```
+
+### Notes on limitations for CP3 in RR3
+
+Some of the configurations do not have a plan associated with them on some paths, meaning that an A case will not run. If the TH tries to start one of these tests, it will get an error from the TA. There may also be some of these that exist during the actual evaluation. It is about 5% of the configuration/path space currently. We aim to reduce this.
+
 ### Building CP3
+*Note*: Due to a last minute disappearance of one of the Unix packages (`ros-kinetic-mrpt-localization`) it is not possible to build CP3 from scratch. Use the DockerHub version instead. We are hoping this is temporary, but will develop a workaround before evaluation.
+
 
 1. Clone the CP3 base repo, `git clone
    git@github.com:cmu-mars/cp3_base.git` somewhere on the file system,
