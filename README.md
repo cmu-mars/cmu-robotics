@@ -31,17 +31,15 @@ for a reply. Some of the TAs may have a fallback for reading a ready
 message JSON object from the filesystem for debugging, but that is not
 uniform.
 
-## Phase II RR3 Instructions
-
-### DockerHub Containers
+## DockerHub Containers
 
 For each challenge problem, we have tagged a container for integration week. The containers will allow you to run without being able to build. They are:
 
-- cmumars/p2-cp1:RR2.IW
+- cmumars/cp1:latest
 - cmumars/p2-cp2:RR2.IW
 - cmumars/p2-cp3:RR3
 
-To get these, you can simply do `docker pull cmumars/p2-cp3:RR3` for example. You will need to change the docker-compose files to refer to these builds though.
+To get these, you can simply do `docker pull cmumars/cp1:latest` for example. You will need to change the docker-compose files to refer to these builds though.
 
 ### Building CP1
 
