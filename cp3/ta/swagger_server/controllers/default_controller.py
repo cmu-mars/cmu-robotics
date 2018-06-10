@@ -26,6 +26,28 @@ import swagger_server.comms as comms
 import traceback
 
 
+def track_adapt(desired=None, update=None):
+    if(config.expected_next_adapt == desired):
+        # grab the current time
+        t_now = rospy.Time.now().secs
+
+        # set the next expected
+        config.expected_next_adapt = update
+
+        # update the sum of time spent adapting, if we have a previous last
+        # adapt marker. if rainbow does produces balanced adapt messages,
+        # this should only get skipped on the very first message, which
+        # should be an "ADAPTING"
+        if not (config.time_at_last_adapt == None):
+            config.time_spent_adapting = config.time_spent_adapting + (t_now - config.time_at_last_adapt)
+
+        # update the last adapted marker in all instances
+        config.time_at_last_adapt = t_now
+    else:
+        ## todo: should anything more happen here?
+        config.logger.error("unbalanced adapting / adapted error from rainbow")
+
+
 def internal_status_post(CP3InternalStatus):  # noqa: E501
     """internal_status_post
 
@@ -70,6 +92,10 @@ def internal_status_post(CP3InternalStatus):  # noqa: E501
 
         elif cp3_internal_status.status == "ADAPTING":
             config.adaptations = config.adaptations + 1
+
+            track_adapt(desired=cp3_internal_status.status,
+                        update="ADAPTED")
+
             comms.setup_adapted_listeners()
             # TODO set up IG listener to listen for new IG followed by first move
             comms.send_status("internal status, adapting",
@@ -77,12 +103,15 @@ def internal_status_post(CP3InternalStatus):  # noqa: E501
                         "DAS is now adapting")
 
         elif cp3_internal_status.status == "ADAPTED":
-            #TODO wait for send 
+            track_adapt(desired=cp3_internal_status.status,
+                        update="ADAPTING")
+
+            #TODO wait for send
             # comms.send_status("internal status, adapted",
             #                   "adapted",
             #                   "DAS has now adapted")
             #config.adapted_state = 1
-            pass
+            # pass
 
         elif cp3_internal_status.status == "ADAPTED_FAILED":
             comms.send_status("internal status, adapted_failed",
@@ -242,6 +271,7 @@ def start_post():
                                                                 active_cb,
                                                                 done_cb)
         config.started = True
+        config.time_at_start = rospy.Time.now().secs
         return {} , 200
     else:
         ret = InlineResponse400("/start called more than once")

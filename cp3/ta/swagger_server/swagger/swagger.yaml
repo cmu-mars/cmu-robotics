@@ -138,9 +138,9 @@ definitions:
         type: "string"
         description: "which sensor of SENSORSET to set"
         enum:
-        - "kinect-ir"
+        - "kinect"
         - "lidar"
-        - "kinect-all"
+        - "camera"
       state:
         type: "boolean"
         description: "upon response, the named sensor will be on if `true` and `off`\
@@ -154,10 +154,9 @@ definitions:
         type: "string"
         description: "cause the named node to fail"
         enum:
-        - "movebase"
         - "amcl"
         - "mrpt"
-        - "cb-base"
+        - "aruco"
   inline_response_200_1:
     required:
     - "sim-time"

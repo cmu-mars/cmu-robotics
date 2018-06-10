@@ -1,5 +1,7 @@
 __all__ = ["mutation2perturb" , "perturb2mutation", "patch2ca"]
 
+import logging
+
 from swagger_server.models.error import Error  # noqa: E501
 from swagger_server.models.inline_response200 import InlineResponse200  # noqa: E501
 from swagger_server.models.inline_response2001 import InlineResponse2001  # noqa: E501
@@ -18,18 +20,24 @@ import boggart
 import darjeeling
 import boggart as bgrt
 
+logger = logging.getLogger("cp2ta.converters")
+
+
 def patch2ca(pa):
     outcome_compilation = CompilationOutcome(time_taken=pa.build.time_taken,
                                              successful=pa.build.successful)
     outcome_tests = [
         TestOutcome(test_id=test_id,
                     time_taken=pa.tests[test_id].time_taken,
-                    passed=pa.tests[test_id].passed)
+                    passed=pa.tests[test_id].successful)
         for test_id in pa.tests
     ]
-    return CandidateAdaptation(diff=pa.diff,
-                               compilation_outcome=outcome_compilation,
-                               test_outcomes=outcome_tests)
+
+    ca = CandidateAdaptation(diff=pa.diff,
+                             compilation_outcome=outcome_compilation,
+                             test_outcomes=outcome_tests)
+    logger.debug("converted patch to candidate adaptation: %s", ca)
+    return ca
 
 def perturb2mutation(pp):
     loc = bgrt.FileLocationRange(pp.at.start.file,

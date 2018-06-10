@@ -29,8 +29,7 @@ services:
 #    command: --cp CP3 --thPort ${TH_PORT} --taHost cp3_ta --taPort 5000
 
   cp1_ta:
-    build: .
-#    image: cmu-mars/cp1
+    image: cmumars/cp1
     container_name: cp1_ta
     hostname: cp1_ta
     environment:

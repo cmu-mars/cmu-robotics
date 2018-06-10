@@ -3,11 +3,15 @@
 ## Installation
 
 ```
-$ docker-compose build
+$ docker pull cmumars/cp2:base
+$ docker-compose build --no-cache
 ```
 
 ## Usage
 
 ```
-$ docker-compose up --build
+$ docker-compose up
 ```
+
+Logs for the various components involved in CP2 should be written to the
+`./logs` directory.
