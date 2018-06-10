@@ -1,7 +1,10 @@
 # cmu-robotics
 
-As of 26 April, this file has been rewritten for how to build the
-different CPs for RR2.
+As of 10 June, this file has been rewritten for how to build the
+different CPs for RR3. Details about test design and current limitations can be found at:
+
+* [documents/test_design_cp1.md](documents/test_design_cp1.md)
+* [documents/test_design_cp3.md](documents/test_design_cp3.md)
 
 `documents` contains markdown files with draft descriptions of each
 challenge problem following the provided format. The APIs describing the
@@ -36,10 +39,10 @@ uniform.
 For each challenge problem, we have tagged a container for integration week. The containers will allow you to run without being able to build. They are:
 
 - cmumars/cp1:latest
-- cmumars/p2-cp2:RR2.IW
+- For CP2 see [cp2/ta/README.md](cp2/ta/README.md)
 - cmumars/p2-cp3:RR3
 
-To get these, you can simply do `docker pull cmumars/cp1:latest` for example. You will need to change the docker-compose files to refer to these builds though.
+To get these, you can simply do `docker pull cmumars/p2-cp3:latest` for example. You will need to change the docker-compose files to refer to these builds though.
 
 ### Building CP1
 
@@ -111,7 +114,7 @@ Instructions for building and interacting with CP2 can be found at:
 2. In the directory that you are wanting to compose in, ensure that the directorys `roslogs`, `logs` exist (these are where logs will be put), and ensure that they are Readable, Writable, and Executable for everyone.
 3. Compose with:
 ``` shell
-TA_PORT=8080 TA_PORT=8081 docker-compose -f docker-compose-mitll-harness.yml up
+TA_PORT=5000 TA_PORT=5001 docker-compose -f docker-compose-mitll-harness.yml up
 ```
 
 ### Notes on limitations for CP3 in RR3
