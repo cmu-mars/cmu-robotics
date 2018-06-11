@@ -12,3 +12,11 @@ coverage criteria should be considered:
     different files (n.b. the list of files can be obtained using the TA API).
 * operator coverage: each of the different types of operator should be
     covered.
+
+At the end of the scenario, the TA should report a summary of the outcome of
+the adaptation process. Below are the three possible outcomes of the
+adaptation:
+
+* **Complete repair**
+* **Partial repair**
+* **No repair**
