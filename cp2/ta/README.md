@@ -12,3 +12,6 @@ $ docker-compose build --no-cache
 ```
 $ docker-compose up
 ```
+
+Logs for the various components involved in CP2 should be written to the
+`./logs` directory.

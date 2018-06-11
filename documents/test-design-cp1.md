@@ -50,3 +50,8 @@ difficulty of the test, we consider them identical.
 ## Discussions
 We have discussed some test strategies and ideas in the following threads:
 * [Fairness](https://github.mit.edu/brass/cmu-robotics/issues/156).
+
+
+## Map
+
+![map](https://github.mit.edu/storage/user/9866/files/c7cd0ec0-64c5-11e8-8358-50c8d95ca67a)
