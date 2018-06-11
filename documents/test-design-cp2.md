@@ -17,6 +17,10 @@ At the end of the scenario, the TA should report a summary of the outcome of
 the adaptation process. Below are the three possible outcomes of the
 adaptation:
 
-* **Complete repair**
-* **Partial repair**
-* **No repair**
+* **Complete repair:** a code adaptation was found that results in all of the
+    tests passing.
+* **Partial repair:** a code adaptation was found that results in the passing
+    of at least one previously failing test but not all previously failing
+    tests.
+* **No repair:** no code adaptation could be found that causes any previously
+    failing 
