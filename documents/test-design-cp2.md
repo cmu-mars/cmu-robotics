@@ -1,0 +1,14 @@
+# Test Design (CP2)
+
+Each test should inject a single perturbation into the baseline system.
+The set of possible perturbations should be computed dynamically using the
+TA's API. Changes to the source code that do not result in at least one test
+failure are considered invalid and are reported as such by the TA.
+
+To ensure a fair assessment of the performance of our system, the following
+coverage criteria should be considered:
+
+* file coverage: perturbations should be uniformly distributed across the
+    different files (n.b. the list of files can be obtained using the TA API).
+* operator coverage: each of the different types of operator should be
+    covered.
