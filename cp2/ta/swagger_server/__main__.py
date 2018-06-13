@@ -76,9 +76,9 @@ def main():
 
     # setup_logger('werkzeug')
     setup_logger('orchestrator', True)
+    setup_logger('darjeeling', True)
     setup_logger('boggart')
     setup_logger('bugzoo')
-    setup_logger('darjeeling')
     setup_logger('rooibos')
 
     def log_request_info():
