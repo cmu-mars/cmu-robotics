@@ -21,7 +21,7 @@ services:
       - ./coverage:/root/.bugzoo/coverage
     expose:
       - 6060
-    command: -p 6060 --debug --log-file /var/log/bugzoo/bugzood.log
+    entrypoint: /bin/sh -c "bugzood -p 6060 --debug --log-file /var/log/bugzoo/bugzood.log >& /dev/null"
 
   rooibos:
     image: squareslab/rooibosd
@@ -66,4 +66,4 @@ services:
         --boggart-url http://boggart:6000
         --bugzoo-url http://bugzoo:6060
         --rooibos-url http://rooibos:8888
-        --threads 12
+        --threads 16
