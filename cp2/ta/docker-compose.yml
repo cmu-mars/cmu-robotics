@@ -8,7 +8,13 @@ services:
       - ./logs:/var/log/th
     expose:
       - 5001
-    command: -p 5001 --url-ta http://cp2_ta:5000 --debug --log-file /var/log/th/cp2th.log
+    command: |
+      -p 5001
+        --debug
+        --url-ta http://cp2_ta:5000
+        --log-file /var/log/th/cp2th.log
+        --time-limit-mins 8
+        --operator flip-boolean-operator
 
   bugzoo:
     image: squareslab/bugzoo
