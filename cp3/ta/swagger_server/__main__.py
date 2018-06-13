@@ -220,6 +220,8 @@ if __name__ == '__main__':
         # Note, there is an error here because nodes should just contain
         # amcl or arcuo, but the spec says it is a combo
         #config.logger.debug("%s, %s" %(sensors,nodes))
+        old = config.nodes
+
         config.nodes = [] 
 
         if sensors is not None and len(sensors) != 0:
@@ -235,9 +237,14 @@ if __name__ == '__main__':
         else:
             # if there is no sensor, that will be indicated in sensors
             for i in nodes:
-                config.nodes.append(i + "-kinect")
+                config.nodes.append(i + "-kinect") if i != 'aruco' else 'aruco-camera'
         config.sensors = []
         config.sensors.extend(list(sensors))
+        if (("amcl-kinect" in config.nodes or "amcl-lidar" in config.nodes) and ("amcl-kinect" not in old and "amcl-lidar" not in old)) or (("mrpt-kinect" in config.nodes or "mrpt-lidar" in config.nodes) and ("mrpt-kinect" not in old and "mrpt-lidar" not in old)):
+            logger.debug("Publishing robot pose for map")
+            cp.gazebo.publish_amcl()
+
+
 
     cp.track_config(config_updater)
 
