@@ -5,6 +5,7 @@ import sys
 import logging
 import traceback
 import threading
+import argparse
 from swagger_server import encoder
 from swagger_client import DefaultApi
 
@@ -22,15 +23,30 @@ logger.setLevel(logging.DEBUG)
 logger.addHandler(logging.NullHandler())
 
 
-if __name__ == '__main__':
-    # Parameter parsing, to set up TH
-    if len(sys.argv) != 4:
-      print("expected th_uri boggart_url bugzoo_url")
-      sys.exit(1)
+cli = argparse.ArgumentParser('CP2 TA')
+cli.add_argument('--th-url',
+                 type=str,
+                 default='http://cp2_th:5001')
+cli.add_argument('--boggart-url',
+                 type=str,
+                 default='http://boggart:6000')
+cli.add_argument('--bugzoo-url',
+                 type=str,
+                 default='http://bugzoo:6060')
+cli.add_argument('--rooibos-url',
+                 type=str,
+                 default='http://rooibos:888')
+cli.add_argument('--threads',
+                 type=int,
+                 default=8)
 
-    th_uri = sys.argv[1]
-    boggart_url = sys.argv[2]
-    bugzoo_url = sys.argv[3]
+def main():
+    args = cli.parse_args()
+    th_uri = args.th_url
+    boggart_url = args.boggart_url
+    bugzoo_url = args.bugzoo_url
+    rooibos_url = args.rooibos_url
+    threads = args.threads
 
     # Set up TA server
     app = connexion.App(__name__, specification_dir='./swagger/')
@@ -43,7 +59,8 @@ if __name__ == '__main__':
                           '%Y-%m-%d %H:%M:%S')
     log_to_stdout = logging.StreamHandler(sys.stdout)
     log_to_stdout.setFormatter(log_formatter)
-    log_to_file = logging.FileHandler('/var/log/ta/ta.log')
+    log_to_stdout.setLevel(logging.INFO)
+    log_to_file = logging.FileHandler('/var/log/ta/ta.log', 'w')
     log_to_file.setFormatter(log_formatter)
 
     logger.setLevel(logging.DEBUG)
@@ -61,6 +78,7 @@ if __name__ == '__main__':
     setup_logger('boggart')
     setup_logger('bugzoo')
     setup_logger('darjeeling')
+    setup_logger('rooibos')
 
     def log_request_info():
         logger.debug('Headers: %s', connexion.request.headers)
@@ -92,7 +110,13 @@ if __name__ == '__main__':
     def error_cb(err_code, msg):
         thApi.error_post(ErrorError(kind=err_code,message=msg))
 
-    config.orc = Orchestrator(boggart_url, bugzoo_url, progress_cb, done_cb, error_cb)
+    config.orc = Orchestrator(boggart_url,
+                              bugzoo_url,
+                              rooibos_url,
+                              progress_cb,
+                              done_cb,
+                              error_cb,
+                              threads=threads)
 
     def fail_hard(s):
         logger.debug(s)
@@ -119,3 +143,7 @@ if __name__ == '__main__':
     # Start the TA listening
     logger.debug("running the TA")
     app.run(port=5000, host='0.0.0.0', threaded=True)
+
+
+if __name__ == '__main__':
+    main()
