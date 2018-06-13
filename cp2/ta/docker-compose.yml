@@ -45,7 +45,7 @@ services:
       - ./logs:/var/log/boggart
     expose:
       - 6000
-    command: boggartd -p 6000 --bugzoo http://bugzoo:6060 --rooibos http://rooibos:8888 --log-file /var/log/boggart/boggartd.log
+    command: /bin/sh -c "boggartd -p 6000 --bugzoo http://bugzoo:6060 --rooibos http://rooibos:8888 --log-file /var/log/boggart/boggartd.log >& /dev/null"
 
   cp2_ta:
     build: .
