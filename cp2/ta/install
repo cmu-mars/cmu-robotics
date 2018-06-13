@@ -7,3 +7,4 @@ docker pull squareslab/rooibos
 docker pull squareslab/rooibosd
 docker pull squareslab/bugzoo
 docker pull squareslab/boggart
+docker-compose build
