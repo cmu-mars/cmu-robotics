@@ -4,6 +4,7 @@
 
 ```
 $ docker pull cmumars/cp2:base
+$ docker pull cmumars/cp2:instrument
 $ docker-compose build --no-cache
 ```
 
