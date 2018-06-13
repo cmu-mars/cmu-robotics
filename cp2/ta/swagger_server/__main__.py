@@ -67,14 +67,15 @@ def main():
     logger.addHandler(log_to_stdout)
     logger.addHandler(log_to_file)
 
-    def setup_logger(name):
+    def setup_logger(name: str, stdout: bool = False):
         lgr = logging.getLogger(name)
         lgr.setLevel(logging.DEBUG)
-        lgr.addHandler(log_to_stdout)
         lgr.addHandler(log_to_file)
+        if stdout:
+            lgr.addHandler(log_to_stdout)
 
     # setup_logger('werkzeug')
-    setup_logger('orchestrator')
+    setup_logger('orchestrator', True)
     setup_logger('boggart')
     setup_logger('bugzoo')
     setup_logger('darjeeling')
