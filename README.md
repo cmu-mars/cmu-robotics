@@ -4,6 +4,7 @@ As of 10 June, this file has been rewritten for how to build the
 different CPs for RR3. Details about test design and current limitations can be found at:
 
 * [documents/test-design-cp1.md](documents/test-design-cp1.md)
+* [documents/test-design-cp2.md](documents/test-design-cp2.md)
 * [documents/test-design-cp3.md](documents/test-design-cp3.md)
 
 `documents` contains markdown files with draft descriptions of each
