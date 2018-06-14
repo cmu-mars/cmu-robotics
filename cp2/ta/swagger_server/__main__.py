@@ -67,19 +67,22 @@ def main():
     logger.addHandler(log_to_stdout)
     logger.addHandler(log_to_file)
 
-    def setup_logger(name: str, stdout: bool = False):
+    def setup_logger(name: str,
+                     stdout: bool = False,
+                     level: int = logging.DEBUG
+                     ) -> None:
         lgr = logging.getLogger(name)
-        lgr.setLevel(logging.DEBUG)
+        lgr.setLevel(level)
         lgr.addHandler(log_to_file)
         if stdout:
             lgr.addHandler(log_to_stdout)
 
     # setup_logger('werkzeug')
-    setup_logger('orchestrator', True)
-    setup_logger('darjeeling', True)
-    setup_logger('boggart')
-    setup_logger('bugzoo')
-    setup_logger('rooibos')
+    setup_logger('orchestrator', stdout=True)
+    setup_logger('darjeeling', stdout=True)
+    setup_logger('boggart', level=logging.ERROR)
+    setup_logger('bugzoo', level=logging.ERROR)
+    setup_logger('rooibos', level=logging.ERROR)
 
     def log_request_info():
         logger.debug('Headers: %s', connexion.request.headers)
