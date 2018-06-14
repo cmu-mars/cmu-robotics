@@ -15,6 +15,7 @@ services:
         --log-file /var/log/th/cp2th.log
         --time-limit-mins 8
         --operator flip-boolean-operator
+        --file src/ros_comm/roscpp/src/libros/transport_subscriber_link.cpp
 
   bugzoo:
     image: squareslab/bugzoo
@@ -27,7 +28,7 @@ services:
       - ./coverage:/root/.bugzoo/coverage
     expose:
       - 6060
-    entrypoint: /bin/sh -c "bugzood -p 6060 --debug --log-file /var/log/bugzoo/bugzood.log >& /dev/null"
+    entrypoint: /bin/sh -c "bugzood -p 6060 --debug --log-file /var/log/bugzoo/bugzood.log --log-level warning"
 
   rooibos:
     image: squareslab/rooibosd
