@@ -14,6 +14,24 @@ RUN apk add --no-cache python3 git gcc gfortran python3-dev build-base openblas-
 
 RUN pip install --no-cache numpy==1.14.2
 
+# install BugZoo from source
+COPY --from=squareslab/bugzoo /opt/bugzoo /tmp/bugzoo
+RUN cd /tmp/bugzoo \
+ && pip install --no-cache . \
+ && rm -rf /tmp/bugzoo
+
+# install boggart from source
+COPY --from=squareslab/boggart /opt/boggart /tmp/boggart
+RUN cd /tmp/boggart \
+ && pip install --no-cache . \
+ && rm -rf /tmp/boggart
+
+# install Darjeeling from source
+COPY --from=squareslab/darjeeling /opt/darjeeling /tmp/darjeeling
+RUN cd /tmp/darjeeling \
+ && pip install --no-cache . \
+ && rm -rf /tmp/darjeeling
+
 # install Orchestrator from source
 COPY --from=cmumars/orchestrator /opt/orchestrator /tmp/orchestrator
 RUN cd /tmp/orchestrator \

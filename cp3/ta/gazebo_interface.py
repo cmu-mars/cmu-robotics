@@ -167,6 +167,38 @@ class GazeboInterface:
             print(traceback.format_exc())
             return False
 
+    def publish_amcl(self):
+        try:
+            tb = self.get_model_state('mobile_base', '')
+            # Check to see if robot is moving. If it is, return an error
+            #if (tb.twist.linear.x != 0 or tb.twist.linear.y != 0 or
+            #   tb.twist.linear.z != 0 or tb.twist.angular.x!= 0 or
+            #   tb.twist.angular.y!= 0 or tb.twist.angular.z != 0):
+            #   rospy.logerr('Cannot set the robot position while it is moving')
+            #   return False
+
+            # Set the position to the new position
+            tb.pose.position.x, tb.pose.position.y = self.translateGazeboToMap(tb.pose.position.x, tb.pose.position.y)
+            ip = PoseWithCovarianceStamped()
+            ip.header.stamp = rospy.Time.now()
+            ip.header.frame_id = 'map'
+            ip.pose.pose.position.x = tb.pose.position.x
+            ip.pose.pose.position.y = tb.pose.position.y
+            ip.pose.pose.position.z = 0
+            ip.pose.pose.orientation.x = tb.pose.orientation.x
+            ip.pose.pose.orientation.y = tb.pose.orientation.y
+            ip.pose.pose.orientation.z = tb.pose.orientation.z
+            ip.pose.pose.orientation.w = tb.pose.orientation.w
+            ip.pose.covariance = [0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.06853891945200942]
+            print ('Publishing amcl location')
+            self.amcl.publish(ip)
+            time.sleep(2)
+            return True
+        except:
+            rospy.logerr ("Could not set the pose of the robot")
+            rospy.logerr (traceback.format_exc())
+            print(traceback.format_exc())
+            return False
     def get_turtlebot_state(self):
         # Queries gazebo to get the current state of the turtlebot
         # :return x,y in map coordinates; w as the yaw

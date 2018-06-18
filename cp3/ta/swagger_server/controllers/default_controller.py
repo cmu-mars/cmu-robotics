@@ -9,6 +9,7 @@ from swagger_server.models.inline_response4002 import InlineResponse4002
 from swagger_server.models.parameters0 import Parameters0
 from swagger_server.models.parameters1 import Parameters1
 from swagger_server.models.parameters2 import Parameters2
+from swagger_client.models.collision_data import CollisionData
 from datetime import date, datetime
 from typing import List, Dict
 from six import iteritems
@@ -263,7 +264,7 @@ def start_post():
             config.collisions.append(CollisionData(robot_x=x,
                                                    robot_y=y,
                                                    robot_speed=velocity,
-                                                   sim_time=time))
+                                                   sim_time=time.secs))
         config.cp.track_bumps(collision_cb)
         result , msg = config.cp.do_instructions(config.cp.start,
                                                                 config.cp.target,

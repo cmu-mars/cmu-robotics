@@ -8,10 +8,17 @@ services:
       - ./logs:/var/log/th
     expose:
       - 5001
-    command: -p 5001 --url-ta http://cp2_ta:5000 --debug --log-file /var/log/th/cp2th.log
+    command: |
+      -p 5001
+        --debug
+        --url-ta http://cp2_ta:5000
+        --log-file /var/log/th/cp2th.log
+        --time-limit-mins 8
+        --operator flip-boolean-operator
+        --file src/ros_comm/roscpp/src/libros/transport_subscriber_link.cpp
 
   bugzoo:
-    image: cmumars/bugzoo
+    image: squareslab/bugzoo
     container_name: bugzoo
     hostname: bugzoo
     volumes:
@@ -21,7 +28,7 @@ services:
       - ./coverage:/root/.bugzoo/coverage
     expose:
       - 6060
-    command: -p 6060 --debug --log-file /var/log/bugzoo/bugzood.log
+    entrypoint: /bin/sh -c "bugzood -p 6060 --debug --log-file /var/log/bugzoo/bugzood.log --log-level warning"
 
   rooibos:
     image: squareslab/rooibosd
@@ -33,7 +40,7 @@ services:
       - ./logs:/var/log/rooibosd
     expose:
       - 8888
-    command: -p 8888
+    entrypoint: /bin/bash -c "rooibosd -p 8888 >& /dev/null"
 
   boggart:
     image: squareslab/boggart
@@ -45,7 +52,7 @@ services:
       - ./logs:/var/log/boggart
     expose:
       - 6000
-    command: boggartd -p 6000 --bugzoo http://bugzoo:6060 --rooibos http://rooibos:8888 --log-file /var/log/boggart/boggartd.log
+    command: /bin/sh -c "boggartd -p 6000 --bugzoo http://bugzoo:6060 --rooibos http://rooibos:8888 --log-file /var/log/boggart/boggartd.log >& /dev/null"
 
   cp2_ta:
     build: .
@@ -60,4 +67,10 @@ services:
       - ./logs:/var/log/ta
     expose:
       - 5000
-    command: python3 -u -m swagger_server http://cp2_th:5001 http://boggart:6000 http://bugzoo:6060
+    command: |
+      python3 -u -m swagger_server
+        --th-url http://cp2_th:5001
+        --boggart-url http://boggart:6000
+        --bugzoo-url http://bugzoo:6060
+        --rooibos-url http://rooibos:8888
+        --threads 16

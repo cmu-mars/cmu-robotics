@@ -1,0 +1,10 @@
+#!/bin/bash
+docker pull cmumars/cp2:base
+docker pull cmumars/cp2:instrument
+docker pull cmumars/cp2mockth
+docker pull cmumars/orchestrator
+docker pull squareslab/rooibos
+docker pull squareslab/rooibosd
+docker pull squareslab/bugzoo
+docker pull squareslab/boggart
+docker-compose build

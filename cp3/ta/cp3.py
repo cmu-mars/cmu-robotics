@@ -260,13 +260,12 @@ class CP3(ConverterMixin,BaseSystem):
 			elif has_mrpt and not "mrpt" in self.nodes:
 				self.nodes.add("mrpt")
 				rc = True
-			if "arcuo" in self.nodes and not has_aruco:
+			if "aruco" in self.nodes and not has_aruco:
 				self.nodes.remove("aruco")
 				rc = True
 			elif has_aruco and not "aruco" in self.nodes:
 				self.nodes.add("aruco")
 				rc = True
-
 			if self.config_callback is not None:
 				with self.lock:
 					self.report_config = False
