@@ -271,7 +271,7 @@ arrival_A = arrival for Baseline A
 **Verdict Expressions**:
 
 ```
-BUFFER = 30s, the amount of time we can be slower than A and still get a score
+BUFFER = 60s, the amount of time we can be slower than A and still get a score
 
 function close_enough (loc1, loc2) = distance (loc1, loc2) <= MAX_DISTANCE
 
