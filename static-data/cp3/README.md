@@ -9,8 +9,5 @@ The static data for CP3 are the map, which can be found in: https://github.com/c
 # Log file locations
 In addition to the console trace from the ta, we need the following logs collected:
 
-1. /usr/src/app/access.log
-2. /home/mars/rainbow.log
-3. /home/mars/.ros/logs/latest/\*
-4. /home/mars/das/rainbow-brass/\*.log
-5. ~/ps_*.log
+1. /home/mars/logs
+2. /home/mars/.ros/logs/latest/\*
