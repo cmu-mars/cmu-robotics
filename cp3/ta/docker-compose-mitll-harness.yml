@@ -44,4 +44,4 @@ services:
     expose:
       - 5000
       - 1100
-    command: bash -c "sleep 20 && . entrypoint.sh && cd /usr/src/app && ./start_exp.sh http://cp3_th:${TH_PORT}"
+    command: bash -c "sleep 20 && . ~/catkin_ws/entrypoint.sh && cd /usr/src/app && ./start_exp.sh http://cp3_th:${TH_PORT}"
