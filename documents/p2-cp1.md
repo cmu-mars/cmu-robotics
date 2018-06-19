@@ -27,8 +27,8 @@ is one of the characteristics of cyber-physical systems that
 
 Using power as an example model, the aim of this challenge problem is to
 
-  1. apply machine learning techniques to discover new power models for a robotics
-     system, and
+  1. apply machine learning techniques to discover new power models for a
+     robotics system, and
   2. take advantage of these new models at run time to improve the quality
      of missions of the robot over the use of no or static models.
 
@@ -214,7 +214,7 @@ problem. They are defined as follows:
 ### Adaptation space and power model selection
 
 In this challenge problem, we have a (feature) model that describe
-the space of adaptation (configuration options and their values). 
+the space of adaptation (configuration options and their values).
 
 ```json
 {
@@ -247,7 +247,7 @@ the main source of power consumption in robots, i.e., robot's motion
 actuator, sensors, and computationally intensive algorithms in the
 robot. These variations will be implemented by adjusting measurement
 frequencies, spatial resolution, or depth resolution of the
-sensors as an example. 
+sensors as an example.
 
 An example configuration of the robot is encoded by 20 Boolean
 variables:
@@ -287,14 +287,13 @@ The total number of possible configuration for the robot is: `2^20 = 1M`, which 
 The power consumption model is then specified as:
 
 ```
-$P(.) = \beta_0 + \beta_o1*o1 + ... + \beta_o20*o20
-+ \beta_o12*o1*o2 + ... + \beta_o2019*o20*o19
+$P(.) = β_0 + β_o1*o1 + ... + β_o20*o20 + β_o12*o1*o2 + ... + β_o2019*o20*o19
 ```
 
-where `o_i` are boolean variables, the
-coefficients for the variables ($\beta_i$) are any positive real numbers
-and the coefficients for the interaction terms ($\beta_{oij}$) are any real
-numbers including negative or zero.
+where `o_i` are boolean variables, the coefficients for the variables
+($β_i$) are any positive real numbers and the coefficients for the
+interaction terms ($β_{oij}$) are any real numbers including negative or
+zero.
 
 The interaction terms in the power consumption model are important. Let us
 give an example for the necessity of capturing interactions in the power
@@ -314,14 +313,19 @@ components of the robot.
 
 #### Battery dynamics
 
-The battery will be discharged according to open-circuit battery model that we implemented in [brass_gazebo_battery](https://github.com/cmu-mars/brass_gazebo_battery). This power model simulates the power consumption of a robot. The amount of power consumed by each component of a robot depends on its usage. Given a period of time `dt` during which the configuration of the
-robot remains unchanged, the charge level of the battery at the end of the period is
-calculated by adding the charge delta and subtracting the discharge delta
-from the battery level at the beginning of the time period. The battery
-level cannot go below 0 at any moment.
+The battery will be discharged according to open-circuit battery model that
+we implemented in
+[brass_gazebo_battery](https://github.com/cmu-mars/brass_gazebo_battery). This
+power model simulates the power consumption of a robot. The amount of power
+consumed by each component of a robot depends on its usage. Given a period
+of time `dt` during which the configuration of the robot remains unchanged,
+the charge level of the battery at the end of the period is calculated by
+adding the charge delta and subtracting the discharge delta from the
+battery level at the beginning of the time period. The battery level cannot
+go below 0 at any moment.
 
-* *Discharge*: `$discharge_delta(t) = P_discharge(.)*dt$`
-* *Total change*: `$new_battery_charge(t, old_battery_charge) = max(0, old_battery_charge - discharge_delta(t))$`
+* *Discharge*: `$discharge_δ(t) = P_discharge(.)*dt$`
+* *Total change*: `$new_battery_charge(t, old_battery_charge) = max(0, old_battery_charge - discharge_δ(t))$`
 
 
 
@@ -387,7 +391,7 @@ the target location.
 
 **Test/Capture Method**: For determining whether a task is accomplished
 successfully, the position of the robot will be read from the
-simulator. This will be returned in the `/done/tasks-finished` data structure. 
+simulator. This will be returned in the `/done/tasks-finished` data structure.
 
 **Result expression**: `location{i} = (/done/tasks-finished{i}/x, /done/tasks-finished{i}/y)` for each task `i` completed.
 `total_tasks=size(/ready/target-locs)`
@@ -491,7 +495,7 @@ We assume the following test stages for evaluation:
 
 ## Static data
 
-[static data](../static-data/cp1/README.md) 
+[static data](../static-data/cp1/README.md)
 
 ### Backend components
 

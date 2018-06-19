@@ -8,7 +8,14 @@ services:
       - ./logs:/var/log/th
     expose:
       - 5001
-    command: -p 5001 --url-ta http://cp2_ta:5000 --debug --log-file /var/log/th/cp2th.log
+    command: |
+      -p 5001
+        --debug
+        --url-ta http://cp2_ta:5000
+        --log-file /var/log/th/cp2th.log
+        --time-limit-mins 8
+        --operator flip-boolean-operator
+        --file src/ros_comm/roscpp/src/libros/transport_subscriber_link.cpp
 
   bugzoo:
     image: squareslab/bugzoo
@@ -21,7 +28,7 @@ services:
       - ./coverage:/root/.bugzoo/coverage
     expose:
       - 6060
-    entrypoint: /bin/sh -c "bugzood -p 6060 --debug --log-file /var/log/bugzoo/bugzood.log >& /dev/null"
+    entrypoint: /bin/sh -c "bugzood -p 6060 --debug --log-file /var/log/bugzoo/bugzood.log --log-level warning"
 
   rooibos:
     image: squareslab/rooibosd
@@ -45,7 +52,7 @@ services:
       - ./logs:/var/log/boggart
     expose:
       - 6000
-    command: boggartd -p 6000 --bugzoo http://bugzoo:6060 --rooibos http://rooibos:8888 --log-file /var/log/boggart/boggartd.log
+    command: /bin/sh -c "boggartd -p 6000 --bugzoo http://bugzoo:6060 --rooibos http://rooibos:8888 --log-file /var/log/boggart/boggartd.log >& /dev/null"
 
   cp2_ta:
     build: .
