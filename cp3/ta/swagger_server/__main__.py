@@ -36,6 +36,8 @@ from cp3 import CP3
 import swagger_server.config as config
 import swagger_server.comms as comms
 
+LIGHTS_OFF = [3,63,62,2,10,88,11,18,72,16]
+
 if __name__ == '__main__':
     # Command line argument parsing
     if len(sys.argv) != 2:
@@ -176,6 +178,9 @@ if __name__ == '__main__':
         start_coords = cp.map_server.waypoint_to_coords(ready_resp.start_loc)
         direction = cp.instruction_server.get_start_heading(ready_resp.start_loc, ready_resp.target_loc, ready_resp.utility_function + '-' + ready_resp.start_configuration)
         gazebo.set_turtlebot_position(start_coords['x'], start_coords['y'], 0)
+        # Turn off lights
+        for l in LIGHTS_OFF:
+            gazebo.enable_light('light%s' %l, False)
     except Exception as e:
         fail_hard("failed to connect to gazebo: %s" % e)
 
