@@ -61,7 +61,8 @@ Where,
 
 The set of all "node-ids" will be referred to as WAYPOINT_SET; the set of all light "light-ids" will be referred to as LIGHT_SET.
 
-The map for this challenge problem can be tracked at: https://github.com/cmu-mars/cp3_base/edit/develop/cp3_base/maps/cp3.json. The precise version to use will be fixed at a later date -- currently this tracks the develop branch.
+The map for this challenge problem can be tracked at:
+https://github.com/cmu-mars/cp3_base/blob/master/cp3_base/maps/cp3.json . The precise version to use will be fixed at a later date -- currently this tracks the develop branch.
 
 ### Sensors
 
@@ -87,7 +88,7 @@ NODE_SET = enum {amcl,mrpt,aruco}
 ```
 
 ### Configurations
-The robot will have a set of valid configurations that the test harness can start the robot up in. These will be given a label of the form `CONFIG<N>`. 
+The robot will have a set of valid configurations that the test harness can start the robot up in. These will be given a label of the form `CONFIG<N>`.
 
 ```
 CONFIG_SET = enum {amcl-kinect, amcl-lidar, mrpt-kinect, mrpt-lidar, aruco}
@@ -211,11 +212,11 @@ DEG_B = the score (0..1) degraded of B
 
 **Formal Description**: Software systems are designed to trade-off different goals. Over time, these trade-offs may adapt and the system must change the way it responds to match these new trade-offs. For the purposes of this challenge problem, we represent the trade-offs as a utility preference function, but limit the preference functions to one that favors timeliness, one that favors efficiency, and another that favors safety. Utility will be a value on the interval [0,1].
 
-**Test/Capture Method**: The done message will contain the final utility of the system, based on combining the metrics from the qualities of timeliness, efficiency, and safety described below. 
+**Test/Capture Method**: The done message will contain the final utility of the system, based on combining the metrics from the qualities of timeliness, efficiency, and safety described below.
 
 **Result expression**: `utility = /done/final-utility`
 
-**Verdict Expression**: The value for the verdict expression will be the value of utility. In the roll-up of the test, the test succeeds if the utility of the Challenge is greater than the utility of Baseline B. The function to be used for making tradeoffs will be specified by the evaluators as one of three functions that can broadly be described as (a) favoring timing, (b) favoring safety, or (b) favoring efficiency. The function will be of the form `w_t x timing_score + w_s x safety_score + w_e * efficiency score`, where the utility will be normalized to be in the interval [0-1]. 
+**Verdict Expression**: The value for the verdict expression will be the value of utility. In the roll-up of the test, the test succeeds if the utility of the Challenge is greater than the utility of Baseline B. The function to be used for making tradeoffs will be specified by the evaluators as one of three functions that can broadly be described as (a) favoring timing, (b) favoring safety, or (b) favoring efficiency. The function will be of the form `w_t x timing_score + w_s x safety_score + w_e * efficiency score`, where the utility will be normalized to be in the interval [0-1].
 
 The following weights are to be used in the evaluation:
 
@@ -257,14 +258,14 @@ Scoring requirements:
 1. Account for some inaccuracy (can’t be right on the time). Call this BUFFER
 2. Being quicker is better
 
-**Test/Capture Method**: The running time of the test will be calculated starting when the test begins to when the mission is complete. 
+**Test/Capture Method**: The running time of the test will be calculated starting when the test begins to when the mission is complete.
 
-**Result Expression**: 
+**Result Expression**:
 ```
 location=(/done/final_x,/done/final_y)
 arrival=/done/final-sim-time
 
-arrival_C = arrival for Challenge 
+arrival_C = arrival for Challenge
 arrival_A = arrival for Baseline A
 ```
 
@@ -307,7 +308,7 @@ function close_enough (loc1, loc2) = distance (loc1, loc2) <= MAX_DISTANCE
 
 **Utility Component 3: Safety**
 
-**Informal Description**: Whether the robot collides with something in the environment. 
+**Informal Description**: Whether the robot collides with something in the environment.
 
 **Formal Description**: The intent is related to the risk that the robot takes to complete the mission. Being riskier means, e.g., traveling through an unknown environment at a high speed to complete the mission on time. We will have protrusions in the environment that are of a height that will make them undetectable by at least one of the sensors. Transitions in the map will be annotated to assess their riskiness of traversal.
 
@@ -325,5 +326,3 @@ function close_enough (loc1, loc2) = distance (loc1, loc2) <= MAX_DISTANCE
 |----------------------------------------------------------------|------------------------------------------------------|
 | forall speed in collisions . speed < SAFE_SPEED                                                      | 1 |
 | otherwise | 0 |
-
-
