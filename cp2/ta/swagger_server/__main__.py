@@ -40,6 +40,23 @@ cli.add_argument('--threads',
                  type=int,
                  default=8)
 
+
+def shutdown():
+    """
+    Responsible for ensuring that all resources are deallocated before the
+    TA is closed.
+    """
+    logger.info("Cleaning up resources")
+    try:
+        if config.orc:
+            config.orc.shutdown()
+        else:
+            logger.info("No resources left to clean-up: orchestrator was never started")
+    except Exception:
+        logger.exception("Failed to safely shutdown repair stack.")
+    logger.info("Cleaned up resources")
+
+
 def main():
     args = cli.parse_args()
     th_uri = args.th_url
@@ -105,14 +122,17 @@ def main():
             'PARTIAL_REPAIR': 'partial-repair',
             'COMPLETE_REPAIR': 'complete-repair'
         })[outcome.name]  # type: str
-        thApi.done_post(Parameters1(outcome=outcome_s,
-                                    running_time=runtime,
-                                    num_attempts=attempts,
-                                    pareto_set=[ patch2ca(x) for x in pareto ],
-                                    log=[ patch2ca(x) for x in log ]))
+        response = Parameters1(outcome=outcome_s,
+                               running_time=runtime,
+                               num_attempts=attempts,
+                               pareto_set=[patch2ca(x) for x in pareto],
+                               log=[patch2ca(x) for x in log])
+        shutdown()
+        thApi.done_post(response)
 
     def error_cb(err_code, msg):
-        thApi.error_post(ErrorError(kind=err_code,message=msg))
+        shutdown()
+        thApi.error_post(ErrorError(kind=err_code, message=msg))
 
     config.orc = Orchestrator(boggart_url,
                               bugzoo_url,
@@ -123,6 +143,7 @@ def main():
                               threads=threads)
 
     def fail_hard(s):
+        shutdown()
         logger.debug(s)
         thApi.error_post(Parameters(s))
         raise Exception(s)
