@@ -40,13 +40,20 @@ cli.add_argument('--threads',
                  type=int,
                  default=8)
 
+
 def shutdown():
     """
     Responsible for ensuring that all resources are deallocated before the
     TA is closed.
     """
     logger.info("Cleaning up resources")
-    logger.warning("RESOURCE CLEANUP IS NOT IMPLEMENTED.")
+    try:
+        if config.orc:
+            config.orc.shutdown()
+        else:
+            logger.info("No resources left to clean-up: orchestrator was never started")
+    except Exception:
+        logger.exception("Failed to safely shutdown repair stack.")
     logger.info("Cleaned up resources")
 
 
