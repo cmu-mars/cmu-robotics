@@ -213,7 +213,7 @@ if __name__ == '__main__':
     if (len(config.plan) == 0): # We didn't find a plan for this configuration
         fail_hard('did not find a starting plan for this configuration')
 
-    if th_connected and not ready_resp.use_adaptation:
+    if not ready_resp.use_adaptation:
         def worker():
             rospy.sleep(5)
             comms.send_status("__main__", "live", "CP3 TA ready to recieve inital perturbs and start in non-adaptive case")
@@ -246,7 +246,8 @@ if __name__ == '__main__':
         config.sensors = []
         config.sensors.extend(list(sensors))
         if (("amcl-kinect" in config.nodes or "amcl-lidar" in config.nodes) and ("amcl-kinect" not in old and "amcl-lidar" not in old)) or (("mrpt-kinect" in config.nodes or "mrpt-lidar" in config.nodes) and ("mrpt-kinect" not in old and "mrpt-lidar" not in old)):
-            logger.debug("Publishing robot pose for map")
+            rospy.sleep(10)
+            logger.debug("Publishing robot pose for map after waiting 10 seconds")
             cp.gazebo.publish_amcl()
 
 

@@ -26,6 +26,9 @@ def send_done(src):
         config.logger.debug("sending done from %s" % src)
         save_ps("done")
         x , y , w , v = config.cp.gazebo.get_turtlebot_state()
+        total = (config.time_at_done - config.time_at_start) - config.time_spent_adapting
+        config.logger.debug("Total test time: %s, Total adapting time: %s, Final Time %s" 
+          %(config.time_at_done-config.time_at_start, config.time_spent_adapting, total))
         d = Parameters2(final_x = x,
                         final_y = y,
                         final_sim_time = (config.time_at_done - config.time_at_start) - config.time_spent_adapting,

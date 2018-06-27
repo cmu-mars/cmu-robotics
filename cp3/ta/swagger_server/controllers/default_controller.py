@@ -40,7 +40,9 @@ def track_adapt(desired=None, update=None):
         # this should only get skipped on the very first message, which
         # should be an "ADAPTING"
         if not (config.time_at_last_adapt == None):
-            config.time_spent_adapting = config.time_spent_adapting + (t_now - config.time_at_last_adapt)
+            adapt_time = (t_now - config.time_at_last_adapt)
+            config.logger.debug("This adaptation took %s" %adapt_time)
+            config.time_spent_adapting = config.time_spent_adapting + adapt_time
 
         # update the last adapted marker in all instances
         config.time_at_last_adapt = t_now
