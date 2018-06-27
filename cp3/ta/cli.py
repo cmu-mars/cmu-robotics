@@ -34,7 +34,7 @@ if __name__ == "__main__":
     commands = ['help', 'enable_light', 'enable_headlamp', 'list_obstacles', 
         'place_obstacle', 'remove_obstacle', 'set_pose', 'kinect', 'lidar', 'where', 'go',
         'voltage', 'charging', "place_markers", "set_location", "cover", "kill", "list_lights", "safety_test", 'execute']
-    configs = ['amcl-kinect', 'mrpt-kinect', 'amcl-lidar', 'mrpt-lidar', 'aruco']
+    configs = ['amcl-kinect', 'mrpt-kinect', 'amcl-lidar', 'mrpt-lidar', 'aruco-camera']
     parser.add_argument('--challenge', choices={'cp1','cp2','cp3'}, default='cp3', help='The challenge problem context')
     parser.add_argument('command', choices=commands, help='The command to issue to Gazebo')
     #parser.add_argument('carg', nargs='*', help='The arguments for the particular command. Use help command to find out more information')
@@ -296,7 +296,8 @@ if __name__ == "__main__":
                     result=cp.gazebo.enable_headlamp(True)
                 if not gargs.no_publish:
                     location = cp.map_server.waypoint_to_coords(gargs.start)
-                    heading = cp.instruction_server.get_start_heading(gargs.start, gargs.target)
+                    heading = cp.instruction_server.get_start_heading(gargs.start, gargs.target,'favor-timeliness-%s' %gargs.config)
+		    cp.start_configuration='favor-timeliness-%s' %gargs.config
                     # Fix to heading
                     tl = cp.map_server.waypoint_to_coords(gargs.target)
                     heading = math.atan2(tl["y"] - location["y"], tl["x"] - location["x"])
@@ -320,7 +321,15 @@ if __name__ == "__main__":
                     message = "%s from target is too far, am at (%s,%s) expecting to be at (%s,%s)" %(str(distance(x,y,target["x"], target["y"])), str(x), str(y), target["x"], target["y"])
             s = ""
             if gargs.config is not None:
-                s = s + "%s," %gargs.config
+                s = s + "%s" %gargs.config
+                if gargs.speed is not None:
+                    s = s + "-%s" %gargs.speed
+                else:
+                    s = s + "-65"
+
+                if gargs.headlamp:
+                    s = s + "-headlamp"
+                s = s + ","
             s = s + "%s,%s,%s,%s" %(gargs.start,gargs.target,result,(end-start).to_sec())
             if gargs.illuminance:
                 s = s + ",max_illuminance=%s,min_illuminance=%s" %(cp.max_illuminance,cp.min_illuminance)
@@ -455,7 +464,7 @@ if __name__ == "__main__":
                     launch_cmd = launch_cmd + "cp3-amcl-kinect.launch"
                 elif cargs.config == 'amcl-lidar':
                     launch_cmd = launch_cmd + "cp3-amcl-lidar.launch"
-                elif cargs.config == 'aruco':
+                elif cargs.config == 'aruco-camera':
                     launch_cmd = launch_cmd + "cp3-aruco-kinect.launch"
                 elif cargs.config == 'mrpt-kinect':
                     launch_cmd = launch_cmd + "cp3-mrpt-kinect.launch"
@@ -507,7 +516,7 @@ if __name__ == "__main__":
             launch_cmd = launch_cmd + "cp3-amcl-kinect.launch"
         elif cargs.config == 'amcl-lidar':
             launch_cmd = launch_cmd + "cp3-amcl-lidar.launch"
-        elif cargs.config == 'aruco':
+        elif cargs.config == 'aruco-camera':
             launch_cmd = launch_cmd + "cp3-aruco-kinect.launch"
         elif cargs.config == 'mrpt-kinect':
             launch_cmd = launch_cmd + "cp3-mrpt-kinect.launch"
