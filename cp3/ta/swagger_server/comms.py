@@ -10,6 +10,14 @@ from swagger_client.models.parameters_2 import Parameters2
 from ig_action_msgs.msg import InstructionGraphActionFeedback
 import rospy
 
+def sequester():
+    logdirs = ["/home/mars/logs", "/home/mars/.ros/logs/latest/"]
+
+    for ld in logdirs:
+        subprocess.call(["aws", "s3", "cp", ld,
+                         "s3://dev-cmur-logs/" + config.uuid + "/" ,
+                         "--recursive"])
+
 def save_ps(src):
     with open(os.path.expanduser("~/logs/ps_%s_%s.log") % (src, datetime.datetime.now()), "w") as outfile:
         subprocess.call(["ps","aux"],stdout=outfile)
@@ -27,7 +35,7 @@ def send_done(src):
         save_ps("done")
         x , y , w , v = config.cp.gazebo.get_turtlebot_state()
         total = (config.time_at_done - config.time_at_start) - config.time_spent_adapting
-        config.logger.debug("Total test time: %s, Total adapting time: %s, Final Time %s" 
+        config.logger.debug("Total test time: %s, Total adapting time: %s, Final Time %s"
           %(config.time_at_done-config.time_at_start, config.time_spent_adapting, total))
         d = Parameters2(final_x = x,
                         final_y = y,
@@ -38,9 +46,14 @@ def send_done(src):
                         final_utility = 0 ## todo placeholder value
         )
         config.logger.debug("Done message is %s" %d)
+        ## right before posting, sequester the logs
+        sequester()
         response = config.thApi.done_post(d)
+
+        ## this may not show up in sequestered logs
         config.logger.debug("response from done: %s" % response)
     except Exception as e:
+        ## this may not show up in sequestered logs
         config.logger.error("Got an error %s when sending done" %e)
 
 def send_status(src, code, msg):

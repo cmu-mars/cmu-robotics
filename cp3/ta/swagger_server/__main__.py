@@ -73,9 +73,24 @@ if __name__ == '__main__':
     def fail_hard(s):
         logger.debug(s)
         comms.save_ps("error-failhard")
+
+        ## if we at least have the UUID, then try to sequester.
+        if config.uuid:
+            comms.sequester()
+
         if th_connected:
             thApi.error_post(Parameters(s))
         raise Exception(s)
+
+    ## grab the UUID from the TaskARN, per LL advice
+    ecs_meta = os.environ.get('ECS_CONTAINER_METADATA_FILE')
+    if not ecs_meta:
+        fail_hard('ECS_CONTAINER_METADATA_FILE not defined; cannot sequester logs')
+
+    config.uuid = (subprocess.check_output("cat $ECS_CONTAINER_METADATA_FILE | jq -r '.TaskARN' | cut -d '/' -f2")).strip()
+
+    if (not config.uuid) or len(config.uuid) == 0:
+        fail_hard("uuid undefined; cannot sequester logs")
 
     ## start the sequence diagram: post to ready to get configuration data
     try:
@@ -227,7 +242,7 @@ if __name__ == '__main__':
         #config.logger.debug("%s, %s" %(sensors,nodes))
         old = config.nodes
 
-        config.nodes = [] 
+        config.nodes = []
 
         if sensors is not None and len(sensors) != 0:
             for i in nodes:
