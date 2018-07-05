@@ -25,6 +25,7 @@ services:
     volumes:
       - ./logs:/home/mars/logs
       - ./roslogs:/home/mars/.ros/log
+      - ./cp1logs:/home/mars/cp1
     ports:
       - ${TA_PORT}:5000
       - 1044:1044
