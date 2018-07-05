@@ -26,6 +26,8 @@ RUN cd ~/catkin_ws && . /opt/ros/kinetic/setup.sh && catkin_make
 
 RUN sudo mkdir -p /usr/src/app
 RUN sudo chown mars /usr/src/app
+
+
 WORKDIR /usr/src/app
 
 COPY requirements.txt /usr/src/app/

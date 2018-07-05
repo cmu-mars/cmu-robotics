@@ -1,3 +1,7 @@
+# log directories
+logs/
+roslogs/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
