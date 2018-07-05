@@ -49,3 +49,6 @@ time_at_last_adapt  = None
 
 # uuid for log sequestering
 uuid = None
+
+## whether we got the ready message from the TH or from a file
+th_connected = False

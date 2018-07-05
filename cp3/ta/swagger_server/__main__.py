@@ -45,7 +45,6 @@ if __name__ == '__main__':
       sys.exit(1)
 
     th_uri = sys.argv[1]
-    th_connected = False
 
     app = connexion.App(__name__, specification_dir='./swagger/')
     app.app.json_encoder = JSONEncoder ## this may be busted; see CP2. depends on codegen version
@@ -75,40 +74,47 @@ if __name__ == '__main__':
         comms.save_ps("error-failhard")
 
         ## if we at least have the UUID, then try to sequester.
-        if config.uuid:
+        if config.uuid and config.th_connected:
             comms.sequester()
 
-        if th_connected:
+        if config.th_connected:
             thApi.error_post(Parameters(s))
         raise Exception(s)
 
     ## grab the UUID from the TaskARN, per LL advice
-    ecs_meta = os.environ.get('ECS_CONTAINER_METADATA_FILE')
-    if not ecs_meta:
-        fail_hard('ECS_CONTAINER_METADATA_FILE not defined; cannot sequester logs')
-
-    config.uuid = (subprocess.check_output("cat $ECS_CONTAINER_METADATA_FILE | jq -r '.TaskARN' | cut -d '/' -f2")).strip()
-
-    if (not config.uuid) or len(config.uuid) == 0:
-        fail_hard("uuid undefined; cannot sequester logs")
-
     ## start the sequence diagram: post to ready to get configuration data
     try:
         logger.debug("posting to /ready")
         ready_resp = thApi.ready_post()
-        th_connected = True
+        config.th_connected = True
         logger.debug("recieved response from /ready: %s" % ready_resp)
     except Exception as e:
         ## this isn't a call to fail_hard because the TH isn't
         ## responding at all; we have to hope that LL notices the log
         ## output and that this happens only very rarely if at all
+
+        ## note that these logs will not get sequestered
         logger.debug("Failed to connect with th")
         logger.debug(traceback.format_exc())
-        th_connected = False
+        config.th_connected = False
         with open(os.path.expanduser(sys.argv[1])) as ready:
             data = json.load(ready)
             ready_resp = InlineResponse200(data["start-loc"], data["target-loc"], data["use-adaptation"], data["start-configuration"], data["utility-function"])
             logger.info("started TA in disconnected mode")
+
+    ## if we get a message from ready, that means we're in the LL
+    ## environment and should set up log sequestration
+    if config.th_connected:
+        ecs_meta = os.environ.get('ECS_CONTAINER_METADATA_FILE')
+
+        if not ecs_meta:
+            fail_hard('ECS_CONTAINER_METADATA_FILE not defined; cannot sequester logs')
+
+        config.uuid = (subprocess.check_output("cat $ECS_CONTAINER_METADATA_FILE | jq -r '.TaskARN' | cut -d '/' -f2")).strip()
+
+        if (not config.uuid) or (len(config.uuid) == 0):
+            fail_hard("uuid undefined; cannot sequester logs")
+
 
     config.use_adaptation = ready_resp.use_adaptation
 

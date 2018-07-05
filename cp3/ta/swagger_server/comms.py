@@ -11,12 +11,13 @@ from ig_action_msgs.msg import InstructionGraphActionFeedback
 import rospy
 
 def sequester():
-    logdirs = ["/home/mars/logs", "/home/mars/.ros/logs/latest/"]
+    if config.th_connected:
+        logdirs = ["/home/mars/logs", "/home/mars/.ros/logs/latest/"]
 
-    for ld in logdirs:
-        subprocess.call(["aws", "s3", "cp", ld,
-                         "s3://dev-cmur-logs/" + config.uuid + "/" ,
-                         "--recursive"])
+        for ld in logdirs:
+            subprocess.call(["aws", "s3", "cp", ld,
+                             "s3://dev-cmur-logs/" + config.uuid + "/" ,
+                             "--recursive"])
 
 def save_ps(src):
     with open(os.path.expanduser("~/logs/ps_%s_%s.log") % (src, datetime.datetime.now()), "w") as outfile:
@@ -46,8 +47,10 @@ def send_done(src):
                         final_utility = 0 ## todo placeholder value
         )
         config.logger.debug("Done message is %s" %d)
+
         ## right before posting, sequester the logs
         sequester()
+
         response = config.thApi.done_post(d)
 
         ## this may not show up in sequestered logs
