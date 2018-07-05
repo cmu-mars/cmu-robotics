@@ -303,7 +303,7 @@ function close_enough (loc1, loc2) = distance (loc1, loc2) <= MAX_DISTANCE
 
 | Condition                                                      | Score                                                |
 |----------------------------------------------------------------|------------------------------------------------------|
-| final_charge > 0                                               | (MAX_CHARGE - final_charge)/MAX_CHARGE               |
+| final_charge > 0                                               | (final_charge)/MAX_CHARGE               |
 | otherwise                                                      | 0 |
 
 **Utility Component 3: Safety**
