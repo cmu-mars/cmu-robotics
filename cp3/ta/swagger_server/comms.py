@@ -11,7 +11,7 @@ from ig_action_msgs.msg import InstructionGraphActionFeedback
 import rospy
 
 def sequester():
-    if config.th_connected:
+    if config.th_connected and config.uuid is not None:
         logdirs = ["/home/mars/logs", "/home/mars/.ros/logs/latest/"]
 
         for ld in logdirs:
