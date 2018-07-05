@@ -489,6 +489,10 @@ We assume the following test stages for evaluation:
 | Predefined  |             | `✔` (B)     |             |
 | Learned     |             |             | `✔` (C)     |
 
+## Test Environment Resources
+
+For testing, we require an Amazon EC2 `c5d.2xlarge` instance or equivalent. 
+
 ## Test Design
 
 [Guideline](test-design-cp1.md)
