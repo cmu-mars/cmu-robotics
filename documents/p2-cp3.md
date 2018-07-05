@@ -34,6 +34,10 @@ The perturbations to the robot and environment that will trigger change are:
 
 Mission quality will be assessed using a utility preference function. Lincoln Labs will be able to choose a preference function from among a set of three such functions (see below).
 
+## Test Environment Resources
+
+For testing, we require an Amazon EC2 `c5d.4xlarge` instance or equivalent. Or data gathering relied on this environment, and may cause inconsistencies on other platforms.
+
 ## Test Data
 
 The following pieces of indormation will be defined pre-test for this challenge problem:
