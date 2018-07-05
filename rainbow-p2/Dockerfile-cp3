@@ -34,10 +34,10 @@ WORKDIR /home/mars/das
 RUN mkdir rainbow-brass
 WORKDIR /home/mars/das/rainbow-brass
 # Install Rainbow
-RUN wget http://acme.able.cs.cmu.edu/public/BRASS/p2/rainbow-brass-RR2.tgz && \
-    tar zxf rainbow-brass-RR2.tgz && \
+RUN wget http://acme.able.cs.cmu.edu/public/BRASS/p2/rainbow-brass-P2-release.tgz && \
+    tar zxf rainbow-brass-P2-release.tgz && \
     find . -name "*.sh" -exec chmod +x {} \; && \
-    rm -f rainbow-brass-RR2.tgz
+    rm -f rainbow-brass-P2-release.tgz
 #COPY . /home/mars/das
 
 RUN sudo chown -R mars /home/mars/das
