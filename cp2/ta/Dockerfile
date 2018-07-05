@@ -5,14 +5,18 @@ COPY entrypoint.sh /usr/bin/
 ENTRYPOINT ["/usr/bin/entrypoint.sh"]
 
 # credit to: https://hub.docker.com/r/frolvlad/alpine-python3
-RUN apk add --no-cache python3 git gcc gfortran python3-dev build-base openblas-dev \
+RUN apk add --no-cache \
+      python3 \
+      python3-dev \
+      git \
+      gcc \
+      linux-headers \
+      musl-dev \
  && python3 -m ensurepip \
  && rm -r /usr/lib/python*/ensurepip \
  && pip3 install --no-cache --upgrade pip==9.0.3 setuptools \
  && if [[ ! -e /usr/bin/pip ]]; then ln -s pip3 /usr/bin/pip ; fi \
  && if [[ ! -e /usr/bin/python ]]; then ln -sf /usr/bin/python3 /usr/bin/python; fi
-
-RUN pip install --no-cache numpy==1.14.2
 
 # install BugZoo from source
 COPY --from=squareslab/bugzoo /opt/bugzoo /tmp/bugzoo
@@ -25,6 +29,12 @@ COPY --from=squareslab/boggart /opt/boggart /tmp/boggart
 RUN cd /tmp/boggart \
  && pip install --no-cache . \
  && rm -rf /tmp/boggart
+
+# install Kaskara from source
+COPY --from=squareslab/kaskara /opt/kaskara /tmp/kaskara
+RUN cd /tmp/kaskara \
+ && pip install --no-cache . \
+ && rm -rf /tmp/kaskara
 
 # install Darjeeling from source
 COPY --from=squareslab/darjeeling /opt/darjeeling /tmp/darjeeling

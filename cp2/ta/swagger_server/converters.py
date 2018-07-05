@@ -40,13 +40,15 @@ def patch2ca(pa):
     return ca
 
 def perturb2mutation(pp):
+    loc_start = bgrt.Location(pp.at.start.line, pp.at.start.column)
+    loc_stop = bgrt.Location(pp.at.stop.line, pp.at.stop.column)
     loc = bgrt.FileLocationRange(pp.at.start.file,
-                                 bgrt.Location(pp.at.start.line, pp.at.start.column),
-                                 bgrt.Location(pp.at.stop.line, pp.at.stop.column))
-    return bgrt.Mutation(pp.kind,                 # operator
-                         pp.transformation_index, # transformation_index,
-                         loc,                     # location,
-                         pp.arguments)            # args
+                                 bgrt.LocationRange(loc_start, loc_stop))
+    mut = bgrt.Mutation(pp.kind,
+                        pp.transformation_index,
+                        loc,
+                        pp.arguments)
+    return mut
 
 def mutation2perturb(m):
     return Perturbation(kind = m.operator,
