@@ -11,23 +11,23 @@ import swagger_server.config as config
 def sequester():
     if config.th_connected and config.uuid is not None:
         logdirs = [os.path.expanduser("~/cp1/"),
-                   , "/usr/src/app/access.log"
-                   , "/home/mars/rainbow.log"
-                   , "/home/mars/.ros/logs/latest/"
-                   , "/home/mars/logs/"
+                   "/usr/src/app/access.log",
+                   "/home/mars/rainbow.log",
+                   "/home/mars/.ros/logs/latest/",
+                   "/home/mars/logs/"
                    ]
 
         err = False
         for ld in logdirs:
             res = subprocess.call(["aws", "s3", "cp", ld,
-                                   "s3://dev-cmur-logs/" + config.uuid + "/" ,
+                                   "s3://dev-cmur-logs/" + config.uuid + "/",
                                    "--recursive"])
             if not res == 0:
                 err = True
 
         ## if any of the directories can't be copied, this test should be invalidated
         if err:
-            thApi.error_post(Errorparams(error="other-error",
+            config.thApi.error_post(Errorparams(error="other-error",
                                          message="failed to sequester logs"))
 
 
