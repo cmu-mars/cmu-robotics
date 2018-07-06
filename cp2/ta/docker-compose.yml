@@ -13,9 +13,11 @@ services:
         --debug
         --url-ta http://cp2_ta:5000
         --log-file /var/log/th/cp2th.log
-        --attempts 500
+        --attempts 1000
         --operator flip-relational-operator
-        --file src/laser_geometry/src/laser_geometry.cpp
+        --file src/roscpp_core/rostime/src/time.cpp
+
+#        --file src/laser_geometry/src/laser_geometry.cpp
 
   bugzoo:
     image: squareslab/bugzoo
@@ -27,7 +29,7 @@ services:
       - ./logs:/var/log/bugzoo
     expose:
       - 6060
-    mem_limit: 2G
+    mem_limit: 1G
     ulimits:
       nofile:
         soft: 20000
@@ -42,6 +44,7 @@ services:
       - bugzoo
     volumes:
       - ./logs:/var/log/rooibosd
+    mem_limit: 1G
     expose:
       - 8888
     entrypoint: /bin/bash -c "rooibosd -p 8888 >& /dev/null"
@@ -54,6 +57,7 @@ services:
       - rooibos
     volumes:
       - ./logs:/var/log/boggart
+    mem_limit: 500M
     expose:
       - 6000
     command: /bin/sh -c "boggartd -p 6000 --bugzoo http://bugzoo:6060 --rooibos http://rooibos:8888 --log-file /var/log/boggart/boggartd.log --debug"
@@ -69,6 +73,7 @@ services:
       - boggart
     volumes:
       - ./logs:/var/log
+    mem_limit: 8G
     expose:
       - 5000
     working_dir: /usr/src/app
