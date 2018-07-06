@@ -5,6 +5,7 @@ import os
 import datetime
 import math
 import swagger_server.config as config
+from swagger_client.models.parameters import Parameters
 from swagger_client.models.parameters_1 import Parameters1
 from swagger_client.models.parameters_2 import Parameters2
 from ig_action_msgs.msg import InstructionGraphActionFeedback
@@ -14,10 +15,17 @@ def sequester():
     if config.th_connected and config.uuid is not None:
         logdirs = ["/home/mars/logs", "/home/mars/.ros/logs/latest/"]
 
+        err = False
         for ld in logdirs:
-            subprocess.call(["aws", "s3", "cp", ld,
-                             "s3://dev-cmur-logs/" + config.uuid + "/" ,
-                             "--recursive"])
+            res = subprocess.call(["aws", "s3", "cp", ld,
+                                   "s3://dev-cmur-logs/" + config.uuid + "/" ,
+                                   "--recursive"])
+            if not res == 0:
+                err = True
+
+        ## if any of the directories can't be copied, this test should be invalidated
+        if err:
+            thApi.error_post(Parameters("failed to sequester logs"))
 
 def save_ps(src):
     with open(os.path.expanduser("~/logs/ps_%s_%s.log") % (src, datetime.datetime.now()), "w") as outfile:
