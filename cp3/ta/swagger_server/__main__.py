@@ -205,7 +205,7 @@ if __name__ == '__main__':
         gazebo.set_turtlebot_position(start_coords['x'], start_coords['y'], 0)
         # Turn off lights
         for l in config.lights_off:
-            gazebo.enable_light('light%s' %l, False)
+            gazebo.enable_light(l, False)
     except Exception as e:
         fail_hard("failed to connect to gazebo: %s" % e)
 
