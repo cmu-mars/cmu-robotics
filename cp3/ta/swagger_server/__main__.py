@@ -83,7 +83,7 @@ if __name__ == '__main__':
 
     ## record the resources to log
     resources.report_system_resources(logger)
-    resources.repoty_resource_limits(logger)
+    resources.report_resource_limits(logger)
 
     ## grab the UUID from the TaskARN, per LL advice
     ## start the sequence diagram: post to ready to get configuration data
