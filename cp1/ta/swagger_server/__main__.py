@@ -25,11 +25,12 @@ import swagger_server.comms as comms
 from swagger_server.util import *
 from swagger_server.encoder import JSONEncoder
 
-
 from learner.learn import Learn
 from robotcontrol.bot_controller import BotController
 from rainbow_interface import RainbowInterface
 from robotcontrol.launch_utils import launch_cp1_base, init
+
+import resources
 
 config_list_file = os.path.expanduser('~/cp1/config_list.json')
 config_list_file_true = os.path.expanduser('~/cp1/config_list_true.json')
@@ -79,6 +80,10 @@ if __name__ == '__main__':
             err = Errorparams(error="other-error", message=s)
             result = thApi.error_post(err)
         raise Exception(s)
+
+    ## record the resources to log
+    resources.report_system_resources(logger)
+    resources.repoty_resource_limits(logger)
 
     # start the sequence diagram: post to ready to get configuration data
     try:
