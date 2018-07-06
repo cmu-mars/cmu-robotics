@@ -36,6 +36,8 @@ from cp3 import CP3
 import swagger_server.config as config
 import swagger_server.comms as comms
 
+import resources
+
 if __name__ == '__main__':
     # Command line argument parsing
     if len(sys.argv) != 2:
@@ -78,6 +80,10 @@ if __name__ == '__main__':
         if config.th_connected:
             thApi.error_post(Parameters(s))
         raise Exception(s)
+
+    ## record the resources to log
+    resources.report_system_resources(logger)
+    resources.repoty_resource_limits(logger)
 
     ## grab the UUID from the TaskARN, per LL advice
     ## start the sequence diagram: post to ready to get configuration data
