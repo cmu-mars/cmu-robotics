@@ -47,7 +47,8 @@ def adapt_post(Parameters):  # noqa: E501
     if Parameters.time_limit is not None:
         logger.info("* using time limit of %d minutes")
     if Parameters.attempt_limit is not None:
-        logger.info("* using attempt limit of %d attempts")
+        logger.info("* using attempt limit of %d attempts",
+                    Parameters.attempt_limit)
 
     try:
         config.orc.adapt(minutes=Parameters.time_limit,

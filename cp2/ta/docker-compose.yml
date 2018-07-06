@@ -13,9 +13,9 @@ services:
         --debug
         --url-ta http://cp2_ta:5000
         --log-file /var/log/th/cp2th.log
-        --time-limit-mins 8
-        --operator flip-boolean-operator
-        --file src/ros_comm/roscpp/src/libros/transport_subscriber_link.cpp
+        --attempts 500
+        --operator flip-relational-operator
+        --file src/laser_geometry/src/laser_geometry.cpp
 
   bugzoo:
     image: squareslab/bugzoo
@@ -25,10 +25,14 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /tmp:/tmp
       - ./logs:/var/log/bugzoo
-      - ./coverage:/root/.bugzoo/coverage
     expose:
       - 6060
-    entrypoint: /bin/sh -c "bugzood -p 6060 --debug --log-file /var/log/bugzoo/bugzood.log --log-level warning"
+    mem_limit: 2G
+    ulimits:
+      nofile:
+        soft: 20000
+        hard: 40000
+    entrypoint: /bin/sh -c "bugzood -p 6060 --debug --log-file /var/log/bugzoo/bugzood.log --log-level info"
 
   rooibos:
     image: squareslab/rooibosd
@@ -52,7 +56,7 @@ services:
       - ./logs:/var/log/boggart
     expose:
       - 6000
-    command: /bin/sh -c "boggartd -p 6000 --bugzoo http://bugzoo:6060 --rooibos http://rooibos:8888 --log-file /var/log/boggart/boggartd.log >& /dev/null"
+    command: /bin/sh -c "boggartd -p 6000 --bugzoo http://bugzoo:6060 --rooibos http://rooibos:8888 --log-file /var/log/boggart/boggartd.log --debug"
 
   cp2_ta:
     build: .
@@ -64,13 +68,14 @@ services:
       - rooibos
       - boggart
     volumes:
-      - ./logs:/var/log/ta
+      - ./logs:/var/log
     expose:
       - 5000
+    working_dir: /usr/src/app
     command: |
       python3 -u -m swagger_server
         --th-url http://cp2_th:5001
         --boggart-url http://boggart:6000
         --bugzoo-url http://bugzoo:6060
         --rooibos-url http://rooibos:8888
-        --threads 16
+        --threads 8

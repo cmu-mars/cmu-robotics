@@ -6,6 +6,9 @@ import logging
 import traceback
 import threading
 import argparse
+import tarfile
+import os
+import subprocess
 from swagger_server import encoder
 from swagger_client import DefaultApi
 
@@ -18,10 +21,19 @@ from swagger_client.models.parameters_1 import Parameters1
 from swagger_client.models.parameters import Parameters
 from swagger_server.models.error_error import ErrorError
 
+FN_LOG_TA = '/var/log/ta.log'
 logger = logging.getLogger("cp2ta")  # type: logging.Logger
 logger.setLevel(logging.DEBUG)
-logger.addHandler(logging.NullHandler())
-
+log_formatter = \
+    logging.Formatter('%(asctime)s:%(name)s:%(levelname)s: %(message)s',
+                      '%Y-%m-%d %H:%M:%S')
+log_to_stdout = logging.StreamHandler(sys.stdout)
+log_to_stdout.setFormatter(log_formatter)
+log_to_stdout.setLevel(logging.INFO)
+log_to_file = logging.FileHandler(FN_LOG_TA, 'w')
+log_to_file.setFormatter(log_formatter)
+logger.addHandler(log_to_stdout)
+logger.addHandler(log_to_file)
 
 cli = argparse.ArgumentParser('CP2 TA')
 cli.add_argument('--th-url',
@@ -55,6 +67,88 @@ def shutdown():
     except Exception:
         logger.exception("Failed to safely shutdown repair stack.")
     logger.info("Cleaned up resources")
+    try:
+        write_logs_to_s3()
+    except Exception:
+        logger.exception("Failed to write logs to S3.")
+
+
+def write_logs_to_s3():
+    """
+    Collects the log files for the challenge problem and uploads them to S3.
+    """
+    logger.info("Attempting to write logs to S3")
+
+    # attempt to fetch the UUID for the ECS task
+    uuid_arn = "UNKNOWN-ARN-UUID"
+    try:
+        try:
+            ecs_metadata_fn = os.environ['ECS_CONTAINER_METADATA_FILE']
+        except KeyError:
+            raise Exception("ECS_CONTAINER_METADATA_FILE not found in environment.")
+
+        try:
+            with open(ecs_metadata_fn, 'r') as f:
+                jsn = json.load(f)
+                uuid_arn = jsn['TaskARN'].split('/')[2]
+        except IOError:
+            msg = "failed to open metadata file [{}]".format(ecs_metadata_fn)
+            raise Exception(msg)
+        except KeyError:
+            raise Exception("failed to find TaskARN property in metadata file")
+
+    except Exception as e:
+        logger.exception("failed to find TaskARN UUID: %s", e)
+        logger.warning("using fallback ARN UUID: %s", uuid_arn)
+
+    # ensure that TA logs are flushed to disk
+    log_to_file.flush()
+
+    # create a gzipped archive of the logs
+    log_archive_fn = '/tmp/{}.tar.gz'.format(uuid_arn)
+    # log_archive_fn = '/borko/{}.tar.gz'.format(uuid_arn)
+    logger.info("writing log files to compressed archive: %s", log_archive_fn)
+    try:
+        component_log_files = [
+            'ta.log', 'bugzood.log', 'boggartd.log'
+        ]
+        with tarfile.open(log_archive_fn, 'w:gz') as tf:
+            for component_log_fn in component_log_files:
+                try:
+                    tf.add('/var/log/{}'.format(component_log_fn),
+                           component_log_fn)
+                except IOError:
+                    logger.exception('failed to write %s to archive',
+                                     component_log_fn)
+
+    except Exception:
+        logger.exception("failed to write log files to compressed archive")
+        raise
+    logger.info("finished writing log files to compressed archive")
+
+    # upload archive to S3 bucket via the AWS CLI
+    url_bucket = "s3://dev-cmur-logs/"
+    cmd = "aws s3 cp {} {}".format(log_archive_fn, url_bucket)
+    logger.info("Using the following AWS S3 command: %s", cmd)
+    try:
+        p = subprocess.Popen(cmd,
+                             shell=True,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT,
+                             universal_newlines=True)
+        out, errs = p.communicate()
+        if p.returncode != 0:
+            raise subprocess.CalledProcessError(p.returncode, cmd, out, errs)
+
+    except subprocess.CalledProcessError as e:
+        logger.exception("failed to upload logs to S3: command exited with code [%d]: %s",
+                         e.returncode, e.output)
+        raise
+    except Exception:
+        logger.exception("failed to upload logs to S3: unexpected failure.")
+        raise
+
+    logger.info("Finished writing logs to S3")
 
 
 def main():
@@ -71,18 +165,6 @@ def main():
     app.add_api('swagger.yaml', arguments={'title': 'CP2'}, strict_validation=True)
 
     # Setup logging
-    log_formatter = \
-        logging.Formatter('%(asctime)s:%(name)s:%(levelname)s: %(message)s',
-                          '%Y-%m-%d %H:%M:%S')
-    log_to_stdout = logging.StreamHandler(sys.stdout)
-    log_to_stdout.setFormatter(log_formatter)
-    log_to_stdout.setLevel(logging.INFO)
-    log_to_file = logging.FileHandler('/var/log/ta/ta.log', 'w')
-    log_to_file.setFormatter(log_formatter)
-
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(log_to_stdout)
-    logger.addHandler(log_to_file)
 
     def setup_logger(name: str,
                      stdout: bool = False,

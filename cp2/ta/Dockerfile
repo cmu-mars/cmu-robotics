@@ -4,19 +4,32 @@ FROM alpine:3.7
 COPY entrypoint.sh /usr/bin/
 ENTRYPOINT ["/usr/bin/entrypoint.sh"]
 
-# credit to: https://hub.docker.com/r/frolvlad/alpine-python3
 RUN apk add --no-cache \
-      python3 \
-      python3-dev \
       git \
       gcc \
       linux-headers \
       musl-dev \
+      libffi-dev \
+      openssl-dev \
+      make
+
+## install aws CLI
+#RUN apk add --no-cache python python-dev \
+# && python2.7 -m ensurepip \
+# && rm -r /usr/lib/python*/ensurepip \
+# && pip2.7 install --no-cache aws
+
+# credit to: https://hub.docker.com/r/frolvlad/alpine-python3
+RUN apk add --no-cache \
+      python3 \
+      python3-dev \
  && python3 -m ensurepip \
  && rm -r /usr/lib/python*/ensurepip \
  && pip3 install --no-cache --upgrade pip==9.0.3 setuptools \
  && if [[ ! -e /usr/bin/pip ]]; then ln -s pip3 /usr/bin/pip ; fi \
  && if [[ ! -e /usr/bin/python ]]; then ln -sf /usr/bin/python3 /usr/bin/python; fi
+
+RUN pip install --no-cache awscli
 
 # install BugZoo from source
 COPY --from=squareslab/bugzoo /opt/bugzoo /tmp/bugzoo
