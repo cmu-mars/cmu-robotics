@@ -149,7 +149,7 @@ def observe_get():
     ret.y = y
     ret.battery = config.battery
     ret.sim_time = rospy.Time.now().secs
-    ret.lights = config.cp.map_server.lights_on()
+    ret.lights = config.lights_off
     return ret
 
 def perturb_light_post(Parameters):
@@ -164,14 +164,30 @@ def perturb_light_post(Parameters):
     if connexion.request.is_json:
         Parameters = Parameters0.from_dict(connexion.request.get_json())
 
+    ## check if the light name is valid
     if not config.cp.map_server.is_light(Parameters.id):
         ret = InlineResponse4001(rospy.Time.now().secs, "invalid light name")
         return ret , 400
 
+    ## if they want to turn it off, make sure it's on
+    if (not Parameters.state) and Parameters.id in config.lights_off:
+        return InlineResponse4001(rospy.Time.now().secs, "cannot turn off a light that is already off")
+
+    ## if they want to turn it on, make sure it's off
+    if Parameters.state and (not Parameters.id in config.lights_off):
+        return InlineResponse4001(rospy.Time.now().secs, "cannot turn on a light that is already on")
+
     if config.cp.gazebo.enable_light(Parameters.id, Parameters.state):
-        ret = InlineResponse200()
-        ret.sim_time = rospy.Time.now().secs
-        return ret
+        ## update the internal data structure for observe. the two
+        ## if-statements above ought to make sure that there are no
+        ## duplicates in the list and that you don't try to remove
+        ## something that isn't there.
+        if (not Parameters.state):
+            config.lights_off.append(Parameters.id)
+        else:
+            config.lights_off.remove(Parameters.id)
+
+        return InlineResponse200(sim_time=rospy.Time.now().secs) , 200
     else:
         ret = InlineResponse4001(rospy.Time.now().secs, "light setting failed on: %s" % Parameters)
         return ret , 400

@@ -52,3 +52,7 @@ uuid = None
 
 ## whether we got the ready message from the TH or from a file
 th_connected = False
+
+## light that are currently OFF (modulo what gazebo may be in the process
+## of modifying). starts with the default off-set in the map def.
+lights_off = [3,63,62,2,10,88,11,18,72,16]
