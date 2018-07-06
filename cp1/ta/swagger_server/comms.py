@@ -10,7 +10,7 @@ import swagger_server.config as config
 
 def sequester():
     if config.th_connected and config.uuid is not None:
-        logdirs = [os.path.expanduser("~/cp1/"),
+        logdirs = [os.path.expanduser("/home/mars/cp1/"),
                    "/usr/src/app/access.log",
                    "/home/mars/rainbow.log",
                    "/home/mars/.ros/logs/latest/",
