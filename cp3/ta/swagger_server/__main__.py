@@ -36,7 +36,7 @@ from cp3 import CP3
 import swagger_server.config as config
 import swagger_server.comms as comms
 
-import resources
+import swagger_server.resources as resources
 
 if __name__ == '__main__':
     # Command line argument parsing
