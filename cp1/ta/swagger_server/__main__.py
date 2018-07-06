@@ -30,7 +30,7 @@ from robotcontrol.bot_controller import BotController
 from rainbow_interface import RainbowInterface
 from robotcontrol.launch_utils import launch_cp1_base, init
 
-import resources
+import swagger_server.resources as resources
 
 config_list_file = os.path.expanduser('~/cp1/config_list.json')
 config_list_file_true = os.path.expanduser('~/cp1/config_list_true.json')
@@ -83,7 +83,7 @@ if __name__ == '__main__':
 
     ## record the resources to log
     resources.report_system_resources(logger)
-    resources.repoty_resource_limits(logger)
+    resources.report_resource_limits(logger)
 
     # start the sequence diagram: post to ready to get configuration data
     try:

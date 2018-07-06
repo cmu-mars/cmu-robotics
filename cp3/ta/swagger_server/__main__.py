@@ -36,7 +36,7 @@ from cp3 import CP3
 import swagger_server.config as config
 import swagger_server.comms as comms
 
-import resources
+import swagger_server.resources as resources
 
 if __name__ == '__main__':
     # Command line argument parsing
@@ -83,7 +83,7 @@ if __name__ == '__main__':
 
     ## record the resources to log
     resources.report_system_resources(logger)
-    resources.repoty_resource_limits(logger)
+    resources.report_resource_limits(logger)
 
     ## grab the UUID from the TaskARN, per LL advice
     ## start the sequence diagram: post to ready to get configuration data
