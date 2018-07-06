@@ -29,3 +29,10 @@ provided by the instance.
 * **`docker-compose` has stopped writing to stdout:** for an unknown reason,
   `docker-compose` stops writing the the stdout when the Amazon Linux AMI is
   used. The issue does not occur with the Ubuntu Server AMI.
+
+## Guidance
+
+* It takes a long time to generate coverage for perturbations to files in
+  `rostime`, `roslib`, or any other core ROS library, since those files are
+  covered by all systems tests and integration tests (as well as a number of\
+  unit tests).
