@@ -11,7 +11,7 @@ ENV GPG_KEY=0D96DF4D4110E5C43FBFB17F2D347EA6AA65421D
 ENV PYTHON_VERSION=3.6.3
 
 RUN sudo apt-get update
-RUN sudo apt-get install ros-kinetic-gazebo-msgs awscli jq
+RUN sudo apt-get install -y ros-kinetic-gazebo-msgs awscli jq
 
 ENV ROS_NAVIGATION_MSGS_VERSION 1.13.0
 RUN wget -q "https://github.com/ros-planning/navigation_msgs/archive/${ROS_NAVIGATION_MSGS_VERSION}.tar.gz" && \
