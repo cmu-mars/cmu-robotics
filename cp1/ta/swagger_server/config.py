@@ -25,3 +25,6 @@ tasks_finished = []
 
 # for testing without th
 th_connected = False
+
+## for log sequestration
+uuid = None

@@ -3,13 +3,36 @@ import subprocess
 import os
 import datetime
 
+from swagger_client.models.errorparams import Errorparams
 from swagger_client.models.doneparams import Doneparams
 from swagger_client.models.statusparams import Statusparams
 import swagger_server.config as config
 
+def sequester():
+    if config.th_connected and config.uuid is not None:
+        logdirs = [os.path.expanduser("~/cp1/"),
+                   , "/usr/src/app/access.log"
+                   , "/home/mars/rainbow.log"
+                   , "/home/mars/.ros/logs/latest/"
+                   , "/home/mars/logs/"
+                   ]
+
+        err = False
+        for ld in logdirs:
+            res = subprocess.call(["aws", "s3", "cp", ld,
+                                   "s3://dev-cmur-logs/" + config.uuid + "/" ,
+                                   "--recursive"])
+            if not res == 0:
+                err = True
+
+        ## if any of the directories can't be copied, this test should be invalidated
+        if err:
+            thApi.error_post(Errorparams(error="other-error",
+                                         message="failed to sequester logs"))
+
 
 def save_ps(src):
-    with open(os.path.expanduser("~/ps_%s_%s.log") % (src, datetime.datetime.now()), "w") as outfile:
+    with open(os.path.expanduser("~/logs/ps_%s_%s.log") % (src, datetime.datetime.now()), "w") as outfile:
         subprocess.call(["ps", "aux"], stdout=outfile)
 
 
@@ -65,6 +88,10 @@ def send_done(src, msg, outcome):
         save_ps("done")
         x, y, ig1, ig2 = config.bot_cont.gazebo.get_bot_state()
         config.logger.debug("sending done from %s" % src)
+
+        ## right before posting, copy out all the logs
+        sequester()
+
         response = config.thApi.done_post(Doneparams(x=x,
                                                      y=y,
                                                      charge=config.battery,

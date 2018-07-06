@@ -41,7 +41,6 @@ if __name__ == '__main__':
         sys.exit(1)
 
     th_uri = sys.argv[1]
-    th_connected = False
 
     # Set up TA server and logging
     app = connexion.App(__name__, specification_dir='./swagger/')
@@ -71,7 +70,12 @@ if __name__ == '__main__':
     def fail_hard(s):
         logger.debug(s)
         comms.save_ps("error-failhard")
-        if th_connected:
+
+        ## if we at least have the UUID, then try to sequester.
+        if config.uuid and config.th_connected:
+            comms.sequester()
+
+        if config.th_connected:
             err = Errorparams(error="other-error", message=s)
             result = thApi.error_post(err)
         raise Exception(s)
@@ -80,7 +84,7 @@ if __name__ == '__main__':
     try:
         logger.debug("posting to /ready")
         ready_resp = thApi.ready_post()
-        th_connected = True
+        config.th_connected = True
         logger.debug("received response from /ready: %s" % ready_resp)
     except Exception as e:
         # this isn't a call to fail_hard because the TH isn't
@@ -88,7 +92,7 @@ if __name__ == '__main__':
         # output and that this happens only very rarely if at all
         logger.debug("failed to connect with th")
         logger.debug(traceback.format_exc())
-        th_connected = False
+        config.th_connected = False
         ready_file_name = sys.argv[1]
         # Adding test ready info
         with open(os.path.expanduser(ready_file_name)) as ready:
@@ -100,6 +104,19 @@ if __name__ == '__main__':
                 discharge_budget=data["discharge-budget"])
             logger.info("started TA in disconnected mode")
         # raise e
+
+    ## if we get a message from ready, that means we're in the LL
+    ## environment and should set up log sequestration
+    if config.th_connected:
+        ecs_meta = os.environ.get('ECS_CONTAINER_METADATA_FILE')
+
+        if not ecs_meta:
+            fail_hard('ECS_CONTAINER_METADATA_FILE not defined; cannot sequester logs')
+
+        config.uuid = (subprocess.check_output("cat $ECS_CONTAINER_METADATA_FILE | jq -r '.TaskARN' | cut -d '/' -f2")).strip()
+
+        if (not config.uuid) or (len(config.uuid) == 0):
+            fail_hard("uuid undefined; cannot sequester logs")
 
     config.ready_response = ready_resp
 
@@ -130,14 +147,17 @@ if __name__ == '__main__':
         except Exception as e:
             logger.debug("parsing raised an exception; notifying the TH and then crashing")
             comms.save_ps("parsing_error")
-            if th_connected:
+            if config.th_connected:
+                ## copy out logs before posting error
+                if config.uuid and config.th_connected:
+                    comms.sequester()
                 thApi.error_post(Errorparams(error="parsing-error", message="exception raised: %s" % e))
             else:
                 rospy.logerr("parsing-error")
             raise e
 
         logger.debug("learning-started")
-        if th_connected:
+        if config.th_connected:
             comms.send_status("__main__", "learning-started", sendxy=False, sendtime=False)
 
         try:
@@ -145,14 +165,19 @@ if __name__ == '__main__':
         except Exception as e:
             logger.debug("learning raised an exception; notifying the TH and then crashing")
             comms.save_ps("learning_error")
-            if th_connected:
+            if config.th_connected:
+
+                ## copy out logs before posting error
+                if config.uuid and config.th_connected:
+                    comms.sequester()
+
                 thApi.error_post(Errorparams(error="learning-error", message="exception raised: %s" % e))
             else:
                 rospy.logerr("learning-error")
             raise e
 
         logger.debug("learning-done")
-        if th_connected:
+        if config.th_connected:
             comms.send_status("__main__", "learning-done", sendxy=False, sendtime=False)
 
         model_learner.dump_learned_model()
@@ -201,7 +226,7 @@ if __name__ == '__main__':
         """call back to update the global battery state from the ros topic"""
         config.battery = int(msg.data)
         if msg.data <= 0:
-            if th_connected:
+            if config.th_connected:
                 comms.send_done("energy call back", "out of juice", "out-of-battery")
             else:
                 rospy.logerr("out-of-battery")
@@ -234,7 +259,7 @@ if __name__ == '__main__':
                 fail_hard("did not connect to rainbow in a timely fashion")
         except Exception as e:
             fail_hard("failed to connection to rainbow: %s" % e)
-    elif th_connected:
+    elif config.th_connected:
         def worker():
             rospy.sleep(5)
             comms.send_status("__main__ in level %s" % ready_resp.level, "live", sendtime=False)
@@ -243,6 +268,6 @@ if __name__ == '__main__':
 
     logger.debug("Starting TA REST interface")
     print("Starting TA REST interface")
-    config.th_connected = th_connected
+
     # app.debug = True
     app.run(host='0.0.0.0', port=5000)

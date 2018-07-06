@@ -18,5 +18,4 @@ A list of paths to log files that we want to be saved from every test run for po
 * `/usr/src/app/access.log`
 * `/home/mars/rainbow.log`
 * `/home/mars/.ros/logs/latest/\*`
-* `/home/mars/ps_*.log`
 * `/home/mars/logs/*`

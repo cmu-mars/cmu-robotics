@@ -61,6 +61,11 @@ def internal_status_post(CP1InternalStatus):  # noqa: E501
             config.logger.debug("internal got a deprecated status which is being ignored")
         elif cp1_internal_status.status == "other-error":
             config.logger.debug("sending error to the TH because of message %s" % cp1_internal_status.message)
+
+            ## copy out logs before posting error
+            if config.uuid and config.th_connected:
+                comms.sequester()
+
             resp = config.thApi.error_post(Errorparams(error="other-error", message=cp1_internal_status.message))
 
         # these are the literal constants that come from rainbow. the
