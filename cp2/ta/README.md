@@ -2,6 +2,9 @@
 
 ## Installation
 
+To download the requisite images for this challenge problem and to build the
+image for the TA:
+
 ```
 $ ./install
 ```
@@ -12,9 +15,10 @@ $ ./install
 $ docker-compose up
 ```
 
-Logs for the various components involved in CP2 should be written to the
-`./logs` directory.
-
+For the purposes of debugging, logs for the various components involved in CP2
+should be written to the `./logs` directory. The `./logs` directory should not
+be mounted during deployment. (Instead, an ephemeral `logs` volume should be
+shared between the containers -- see "Logging Verbosity" for more details.)
 
 ## Deployment
 
@@ -23,7 +27,6 @@ We have tested this challenge problem on Amazon EC2 using the "Ubuntu Server
 different instance types. The `--threads` flag supplied to the TA inside
 `docker-compose.yml` should be adjusted to match the compute resources
 provided by the instance.
-
 
 ### Memory Limits
 
@@ -41,16 +44,30 @@ allocated containers that are used to perform patch evaluation. The amount of
 memory provided by the instance types described above should be more than
 sufficient to cover the dynamic memory needs of this CP.
 
-
 ### Logging Verbosity
 
-TODO: provide guidance on appropriate logging levels for deployment.
+Each of the services defined in `docker-compose.yml` (with the exception of
+`rooibos`) writes to its own log file and come with options for controlling
+logging verbosity.
+
+* `bugzoo`: the logging level is set via `--log-level` option and may be set
+  to any of the following: `none`, `info`, `error`, `warning`, `debug`, or
+  `critical`. Given the large number of calls to `bugzoo` over the course of
+  the evaluation, we recommend logging at the `warning` level during
+  deployment. For debugging, the level can be dropped to `info` or `debug`
+  (but be warned that `debug` can potentially produce GBs of logs).
+* `boggart`: implements an identical logging system `bugzoo`, but produces
+  relatively small logs. We recommend using the `info` level for deployment
+  and `debug` for debugging.
+* `rooibosd`: logging for this component should be **completely disabled** by
+  redirecting its output to `/dev/null`. Any failures in this component
+  should be captured by client logs in the other components.
+* `ta`: the TA does not expose any of its own logging options.
 
 Before posting to `/done` or `/error`, the TA will attempt to collect logs
-from all of the containers listed in `docker-compose.yml`, before aggregating
-them into a compressed archive (i.e., a `.tar.gz` file) and uploading the
-resulting archive to Amazon S3.
-
+from all of the containers above, before aggregating them into a compressed
+archive (i.e., a `.tar.gz` file) and uploading the resulting archive to Amazon
+S3.
 
 ## Troubleshooting
 
