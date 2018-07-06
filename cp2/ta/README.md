@@ -24,9 +24,31 @@ shared between the containers -- see "Logging Verbosity" for more details.)
 
 We have tested this challenge problem on Amazon EC2 using the "Ubuntu Server
 16.04 LTS (HVM), SSD Volume Type" AMI (`ami-6a003c0f`) running on a number of
-different instance types. The `--threads` flag supplied to the TA inside
-`docker-compose.yml` should be adjusted to match the compute resources
-provided by the instance.
+different instance types.
+
+### Instance Type
+
+Specify which instance type should be used.
+
+### Resource Limits
+
+In line with established practices for search-based repair techniques within
+the automated program repair literature, CP2 should be given ten hours to
+attempt to find a complete repair to its perturbation. No limit should be
+placed on the number of candidate patches that may be evaluated during that
+time.
+
+### CPU Resources
+
+To ensure the best outcome and to exploit the full potential of its underlying
+technology, CP2 needs to run on a machine with a large number of CPU cores.
+The `--threads` option to the TA is used to control the number of (logical)
+CPU threads that are allocated to the challenge problem. For the sake of
+predictability, the `--threads` option should be set to the number of threads
+that are available to the underlying machine. (For some perturbations, the
+repair system can run with 3--4X the number of logical threads since those
+threads spend most of their time sleeping, but as that is not universally
+true, we don't recommend doing that.)
 
 ### Memory Limits
 
