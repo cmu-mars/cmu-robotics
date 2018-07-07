@@ -56,3 +56,49 @@ We have discussed some test strategies and ideas in the following threads:
 ## Map
 
 ![map](https://github.mit.edu/storage/user/9866/files/c7cd0ec0-64c5-11e8-8358-50c8d95ca67a)
+
+# Instructions for running tests
+
+Launch CP1 without TH (change `docker-compose-no-th.yml` accordingly with the required baseline params):
+
+```bash
+TH_PORT=8081 TA_PORT=8080 docker-compose -f docker-compose-no-th.yml up
+```
+
+Launch CP1 with TH (change `docker-compose-mitll-harness.yml` accordingly with the required baseline params):
+
+```bash
+TA_PORT=5000 TH_PORT=5001 docker-compose -f docker-compose-mitll-harness.yml up
+```
+
+Get status: 
+
+```bash
+curl -X GET "http://0.0.0.0:8080/observe" -H "accept: application/json"
+```
+
+Perturb (place obstacle):
+
+```bash
+curl -X POST "http://0.0.0.0:8080/place-obstacle" -H "accept: application/json" -H "Content-Type: application/json" -d "{ \"x\": 0, \"y\": 0}"
+```
+
+Perturb (remove obstacle):
+
+```bash
+curl -X POST "http://0.0.0.0:8080/remove-obstacle" -H "accept: application/json" -H "Content-Type: application/json" -d "{ \"obstacleid\": \"string\"}"
+```
+
+Perturb (battery set):
+
+```bash
+curl -X POST "http://0.0.0.0:8080/battery" -H "accept: application/json" -H "Content-Type: application/json" -d "{ \"charge\": 0}"
+```
+
+Start mission:
+
+```bash
+curl -X POST "http://0.0.0.0:8080/start" -H "accept: application/json"
+```
+
+Note that the mission specification is in the compose file, without a TH is specified in a ready message in a json file, while with TH, the mission is specified in `run.sh`.
