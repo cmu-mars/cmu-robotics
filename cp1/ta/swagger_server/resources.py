@@ -8,7 +8,7 @@ def bytes_to_gigabytes(x):
 def report_system_resources(logger):
     cores_physical = psutil.cpu_count(logical=False)
     cores_logical = psutil.cpu_count(logical=True)
-    cpu_freq = psutil.cpu_freq().max
+    cpu_freq = psutil.cpu_freq().max if psutil.cpu_freq is not None else -1
     vmem_total = bytes_to_gigabytes(psutil.virtual_memory().total)
     swap_total = bytes_to_gigabytes(psutil.swap_memory().total)
     swap_free = bytes_to_gigabytes(psutil.swap_memory().free)
