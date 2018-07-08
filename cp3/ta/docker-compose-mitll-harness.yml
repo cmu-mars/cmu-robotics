@@ -27,7 +27,7 @@ services:
 #    command: --cp CP3 --thPort ${TH_PORT} --taHost cp3_ta --taPort 5000
 
   cp3_ta:
-    image: cmumars/p2-cp3
+    image: cmumars/p2-cp3:p2.release
     container_name: cp3_ta
     hostname: cp3_ta
     environment:
