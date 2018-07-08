@@ -30,9 +30,6 @@ We plan to construct this technique by bringing together several of our
 innovations in the fields of fault detection, localisation and repair,
 including but not limited to:
 
-* A novel search algorithm, inspired by *greedy algorithms*, that reduces the
-  cost repairing complex faults (i.e., multi-line faults) by several orders
-  of magnitude compared to existing genetic algorithm--based approaches.
 * The use of *targeted repair* operators and better *fix prediction* to
   concentrate the allocation of limited resources on likely bug fixes.
 * *Automated (system-level) test generation* for improving fault localisation
@@ -62,26 +59,26 @@ illustrated above. Below we briefly discuss each of the stages involved in this
 procedure.
 
 1. **Generation:** A partial description of the perturbation scenario, provided
-		by the examiner to the test harness, is forwarded onto the perturbation
-		engine. The perturbation engine generates and returns a set of suitable
+    by the examiner to the test harness, is forwarded onto the perturbation
+    engine. The perturbation engine generates and returns a set of suitable
     code-level perturbations to the examiner, all of which satisify the
     specified characteristics.
 
-2. **Injection:** The examiner selects one or more suitable perturbations
-    from the set of suitable perturbations, and instructs the perturbation
-    to inject those perturbations into the system.
+2. **Injection:** The examiner selects a suitable perturbation from the set of
+    suitable perturbations, and instructs the perturbation engine to inject
+    the perturbation into the system.
 
 3. **Validation:** The perturbed system is evaluated against the test suite to
     ensure that its behaviour is sufficiently degraded for at least one test
-    (i.e., it must produce at least one `DEGRADED` or `FAILED` test outcome).
-		If the set of perturbations do not produce a change in the outcomes of the
-    test suite, the set of perturbations is discarded and the examiner is
-    required to inject an alternative set of perturbations.
-		(More details on “intent” and our evaluation metric can be found at a later
-		section in this document).
+    (i.e., it must produce at least one `FAILED` test outcome).
+    If the perturbation does not produce a change in the outcomes of the
+    test suite, the perturbation is discarded and the examiner is required to
+    inject an alternative perturbation.
+    (More details on “intent” and our evaluation metric can be found at a later
+    section in this document).
 
 4. **Adaptation:** Once a suitable perturbation has been injected, code-level
-		adaptation is triggered. The code adaptation engine will attempt to find
+    adaptation is triggered. The code adaptation engine will attempt to find
     a code-level transformation that (partially) restores intent, within a set
     of specified resource limits. 
 
@@ -91,11 +88,10 @@ procedure.
 
 ### Scenario Generation
 
-Perturbation scenarios are encoded as a set of individual code-level
-mutations, where each mutations is intended to represent a realistic
-fault (in the context of a robotics system). Each constituent
-fault is generated using our (soon-to-be-)open-source mutation testing
-tool, Shuriken.
+Perturbation scenarios are encoded as an individual code-level mutation,
+intended to represent a realistic fault (in the context of a robotics system).
+Each constituent fault is generated using our (soon-to-be-)open-source
+mutation testing tool, Boggart.
 
 However, generating realistic faults remains an open challenge for both
 robotics, and software systems in general [Just et al., 2014].
@@ -126,12 +122,6 @@ linearly with the number of lines in the program, rather than polynomially.
 Secondly, it excludes bug fixes that simply delete code, which are trivial
 to find -- we keep the *truly challenging* bugs whose fixes require the
 insertion of code.
-
-To ensure that a representative set of faults is produced using these
-operators, we intend to supply Lincoln Labs with a probability distribution
-describing the likely shape and composition of faults. We intend to construct
-this probability distribution through observation of real-world bugs from our
-ArduPilot dataset.
 
 ## Interface to the Test Harness (API)
 
@@ -166,9 +156,9 @@ simulated corridor), be performed in simulation.
 Each test (or mission) within this suite is described by the following:
 
 * a mission schema, describing a kind of mission. (e.g., navigate to a
-	location.)
+  location.)
 * a set of mission parameters, required to instantiate the mission schema
-	as a concrete mission. (e.g., move from A to B.)
+  as a concrete mission. (e.g., move from A to B.)
 * a simulated environment. (e.g., a randomly generated maze.)
 * a configuration for the robot. (e.g., a certain node may be disabled.)
 
