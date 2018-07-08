@@ -491,7 +491,7 @@ We assume the following test stages for evaluation:
 
 ## Test Environment Resources
 
-For testing, we require an Amazon EC2 `c5d.2xlarge` instance or equivalent. 
+For testing, we require an Amazon EC2 `c5d.2xlarge` instance or larger instances. 
 
 ## Test Design
 
@@ -499,7 +499,7 @@ For testing, we require an Amazon EC2 `c5d.2xlarge` instance or equivalent.
 
 ## Static data
 
-[static data](../static-data/cp1/README.md)
+[Static data](../static-data/cp1/README.md)
 
 ### Backend components
 
