@@ -13,6 +13,13 @@ coverage criteria should be considered:
 * operator coverage: each of the different types of operator should be
     covered.
 
+Note that it may be difficult to produce valid perturbations (i.e.,
+perturbations that alter the outcome of the test suite) using the
+`UndoTransformation` and `FlipSignedness` operators. Furthermore, it may take
+longer to perturb certain files (i.e., core ROS libraries) than others due to
+those files being covered by a large number of tests. (Coverage information
+must be recomputed for each of those tests.)
+
 At the end of the scenario, the TA should report a summary of the outcome of
 the adaptation process. Below are the three possible outcomes of the
 adaptation:
