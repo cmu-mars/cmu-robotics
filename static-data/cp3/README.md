@@ -1,6 +1,6 @@
 # Static data for CP3
 
-We have been testing this on a `m5.xlarge` EC2 instance.
+We have been testing this on a `c5d.4xlarge` EC2 instance or larger.
 
 The static data for CP3 are the map, which can be found in: https://github.com/cmu-mars/cp3_base/blob/master/cp3_base/maps/cp3.json. This contains
 1.  The list of waypoints, their location, and their connectivity
@@ -9,8 +9,5 @@ The static data for CP3 are the map, which can be found in: https://github.com/c
 # Log file locations
 In addition to the console trace from the ta, we need the following logs collected:
 
-1. /usr/src/app/access.log
-2. /home/mars/rainbow.log
-3. /home/mars/.ros/logs/latest/\*
-4. /home/mars/das/rainbow-brass/\*.log
-5. ~/ps_*.log
+1. /home/mars/logs
+2. /home/mars/.ros/logs/latest/\*
