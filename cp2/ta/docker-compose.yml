@@ -1,7 +1,7 @@
 version: '2'
 services:
   cp2_th:
-    image: cmumars/cp2mockth
+    image: cmumars/cp2mockth:codefreeze
     container_name: cp2_th
     hostname: cp2_th
     volumes:
@@ -14,13 +14,11 @@ services:
         --url-ta http://cp2_ta:5000
         --log-file /var/log/th/cp2th.log
         --attempts 1000
-        --operator flip-relational-operator
-        --file src/roscpp_core/rostime/src/time.cpp
-
-#        --file src/laser_geometry/src/laser_geometry.cpp
+        --operator flip-arithmetic-operator
+        --file src/navigation/base_local_planner/src/costmap_model.cpp
 
   bugzoo:
-    image: squareslab/bugzoo
+    image: squareslab/bugzoo:2.1.14
     container_name: bugzoo
     hostname: bugzoo
     volumes:
@@ -37,7 +35,7 @@ services:
     entrypoint: /bin/sh -c "bugzood -p 6060 --debug --log-file /var/log/bugzoo/bugzood.log --log-level info"
 
   rooibos:
-    image: squareslab/rooibosd
+    image: squareslab/rooibosd:0.0.1
     container_name: rooibos
     hostname: rooibos
     depends_on:
@@ -50,7 +48,7 @@ services:
     entrypoint: /bin/bash -c "rooibosd -p 8888 >& /dev/null"
 
   boggart:
-    image: squareslab/boggart
+    image: squareslab/boggart:0.1.12
     container_name: boggart
     hostname: boggart
     depends_on:
@@ -60,7 +58,7 @@ services:
     mem_limit: 500M
     expose:
       - 6000
-    command: /bin/sh -c "boggartd -p 6000 --bugzoo http://bugzoo:6060 --rooibos http://rooibos:8888 --log-file /var/log/boggart/boggartd.log --debug"
+    command: /bin/sh -c "boggartd -p 6000 --bugzoo http://bugzoo:6060 --rooibos http://rooibos:8888 --log-file /var/log/boggart/boggartd.log --log-level debug"
 
   cp2_ta:
     build: .
