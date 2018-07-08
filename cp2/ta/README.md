@@ -28,7 +28,9 @@ different instance types.
 
 ### Instance Type
 
-Specify which instance type should be used.
+CP2 should be deployed to a compute-optimised instance belonging to either the
+`c5` or `c5d` families. Since CP2 benefits from a large number of CPU cores,
+it is essential that it runs on either a `9xlarge` or `18xlarge` instance.
 
 ### Resource Limits
 
@@ -49,6 +51,22 @@ that are available to the underlying machine. (For some perturbations, the
 repair system can run with 3--4X the number of logical threads since those
 threads spend most of their time sleeping, but as that is not universally
 true, we don't recommend doing that.)
+
+As a quick reference, below is the optimal `--threads` setting for each of
+the `c5` and `c5d` instance type sizes that are appropriate for CP2.
+
+* *9xlarge:* 36
+* *18xlarge:* 72
+
+### Disk Requirements
+
+It is essential that CP2 runs in an environment where the disk provides
+a fixed number of IOPS (i.e., it should run on an `io2` IOS-provisioned
+disk). Bursty, credit-based disks (i.e., `gp2`, the default disk selection
+on AWS) should not be used as they often lead to unrepresentative results
+and, in some cases, cause Docker to hang. As an alternative to using a
+separate EBS-backed disk, one can use a compute instance with its own
+dedicated SSD (e.g., `c5d.9xlarge` or `c5d.18xlarge`).
 
 ### Memory Limits
 
@@ -90,6 +108,10 @@ Before posting to `/done` or `/error`, the TA will attempt to collect logs
 from all of the containers above, before aggregating them into a compressed
 archive (i.e., a `.tar.gz` file) and uploading the resulting archive to Amazon
 S3.
+
+## Debugging
+
+Discuss debugging flags.
 
 ## Troubleshooting
 
