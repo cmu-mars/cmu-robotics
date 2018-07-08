@@ -241,6 +241,7 @@ def start_post():
         # setting the battery to full charge before starting the mission
         rospy.loginfo("setting the initial charge right before starting the mission")
         full_charge = config.bot_cont.robot_battery.capacity
+        print(full_charge)
         config.bot_cont.gazebo.set_charge(full_charge)
         # now everything is ready to start the mission
         t.start()

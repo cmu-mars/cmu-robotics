@@ -10,4 +10,4 @@ sklearn
 scipy
 pyDOE
 sympy
-psutil
+psutil>=5.4.6

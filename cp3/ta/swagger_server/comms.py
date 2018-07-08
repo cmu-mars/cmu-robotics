@@ -25,7 +25,7 @@ def sequester():
 
         ## if any of the directories can't be copied, this test should be invalidated
         if err:
-            thApi.error_post(Parameters("failed to sequester logs"))
+            config.thApi.error_post(Parameters("failed to sequester logs"))
 
 def save_ps(src):
     with open(os.path.expanduser("~/logs/ps_%s_%s.log") % (src, datetime.datetime.now()), "w") as outfile:
