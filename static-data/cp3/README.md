@@ -1,6 +1,6 @@
 # Static data for CP3
 
-We have been testing this on a `m5.xlarge` EC2 instance.
+We have been testing this on a `c5d.4xlarge` EC2 instance or larger.
 
 The static data for CP3 are the map, which can be found in: https://github.com/cmu-mars/cp3_base/blob/master/cp3_base/maps/cp3.json. This contains
 1.  The list of waypoints, their location, and their connectivity
