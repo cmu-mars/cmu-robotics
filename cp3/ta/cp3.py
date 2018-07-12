@@ -100,13 +100,14 @@ class BaseSystem:
 			self.ig = actionlib.SimpleActionClient("ig_action_server", ig_action_msgs.msg.InstructionGraphAction)
 			self.ig.wait_for_server()
 		# Check if path is none in this configuration
-		path = self.instruction_server.get_path(self, target, self.start_configuration)
+		path = self.instruction_server.get_path(start, target, self.start_configuration)
 		if path is None or len(path) == 0:
 			igcode = self.instruction_server.get_instructions(start, target, 'favor-timeliness-amcl-kinect')
 		else:
 			igcode = self.instruction_server.get_instructions(start, target, self.start_configuration)
 		if speed is not None:
-			igcode = igcode.replace("0.68,", "%s," %speed)
+			igcode = igcode.replace("0.35,", "%s," %speed)
+		print("=====> IG for %s to %s for %s is %s" %(start,target, self.start_configuration, igcode))
 		goal = ig_action_msgs.msg.InstructionGraphGoal(order=igcode)
 		self.gazebo.set_charging_srv(False)
 		if not wait:
@@ -130,7 +131,7 @@ class BaseSystem:
 			self.ig.wait_for_server()
 
 		goal = ig_action_msgs.msg.InstructionGraphGoal(order=igcode)
-		self.gazebo.set_charge_srv(18000000000)
+		self.gazebo.set_charge_srv(180000)
 		if discharge: 
 			self.gazebo.set_charging_srv(False)
 		if not wait:

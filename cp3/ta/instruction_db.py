@@ -28,7 +28,9 @@ class InstructionDB:
 			return None
 		if config is None:
 			config='amcl-kinect'
-		return self.db[key][config]["instructions"]
+		inst = self.db[key][config]["instructions"]
+		print("======> Returning for %s to %s under %s, %s" %(wp_src, wp_tgt, config, inst))
+		return inst
 
 	def get_predicted_duration(self, wp_src, wp_tgt, config):
 		key = self.__form_key(wp_src, wp_tgt)
