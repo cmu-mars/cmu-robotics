@@ -17,7 +17,7 @@ def sequester():
 
         err = False
         for ld in logdirs:
-            res = subprocess.call([os.path.expanduser("~/aws_copy.sh"), ld, config.uuid])
+            res = subprocess.call([os.path.expanduser("~/aws_copy.sh"), ld, config.uuid], shell=True)
             # res = subprocess.call(["aws", "s3", "cp", ld,
             #                        "s3://dev-cmur-logs/" + config.uuid + "/" ,
             #                        "--recursive"])

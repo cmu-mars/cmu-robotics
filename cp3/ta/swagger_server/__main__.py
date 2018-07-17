@@ -115,7 +115,7 @@ if __name__ == '__main__':
             fail_hard('ECS_CONTAINER_METADATA_FILE not defined; cannot sequester logs')
 
         ## config.uuid = (subprocess.check_output("cat $ECS_CONTAINER_METADATA_FILE | jq -r '.TaskARN' | cut -d '/' -f2")).strip()
-        config.uuid = (subprocess.check_output(os.path.expanduser("~/aws_uuid.sh"))).strip()
+        config.uuid = (subprocess.check_output(os.path.expanduser("~/aws_uuid.sh"),shell=True )).strip()
 
         if (not config.uuid) or (len(config.uuid) == 0):
             fail_hard("uuid undefined; cannot sequester logs")
