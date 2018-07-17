@@ -14,8 +14,11 @@ services:
         --url-ta http://cp2_ta:5000
         --log-file /var/log/th/cp2th.log
         --attempts 1000
-        --operator flip-arithmetic-operator
-        --file src/navigation/base_local_planner/src/costmap_model.cpp
+        --operator delete-conditional-control-flow
+        --file src/navigation/base_local_planner/src/goal_functions.cpp
+
+#        --file src/navigation/costmap_2d/src/footprint.cpp
+#        --file src/navigation/base_local_planner/src/costmap_model.cpp
 
   bugzoo:
     image: squareslab/bugzoo:2.1.14
@@ -48,7 +51,7 @@ services:
     entrypoint: /bin/bash -c "rooibosd -p 8888 >& /dev/null"
 
   boggart:
-    image: squareslab/boggart:0.1.12
+    image: squareslab/boggart:0.1.13
     container_name: boggart
     hostname: boggart
     depends_on:
@@ -61,7 +64,9 @@ services:
     command: /bin/sh -c "boggartd -p 6000 --bugzoo http://bugzoo:6060 --rooibos http://rooibos:8888 --log-file /var/log/boggart/boggartd.log --log-level debug"
 
   cp2_ta:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.debug
     container_name: cp2_ta
     hostname: cp2_ta
     depends_on:

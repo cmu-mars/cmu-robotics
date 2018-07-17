@@ -5,5 +5,5 @@ docker pull cmumars/cp2mockth:codefreeze
 docker pull cmumars/orchestrator:codefreeze
 docker pull squareslab/rooibosd:0.0.1
 docker pull squareslab/bugzoo:2.1.14
-docker pull squareslab/boggart:0.1.12
+docker pull squareslab/boggart:0.1.13
 docker-compose build
