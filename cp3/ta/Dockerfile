@@ -24,6 +24,11 @@ RUN wget -q "https://github.com/ros-planning/navigation_msgs/archive/${ROS_NAVIG
 
 RUN cd ~/catkin_ws && . /opt/ros/kinetic/setup.sh && catkin_make
 
+## add scripts for log sequestration on AWS
+COPY aws_uuid.sh ~
+COPY aws_copy.sh ~
+RUN chmod +x ~/aws_*.sh
+
 RUN sudo apt-get install -y python3 python3-pip
 
 RUN sudo mkdir -p /usr/src/app
