@@ -62,7 +62,7 @@ def internal_status_post(CP1InternalStatus):  # noqa: E501
         elif cp1_internal_status.status == "other-error":
             config.logger.debug("sending error to the TH because of message %s" % cp1_internal_status.message)
 
-            ## copy out logs before posting error
+            # copy out logs before posting error
             if config.uuid and config.th_connected:
                 comms.sequester()
 

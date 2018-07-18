@@ -10,6 +10,7 @@ from multiprocessing import Process, Queue
 import rospy
 import actionlib
 import threading
+import subprocess
 
 from std_msgs.msg import Float64
 from move_base_msgs.msg import MoveBaseAction

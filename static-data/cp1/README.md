@@ -14,8 +14,8 @@ A list of paths to log files that we want to be saved from every test run for po
 
 * Standard output of `TA`
 * Standard error of `TA`
-* `~/cp1/\*`
+* `/home/mars/cp1/\*`
 * `/usr/src/app/access.log`
 * `/home/mars/rainbow.log`
 * `/home/mars/.ros/logs/latest/\*`
-* `/home/mars/logs/*`
+* `/home/mars/logs/\*`

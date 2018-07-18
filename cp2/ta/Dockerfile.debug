@@ -25,6 +25,18 @@ RUN apk add --no-cache \
 
 RUN pip install --no-cache awscli
 
+# install Kaskara from source
+COPY --from=squareslab/kaskara /opt/kaskara /tmp/kaskara
+RUN cd /tmp/kaskara \
+ && pip install --upgrade --no-cache . \
+ && rm -rf /tmp/kaskara
+
+# install Darjeeling from source
+COPY --from=squareslab/darjeeling /opt/darjeeling /tmp/darjeeling
+RUN cd /tmp/darjeeling \
+ && pip install --upgrade --no-cache . \
+ && rm -rf /tmp/darjeeling
+
 # install Orchestrator from source
 COPY --from=cmumars/orchestrator:codefreeze /opt/orchestrator /tmp/orchestrator
 RUN cd /tmp/orchestrator \

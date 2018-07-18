@@ -8,9 +8,10 @@ from swagger_client.models.doneparams import Doneparams
 from swagger_client.models.statusparams import Statusparams
 import swagger_server.config as config
 
+
 def sequester():
     if config.th_connected and config.uuid is not None:
-        logdirs = [os.path.expanduser("/home/mars/cp1/"),
+        logdirs = ["/home/mars/cp1/",
                    "/usr/src/app/access.log",
                    "/home/mars/rainbow.log",
                    "/home/mars/.ros/logs/latest/",
@@ -25,7 +26,7 @@ def sequester():
             if not res == 0:
                 err = True
 
-        ## if any of the directories can't be copied, this test should be invalidated
+        # if any of the directories can't be copied, this test should be invalidated
         if err:
             config.thApi.error_post(Errorparams(error="other-error",
                                          message="failed to sequester logs"))
@@ -37,7 +38,6 @@ def save_ps(src):
 
 
 def send_status(src, code, sendxy=True, sendtime=True):
-    # todo, this is pretty hacky; really we want to make x, y
     # optional in the API def and only send them if the robot's
     # been started, also sending time is optional
     try:
@@ -89,7 +89,7 @@ def send_done(src, msg, outcome):
         x, y, ig1, ig2 = config.bot_cont.gazebo.get_bot_state()
         config.logger.debug("sending done from %s" % src)
 
-        ## right before posting, copy out all the logs
+        # right before posting, copy out all the logs
         sequester()
 
         response = config.thApi.done_post(Doneparams(x=x,
