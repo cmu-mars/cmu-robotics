@@ -94,16 +94,20 @@ def internal_status_post(CP3InternalStatus):  # noqa: E501
                 config.logger.warn("[WARN] TA internal status got MISSION_FAILED in non-adapting case")
 
         elif cp3_internal_status.status == "ADAPTING":
-            config.adaptations = config.adaptations + 1
+            if config.waiting_for_adapted is None:
+                config.adaptations = config.adaptations + 1
 
-            track_adapt(desired=cp3_internal_status.status,
-                        update="ADAPTED")
+                track_adapt(desired=cp3_internal_status.status,
+                            update="ADAPTED")
 
-            comms.setup_adapted_listeners()
-            # TODO set up IG listener to listen for new IG followed by first move
-            comms.send_status("internal status, adapting",
-                        "adapting",
-                        "DAS is now adapting")
+                comms.setup_adapted_listeners()
+                # TODO set up IG listener to listen for new IG followed by first move
+                comms.send_status("internal status, adapting",
+                            "adapting",
+                            "DAS is now adapting")
+                config.waiting_for_adapted = True
+            else:
+                comms.send_status("internal status", "adapting", cp3_internal_status.message)
 
         elif cp3_internal_status.status == "ADAPTED":
             track_adapt(desired=cp3_internal_status.status,
@@ -265,6 +269,7 @@ def start_post():
     if not config.started:
         def active_cb():
             """ callback for when the bot is made active """
+            comms.send_status("bot", "mission-running", "The robot has started")
             config.logger.debug("received notification that goal is active")
 
         def done_cb(terminal, result):

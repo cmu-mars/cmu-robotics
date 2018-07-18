@@ -46,6 +46,7 @@ time_at_done = None
 expected_next_adapt = "ADAPTING"
 time_spent_adapting = 0
 time_at_last_adapt  = None
+waiting_for_adapted = None
 
 # uuid for log sequestering
 uuid = None

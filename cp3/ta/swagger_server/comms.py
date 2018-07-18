@@ -99,4 +99,5 @@ def track_adapted_state(feedback):
       config.logger.debug('Got move, now sending adapted')
       config.ig_subscriber.unregister()
       config.ig_subscriber = None
+      config.waiting_for_adapted = None
       send_status("internal status, adapted, track_adapted_state", "adapted", "DAS has finished adapting, robot has finished any reconfigurations")
