@@ -54,5 +54,9 @@ EXPOSE 8080
 ADD entrypoint.sh .
 
 ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
+COPY aws_uuid.sh /home/mars
+COPY aws_copy.sh /home/mars
+RUN sudo chown -R mars /home/mars/aws_*.sh
+RUN chmod +x /home/mars/aws_*.sh
 
 #CMD ["python3", "-m", "swagger_server"]
