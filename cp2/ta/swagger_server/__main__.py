@@ -182,7 +182,7 @@ def main():
     setup_logger('darjeeling', stdout=True)
     setup_logger('boggart', level=logging.ERROR)
     setup_logger('bugzoo', level=logging.ERROR)
-    setup_logger('kaskara', level=logging.DEBUG)
+    # setup_logger('kaskara', level=logging.DEBUG)
     # setup_logger('rooibos', level=logging.WARNING)
 
     def log_request_info():
