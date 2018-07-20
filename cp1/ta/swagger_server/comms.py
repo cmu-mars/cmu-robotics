@@ -20,7 +20,10 @@ def sequester():
 
         err = False
         for ld in logdirs:
-            res = subprocess.call([os.path.expanduser("~/aws_copy.sh"), ld, config.uuid], shell=True)
+            config.logger.debug("Copying %s with the uuid '%s'" %(ld,config.uuid))
+            command = "%s %s %s" %(os.path.expanduser("~/aws_copy.sh"), ld, config.uuid)
+            print("Calling command %s" %command)
+            res = subprocess.call(command, shell=True)
             if not res == 0:
                 err = True
 

@@ -115,8 +115,8 @@ if __name__ == '__main__':
         if not ecs_meta and fail_ecs != 'false':
             fail_hard('ECS_CONTAINER_METADATA_FILE not defined; cannot sequester logs')
         if ecs_meta:
-            config.uuid = (subprocess.check_output(os.path.expanduser("~/aws_uuid.sh"),shell=True )).strip()
-
+            config.uuid = (subprocess.check_output(os.path.expanduser("~/aws_uuid.sh"),shell=True )).strip().decode()
+            print("Got the UUID for log sequenstration as %s" %config.uuid)
             if (not config.uuid) or (len(config.uuid) == 0):
                 fail_hard("uuid undefined; cannot sequester logs")
 

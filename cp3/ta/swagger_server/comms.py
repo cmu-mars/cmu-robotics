@@ -13,12 +13,14 @@ import rospy
 
 def sequester():
     if config.th_connected and config.uuid is not None:
-        logdirs = ["/home/mars/logs", "/home/mars/.ros/logs/latest/"]
+        logdirs = ["/home/mars/logs", "/home/mars/.ros/log/latest/"]
 
         err = False
         for ld in logdirs:
             config.logger.debug("Copying %s with the uuid '%s'" %(ld,config.uuid))
-            res = subprocess.call([os.path.expanduser("~/aws_copy.sh"), ld, config.uuid], shell=True)
+            command = "%s %s %s" %(os.path.expanduser("~/aws_copy.sh"), ld, config.uuid)
+            print("Calling command %s" %command)
+            res = subprocess.call(command, shell=True)
             # res = subprocess.call(["aws", "s3", "cp", ld,
             #                        "s3://dev-cmur-logs/" + config.uuid + "/" ,
             #                        "--recursive"])
