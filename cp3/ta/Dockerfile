@@ -11,7 +11,7 @@ ENV GPG_KEY=0D96DF4D4110E5C43FBFB17F2D347EA6AA65421D
 ENV PYTHON_VERSION=3.6.3
 
 RUN sudo apt-get update
-RUN sudo apt-get install -y ros-kinetic-gazebo-msgs awscli jq
+RUN sudo apt-get install -y ros-kinetic-gazebo-msgs jq
 
 ENV ROS_NAVIGATION_MSGS_VERSION 1.13.0
 RUN wget -q "https://github.com/ros-planning/navigation_msgs/archive/${ROS_NAVIGATION_MSGS_VERSION}.tar.gz" && \
@@ -42,6 +42,8 @@ RUN sudo pip3 install --no-cache-dir -r requirements.txt
 
 RUN sudo pip3 install catkin_pkg rospkg numpy psutil defusedxml flask-script
 
+RUN sudo pip install awscli
+
 COPY . /usr/src/app
 
 ADD start_exp.sh /usr/src/app
@@ -56,7 +58,7 @@ EXPOSE 8080
 
 ADD entrypoint.sh .
 
-
+RUN sudo pip install netifaces
 
 #ADD test-ready.json /home/mars/
 

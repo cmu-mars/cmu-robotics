@@ -11,7 +11,7 @@ ENV GPG_KEY=0D96DF4D4110E5C43FBFB17F2D347EA6AA65421D
 ENV PYTHON_VERSION=3.6.3
 
 RUN sudo apt-get update
-RUN sudo apt-get install -y ros-kinetic-gazebo-msgs awscli jq
+RUN sudo apt-get install -y ros-kinetic-gazebo-msgs jq
 
 ENV ROS_NAVIGATION_MSGS_VERSION 1.13.0
 RUN wget -q "https://github.com/ros-planning/navigation_msgs/archive/${ROS_NAVIGATION_MSGS_VERSION}.tar.gz" && \
@@ -35,7 +35,7 @@ COPY requirements.txt /usr/src/app/
 
 RUN sudo apt-get install -y python3 python3-pip
 RUN sudo pip3 install --no-cache-dir -r requirements.txt
-
+RUN sudo pip install awscli
 # libs that cp1 backend depends on and since ta is running with poython3 we need them with pip3
 # RUN sudo pip3 install catkin_pkg rospkg numpy psutil defusedxml flask-script
 
