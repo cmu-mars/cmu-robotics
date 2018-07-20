@@ -14,7 +14,7 @@ def sequester():
         logdirs = ["/home/mars/cp1/",
                    "/usr/src/app/access.log",
                    "/home/mars/rainbow.log",
-                   "/home/mars/.ros/logs/latest/",
+                   "/home/mars/.ros/log/latest/",
                    "/home/mars/logs/"
                    ]
 
