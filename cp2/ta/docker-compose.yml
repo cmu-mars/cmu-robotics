@@ -13,9 +13,9 @@ services:
         --debug
         --url-ta http://cp2_ta:5000
         --log-file /var/log/th/cp2th.log
-        --attempts 1000
-        --operator delete-conditional-control-flow
-        --file src/navigation/base_local_planner/src/goal_functions.cpp
+        --attempts 5000
+        --operator flip-arithmetic-operator
+        --file src/image_pipeline/depth_image_proc/src/nodelets/point_cloud_xyzrgb.cpp
 
 #        --file src/navigation/costmap_2d/src/footprint.cpp
 #        --file src/navigation/base_local_planner/src/costmap_model.cpp
@@ -35,7 +35,7 @@ services:
       nofile:
         soft: 20000
         hard: 40000
-    entrypoint: /bin/sh -c "bugzood -p 6060 --debug --log-file /var/log/bugzoo/bugzood.log --log-level info"
+    entrypoint: /bin/sh -c "bugzood -p 6060 --debug --log-file /var/log/bugzoo/bugzood.log --log-level info &> /dev/null"
 
   rooibos:
     image: squareslab/rooibosd:0.0.1
@@ -61,12 +61,12 @@ services:
     mem_limit: 500M
     expose:
       - 6000
-    command: /bin/sh -c "boggartd -p 6000 --bugzoo http://bugzoo:6060 --rooibos http://rooibos:8888 --log-file /var/log/boggart/boggartd.log --log-level debug"
+    command: /bin/sh -c "boggartd -p 6000 --bugzoo http://bugzoo:6060 --rooibos http://rooibos:8888 --log-file /var/log/boggart/boggartd.log --log-level debug &> /dev/null"
 
   cp2_ta:
     build:
       context: .
-      dockerfile: Dockerfile.debug
+      dockerfile: Dockerfile
     container_name: cp2_ta
     hostname: cp2_ta
     depends_on:
@@ -86,4 +86,4 @@ services:
         --boggart-url http://boggart:6000
         --bugzoo-url http://bugzoo:6060
         --rooibos-url http://rooibos:8888
-        --threads 8
+        --threads 32

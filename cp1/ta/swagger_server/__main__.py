@@ -122,7 +122,7 @@ if __name__ == '__main__':
         config.uuid = (subprocess.check_output("~/aws_uuid.sh", shell=True)).strip().decode()
         print("Got the UUID for log sequenstration as %s" %config.uuid)
 
-        if (not config.uuid) or (len(config.uuid) == 0):
+        if (not config.uuid) or len(config.uuid) == 0:
             fail_hard("uuid undefined; cannot sequester logs")
 
     config.ready_response = ready_resp
