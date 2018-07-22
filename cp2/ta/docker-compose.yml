@@ -14,8 +14,8 @@ services:
         --url-ta http://cp2_ta:5000
         --log-file /var/log/th/cp2th.log
         --attempts 5000
-        --operator flip-arithmetic-operator
-        --file src/image_pipeline/depth_image_proc/src/nodelets/point_cloud_xyzrgb.cpp
+        --operator flip-relational-operator
+        --file src/navigation/costmap_2d/src/array_parser.cpp
 
 #        --file src/navigation/costmap_2d/src/footprint.cpp
 #        --file src/navigation/base_local_planner/src/costmap_model.cpp
@@ -86,4 +86,4 @@ services:
         --boggart-url http://boggart:6000
         --bugzoo-url http://bugzoo:6060
         --rooibos-url http://rooibos:8888
-        --threads 32
+        --threads 16
