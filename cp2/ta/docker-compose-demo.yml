@@ -1,0 +1,79 @@
+version: '2'
+services:
+  cp2_th:
+    image: cmumars/cp2mockth:codefreeze
+    container_name: cp2_th
+    hostname: cp2_th
+    volumes:
+      - ./logs:/var/log/th
+    expose:
+      - 5001
+    entrypoint: /bin/sh -c "python3 mock.py -p 5001 --debug --url-ta http://cp2_ta:5000 --log-file /var/log/th/cp2th.log --attempts 5000 --operator flip-relational-operator --file src/navigation/base_local_planner/src/costmap_model.cpp --line 72 >& /dev/null"
+
+  bugzoo:
+    image: squareslab/bugzoo:2.1.14
+    container_name: bugzoo
+    hostname: bugzoo
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp:/tmp
+      - ./logs:/var/log/bugzoo
+    expose:
+      - 6060
+    mem_limit: 1G
+    ulimits:
+      nofile:
+        soft: 20000
+        hard: 40000
+    entrypoint: /bin/sh -c "bugzood -p 6060 --debug --log-file /var/log/bugzoo/bugzood.log --log-level info &> /dev/null"
+
+  rooibos:
+    image: squareslab/rooibosd:0.0.1
+    container_name: rooibos
+    hostname: rooibos
+    depends_on:
+      - bugzoo
+    volumes:
+      - ./logs:/var/log/rooibosd
+    mem_limit: 1G
+    expose:
+      - 8888
+    entrypoint: /bin/bash -c "rooibosd -p 8888 >& /dev/null"
+
+  boggart:
+    image: squareslab/boggart:0.1.13
+    container_name: boggart
+    hostname: boggart
+    depends_on:
+      - rooibos
+    volumes:
+      - ./logs:/var/log/boggart
+    mem_limit: 500M
+    expose:
+      - 6000
+    command: /bin/sh -c "boggartd -p 6000 --bugzoo http://bugzoo:6060 --rooibos http://rooibos:8888 --log-file /var/log/boggart/boggartd.log --log-level debug &> /dev/null"
+
+  cp2_ta:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cp2_ta
+    hostname: cp2_ta
+    depends_on:
+      - cp2_th
+      - bugzoo
+      - rooibos
+      - boggart
+    volumes:
+      - ./logs:/var/log
+    mem_limit: 8G
+    expose:
+      - 5000
+    working_dir: /usr/src/app
+    command: |
+      python3 -u -m swagger_server
+        --th-url http://cp2_th:5001
+        --boggart-url http://boggart:6000
+        --bugzoo-url http://bugzoo:6060
+        --rooibos-url http://rooibos:8888
+        --threads 16
