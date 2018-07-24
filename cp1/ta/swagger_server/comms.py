@@ -13,7 +13,6 @@ def sequester():
     if config.th_connected and config.uuid is not None:
         logdirs = ["/home/mars/cp1/",
                    "/usr/src/app/access.log",
-                   "/home/mars/rainbow.log",
                    "/home/mars/.ros/log/latest/",
                    "/home/mars/logs/"
                    ]
