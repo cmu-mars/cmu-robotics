@@ -52,7 +52,7 @@ if __name__ == '__main__':
     # capture the logger
     logger = logging.getLogger('werkzeug')
     logger.setLevel(logging.DEBUG)
-    handler = logging.FileHandler('access.log')
+    handler = logging.FileHandler(os.path.expanduser('~/logs/TA_access.log'))
     logger.addHandler(handler)
 
     # share logger with endpoints
@@ -228,12 +228,14 @@ if __name__ == '__main__':
     bot_cont.gazebo.track_battery_charge()
     bot_cont.level = ready_resp.level
 
+    ran_out_of_energy_handled = False
     # subscribe to rostopics
     def energy_cb(msg):
         """call back to update the global battery state from the ros topic"""
         config.battery = int(msg.data)
         if msg.data <= 0:
-            if config.th_connected:
+            if config.th_connected and not ran_out_of_energy_handled:
+                ran_out_of_energy_handled = True # Only send the done message once
                 comms.send_done("energy call back", "out of juice", "out-of-battery")
             else:
                 rospy.logerr("out-of-battery")

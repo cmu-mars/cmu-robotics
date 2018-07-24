@@ -12,7 +12,6 @@ import swagger_server.config as config
 def sequester():
     if config.th_connected and config.uuid is not None:
         logdirs = ["/home/mars/cp1/",
-                   "/usr/src/app/access.log",
                    "/home/mars/.ros/log/latest/",
                    "/home/mars/logs/"
                    ]
@@ -69,7 +68,7 @@ def send_status(src, code, sendxy=True, sendtime=True):
                              sim_time=0
                              )
             rospy.loginfo(dd)
-            config.logger.debug("Done message is %s" % dd)
+            config.logger.debug("Status message is %s" % dd)
             response = config.thApi.status_post(Statusparams(status=code,
                                                              x=x,
                                                              y=y,
@@ -80,7 +79,7 @@ def send_status(src, code, sendxy=True, sendtime=True):
         config.logger.debug("response from TH to status: %s" % response)
 
     except Exception as e:
-        config.logger.error("Got an error %s when sending done" % e)
+        config.logger.error("Got an error %s when sending status" % e)
 
 
 def send_done(src, msg, outcome):
@@ -91,15 +90,17 @@ def send_done(src, msg, outcome):
 
         # right before posting, copy out all the logs
         sequester()
-
-        response = config.thApi.done_post(Doneparams(x=x,
-                                                     y=y,
-                                                     charge=config.battery,
-                                                     sim_time=rospy.Time.now().secs,
-                                                     tasks_finished=config.tasks_finished,
-                                                     outcome=outcome,
-                                                     message=msg))
+        d = Doneparams(x=x,
+                       y=y,
+                       charge=config.battery,
+                       sim_time=rospy.Time.now().secs,
+                       tasks_finished=config.tasks_finished,
+                       outcome=outcome,
+                       message=msg)
+        config.logger.debug("Done message is %s" %d)
+        print("Done message is %s" %d)
+        response = config.thApi.done_post(d)
         config.logger.debug("response from TH to done: %s" % response)
 
     except Exception as e:
-        config.logger.error("Got an error %s when sending status" % e)
+        config.logger.error("Got an error %s when sending done" % e)
