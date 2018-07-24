@@ -73,7 +73,7 @@ if __name__ == '__main__':
         logger.debug(s)
         comms.save_ps("error-failhard")
 
-        ## if we at least have the UUID, then try to sequester.
+        # if we at least have the UUID, then try to sequester.
         if config.uuid and config.th_connected:
             comms.sequester()
 
@@ -82,7 +82,7 @@ if __name__ == '__main__':
             result = thApi.error_post(err)
         raise Exception(s)
 
-    ## record the resources to log
+    # record the resources to log
     resources.report_system_resources(logger)
     resources.report_resource_limits(logger)
 
@@ -111,8 +111,8 @@ if __name__ == '__main__':
             logger.info("started TA in disconnected mode")
         # raise e
 
-    ## if we get a message from ready, that means we're in the LL
-    ## environment and should set up log sequestration
+    # if we get a message from ready, that means we're in the LL
+    # environment and should set up log sequestration
     if config.th_connected:
         ecs_meta = os.environ.get('ECS_CONTAINER_METADATA_FILE')
 
@@ -155,7 +155,7 @@ if __name__ == '__main__':
             logger.debug("parsing raised an exception; notifying the TH and then crashing")
             comms.save_ps("parsing_error")
             if config.th_connected:
-                ## copy out logs before posting error
+                # copy out logs before posting error
                 if config.uuid and config.th_connected:
                     comms.sequester()
                 thApi.error_post(Errorparams(error="parsing-error", message="exception raised: %s" % e))
@@ -174,7 +174,7 @@ if __name__ == '__main__':
             comms.save_ps("learning_error")
             if config.th_connected:
 
-                ## copy out logs before posting error
+                # copy out logs before posting error
                 if config.uuid and config.th_connected:
                     comms.sequester()
 
@@ -228,14 +228,15 @@ if __name__ == '__main__':
     bot_cont.gazebo.track_battery_charge()
     bot_cont.level = ready_resp.level
 
-    ran_out_of_energy_handled = False
+    config.ran_out_of_energy_handled = False
+
     # subscribe to rostopics
     def energy_cb(msg):
         """call back to update the global battery state from the ros topic"""
         config.battery = int(msg.data)
         if msg.data <= 0:
-            if config.th_connected and not ran_out_of_energy_handled:
-                ran_out_of_energy_handled = True # Only send the done message once
+            if config.th_connected and not config.ran_out_of_energy_handled:
+                config.ran_out_of_energy_handled = True  # Only send the done message once
                 comms.send_done("energy call back", "out of juice", "out-of-battery")
             else:
                 rospy.logerr("out-of-battery")

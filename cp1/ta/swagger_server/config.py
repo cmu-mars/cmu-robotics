@@ -26,5 +26,8 @@ tasks_finished = []
 # for testing without th
 th_connected = False
 
-## for log sequestration
+# for log sequestration
 uuid = None
+
+# For energy callback
+ran_out_of_energy_handled = False
