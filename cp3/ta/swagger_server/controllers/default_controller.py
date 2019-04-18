@@ -25,6 +25,7 @@ import swagger_server.config as config
 import swagger_server.comms as comms
 
 import traceback
+import math
 
 
 def track_adapt(desired=None, update=None):
@@ -95,6 +96,8 @@ def internal_status_post(CP3InternalStatus):  # noqa: E501
 
         elif cp3_internal_status.status == "ADAPTING":
             if config.waiting_for_adapted is None:
+                config.waiting_for_adapted = True
+
                 config.adaptations = config.adaptations + 1
 
                 track_adapt(desired=cp3_internal_status.status,
@@ -105,7 +108,6 @@ def internal_status_post(CP3InternalStatus):  # noqa: E501
                 comms.send_status("internal status, adapting",
                             "adapting",
                             "DAS is now adapting")
-                config.waiting_for_adapted = True
             else:
                 comms.send_status("internal status", "adapting", cp3_internal_status.message)
 
@@ -130,6 +132,8 @@ def internal_status_post(CP3InternalStatus):  # noqa: E501
 
         elif cp3_internal_status.status == "PLAN":
             config.plan = [ x.strip() for x in  ast.literal_eval(cp3_internal_status.message) ]
+            print("Got new plan %s" %str(config.plan))
+            config.logger.debug("Got new plan %s" %str(config.plan))
             if not cp3_internal_status.sim_time == -1:
                 config.logger.debug("[WARN] ta got an internal plan status with sim_time %s, which is out of spec" % cp3_internal_status.sim_time)
     except Exception as e:
@@ -154,6 +158,22 @@ def observe_get():
     ret.battery = config.battery
     ret.sim_time = rospy.Time.now().secs
     ret.lights = config.lights_off
+
+    # # Check to see if the robot has moved > 1m in 15 mins
+    # if not 'oscillation_stamp' in config:
+    #     config.oscillation_stamp = {'x' : ret.x, 'y' : ret.y, 't' : ret.sim_time}
+
+    # if ret.sim_time - config.oscillation_stamp.t > 60*15:
+    #     distance_moved = math.sqrt((ret.x - config.oscillation_stamp.x)**2 + (ret.y - config.oscillation_stamp.y)**2)
+    #     if distance_moved < 1:
+    #         comms.send_done("Robot is oscillating")
+    #     else:
+    #         config.oscillation_stamp = {'x' : ret.x, 'y' : ret.y, 't' : ret.sim_time}
+
+    # # Check to se if we should time out
+    # if ret.sim_time - config.time_at_start > 60*60:
+    #     comms.send_done("Timed out")
+
     return ret
 
 def perturb_light_post(Parameters):
@@ -170,16 +190,16 @@ def perturb_light_post(Parameters):
 
     ## check if the light name is valid
     if not config.cp.map_server.is_light(Parameters.id):
-        ret = InlineResponse4001(rospy.Time.now().secs, "invalid light name")
+        ret = InlineResponse4001(rospy.Time.now().secs, "invalid light name: '%s'" %Parameters.id)
         return ret , 400
 
     ## if they want to turn it off, make sure it's on
     if (not Parameters.state) and Parameters.id in config.lights_off:
-        return InlineResponse4001(rospy.Time.now().secs, "cannot turn off a light that is already off")
+        return InlineResponse4001(rospy.Time.now().secs, "cannot turn off a light that is already off: %s" %Parameters.id)
 
     ## if they want to turn it on, make sure it's off
     if Parameters.state and (not Parameters.id in config.lights_off):
-        return InlineResponse4001(rospy.Time.now().secs, "cannot turn on a light that is already on")
+        return InlineResponse4001(rospy.Time.now().secs, "cannot turn on a light that is already on: %s" %Parameters.id)
 
     if config.cp.gazebo.enable_light(Parameters.id, Parameters.state):
         ## update the internal data structure for observe. the two

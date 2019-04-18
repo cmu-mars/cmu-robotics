@@ -95,13 +95,13 @@ class BaseSystem:
 			rospy.sleep(sleep_time)
 		return self.do_instructions(start, target, wait, active_cb, done_cb)
 
-	def do_instructions(self, start, target, wait, active_cb=None, done_cb = None, speed=None):
+	def do_instructions(self, start, target, wait, active_cb=None, done_cb = None, speed=None, single_step=False):
 		if self.ig is None:
 			self.ig = actionlib.SimpleActionClient("ig_action_server", ig_action_msgs.msg.InstructionGraphAction)
 			self.ig.wait_for_server()
 		# Check if path is none in this configuration
 		path = self.instruction_server.get_path(start, target, self.start_configuration)
-		if path is None or len(path) == 0:
+		if path is None or len(path) == 0 or (single_step and len(path) > 1):
 			igcode = self.instruction_server.get_instructions(start, target, 'favor-timeliness-amcl-kinect')
 		else:
 			igcode = self.instruction_server.get_instructions(start, target, self.start_configuration)
@@ -334,13 +334,13 @@ class CP3(ConverterMixin,BaseSystem):
 			self.illuminance_subscriber.unregister()
 		
 
-	def do_instructions(self, start, target, wait, active_cb = None, done_cb = None, speed=None):
+	def do_instructions(self, start, target, wait, active_cb = None, done_cb = None, speed=None, single_step=False):
 
 		if wait and (self.track_aruco or self.track_illuminance):
 			self.start_aruco_tracking()
 		ret = None
 		try:
-			ret = BaseSystem.do_instructions(self, start, target, wait, active_cb, done_cb, speed=speed)
+			ret = BaseSystem.do_instructions(self, start, target, wait, active_cb, done_cb, speed=speed, single_step=single_step)
 		except:
 			ret = False, "Some weird exception";
 		if wait and (self.track_aruco or self.track_illuminance):

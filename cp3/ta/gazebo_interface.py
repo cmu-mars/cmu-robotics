@@ -170,6 +170,7 @@ class GazeboInterface:
     def publish_amcl(self):
         try:
             tb = self.get_model_state('mobile_base', '')
+            print("---------------------------------------> Got model state")
             # Check to see if robot is moving. If it is, return an error
             #if (tb.twist.linear.x != 0 or tb.twist.linear.y != 0 or
             #   tb.twist.linear.z != 0 or tb.twist.angular.x!= 0 or

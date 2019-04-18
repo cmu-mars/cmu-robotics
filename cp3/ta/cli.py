@@ -81,6 +81,7 @@ if __name__ == "__main__":
     go_parser.add_argument('-e', '--speed', type=float, help='The speed that the robot should go on the path')
     go_parser.add_argument('--headlamp', action='store_true', help='Use the headlamp')
     go_parser.add_argument('--no_publish', action="store_true", help="Do not publish location")
+    go_parser.add_argument('-1', '--single_step', action='store_true', help="Try doing each waypoint order in one step")
     go_parser.add_argument('start', nargs='?', help='The waypoint label of the start')
     go_parser.add_argument('target', help='The wapoint lable of the target')
 
@@ -105,6 +106,7 @@ if __name__ == "__main__":
     co_parser.add_argument('-r', '--restart', action='store_true', help='Restart robot after each segment')
     co_parser.add_argument('-i', '--illuminance', action='store_true', help='Track illuminance and report max and min')
     co_parser.add_argument('-e', '--speed', type=float, help='The speed that the robot should go on the paths')
+    co_parser.add_argument('-1', '--single_step', action='store_true', help="Try doing each waypoint order in one step")
     co_parser.add_argument("waypoint_order", type=str, help='File containing the list of waypoints to visit in order')
     co_parser.add_argument('output', type=str, help='File to print statistics for each leg')
     
@@ -304,7 +306,7 @@ if __name__ == "__main__":
                     result = cp.gazebo.set_turtlebot_position(location["x"], location["y"], heading)
                     rospy.sleep(10)
                 start = rospy.Time.now()
-                result, message = cp.do_instructions(gargs.start, gargs.target, True, speed=gargs.speed if gargs.speed is not None else None)
+                result, message = cp.do_instructions(gargs.start, gargs.target, True, speed=gargs.speed if gargs.speed is not None else None, single_step=gargs.single_step)
             except Exception as e:
                 result = False
                 message = e.message
@@ -432,7 +434,7 @@ if __name__ == "__main__":
                             print("Failed to start -- could not move robot to " + s)
                             sys.exit() 
                     start = rospy.Time.now()
-                    result, msg = cp.do_instructions(s, t, True, speed=cargs.speed)
+                    result, msg = cp.do_instructions(s, t, True, speed=cargs.speed, single_step=cargs.single_step)
                     end = rospy.Time.now()
                     if result: # Check to see that the robot is actually near the target
                         x, y, z, w = cp.gazebo.get_turtlebot_state()
@@ -490,6 +492,8 @@ if __name__ == "__main__":
                             command = "%s --speed %s" %(command, cargs.speed)
                         if cargs.headlamp:
                             command = "%s --headlamp" %(command)
+                        if cargs.single_step:
+                            command = "%s -1" %command
                         command = "%s %s %s" %(command,s,t)
                         print("Calling: %s " %command)
                         subprocess.call(command, shell=True)

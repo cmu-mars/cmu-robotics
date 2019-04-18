@@ -270,9 +270,15 @@ if __name__ == '__main__':
                 config.nodes.append(i + "-kinect") if i != 'aruco' else 'aruco-camera'
         config.sensors = []
         config.sensors.extend(list(sensors))
-        if (("amcl-kinect" in config.nodes or "amcl-lidar" in config.nodes) and ("amcl-kinect" not in old and "amcl-lidar" not in old)) or (("mrpt-kinect" in config.nodes or "mrpt-lidar" in config.nodes) and ("mrpt-kinect" not in old and "mrpt-lidar" not in old)):
+        logger.debug("config.nodes=%s, old=%s" %(str(config.nodes),str(old)))
+        amcl = (("amcl-kinect" in config.nodes or "amcl-lidar" in config.nodes) and ("amcl-kinect" not in old and "amcl-lidar" not in old)) 
+        mrpt = (("mrpt-kinect" in config.nodes or "mrpt-lidar" in config.nodes) and  ("mrpt-kinect" not in old and "mrpt-lidar" not in old))
+        logger.debug("amcl=%s, mrpt=%s" %(amcl,mrpt))
+        if amcl or mrpt:
             rospy.sleep(10)
-            logger.debug("Publishing robot pose for map after waiting 10 seconds")
+            if mrpt:
+                rospy.sleep(10)
+            logger.debug("Publishing robot pose for map after waiting 10 seconds because of " + "mrpt" if mrpt else "amcl")
             cp.gazebo.publish_amcl()
 
 
